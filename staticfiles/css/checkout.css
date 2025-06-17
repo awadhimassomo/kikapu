@@ -1,0 +1,219 @@
+/* Checkout Design System - v1.0
+-------------------------------------------------- */
+
+/* CONSISTENT SPACING SYSTEM */
+.checkout-section {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8;
+}
+
+.checkout-container {
+  @apply bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden;
+}
+
+.checkout-header {
+  @apply flex items-center gap-3 mb-6 pb-4 border-b border-gray-100;
+}
+
+.checkout-title {
+  @apply text-2xl font-bold text-gray-800;
+}
+
+.checkout-subtitle {
+  @apply text-lg font-semibold text-gray-700 mb-4;
+}
+
+/* CARD COMPONENT */
+.checkout-card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-shadow hover:shadow-md;
+}
+
+.checkout-card-header {
+  @apply border-b border-gray-100 pb-3 mb-4 font-medium text-gray-700;
+}
+
+/* INPUT FIELDS */
+.checkout-input {
+  @apply w-full h-12 border border-gray-200 rounded-xl py-3 px-4 text-gray-800
+         focus:ring-2 focus:ring-primary focus:border-primary shadow-sm transition-all;
+}
+
+.checkout-textarea {
+  @apply w-full border border-gray-200 rounded-xl p-3 text-gray-800
+         focus:ring-2 focus:ring-primary focus:border-primary shadow-sm transition-all;
+}
+
+.checkout-select {
+  @apply w-full h-12 border border-gray-200 rounded-xl py-3 px-4 text-gray-800
+         focus:ring-2 focus:ring-primary focus:border-primary shadow-sm transition-all;
+}
+
+.checkout-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.checkout-input-group {
+  @apply relative mb-5;
+}
+
+/* COUPON INPUT */
+.checkout-coupon-container {
+  @apply relative flex items-center mb-6;
+}
+
+.checkout-coupon-input {
+  @apply w-full h-12 border border-gray-200 rounded-xl py-3 px-4 pr-28 text-gray-800
+         focus:ring-2 focus:ring-primary focus:border-primary shadow-sm transition-all;
+}
+
+.checkout-coupon-button {
+  @apply absolute right-1 inset-y-0 my-auto h-10 bg-primary hover:bg-primary/90 text-white
+         font-medium px-5 rounded-lg text-sm transition-colors shadow-sm;
+}
+
+/* CONSISTENT BUTTONS */
+.checkout-btn-primary {
+  @apply bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-6 rounded-xl
+         shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2;
+}
+
+.checkout-btn-secondary {
+  @apply border border-gray-300 bg-white text-gray-700 font-medium py-3 px-6 rounded-xl
+         hover:bg-gray-50 transition-all shadow-sm hover:shadow flex items-center justify-center gap-2;
+}
+
+.checkout-btn-text {
+  @apply text-secondary hover:text-primary py-2 transition-colors font-medium flex items-center gap-2;
+}
+
+/* PAYMENT METHOD SELECTION */
+.checkout-payment-option {
+  @apply cursor-pointer hover:bg-primary/5 transition-colors p-5 border-b border-gray-100 flex items-center;
+}
+
+.checkout-payment-option input[type="radio"] + div {
+  @apply transition-colors;
+}
+
+.checkout-payment-option input[type="radio"]:checked + div {
+  @apply bg-primary/10;
+}
+
+.checkout-payment-radio {
+  @apply w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mr-4;
+}
+
+.checkout-payment-radio-dot {
+  @apply w-3 h-3 rounded-full bg-primary scale-0 opacity-0 transition-all;
+}
+
+.checkout-payment-option input[type="radio"]:checked ~ .checkout-payment-radio {
+  @apply border-primary;
+}
+
+.checkout-payment-option input[type="radio"]:checked ~ .checkout-payment-radio .checkout-payment-radio-dot {
+  @apply scale-100 opacity-100;
+}
+
+/* SUMMARY SECTIONS */
+.checkout-summary-container {
+  @apply bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden;
+}
+
+.checkout-summary-header {
+  @apply bg-primary/10 p-4 border-b border-gray-100 font-semibold text-lg text-gray-800;
+}
+
+.checkout-summary-row {
+  @apply flex justify-between py-3 border-b border-gray-100;
+}
+
+.checkout-summary-row-label {
+  @apply text-gray-600;
+}
+
+.checkout-summary-row-value {
+  @apply font-medium text-gray-800;
+}
+
+.checkout-summary-total {
+  @apply flex justify-between font-bold text-lg text-primary pt-4;
+}
+
+/* STEPPER NAVIGATION */
+.checkout-steps {
+  @apply flex justify-between mb-8 px-4;
+}
+
+.checkout-step {
+  @apply flex flex-col items-center text-center w-1/4 group;
+}
+
+.checkout-step-circle {
+  @apply flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all;
+}
+
+.checkout-step-active .checkout-step-circle {
+  @apply border-primary bg-primary text-white;
+}
+
+.checkout-step-completed .checkout-step-circle {
+  @apply border-gray-400 bg-gray-400 text-white;
+}
+
+.checkout-step-future .checkout-step-circle {
+  @apply border-gray-400 bg-white text-gray-400;
+}
+
+.checkout-step-label {
+  @apply mt-2 text-sm font-medium transition-colors;
+}
+
+.checkout-step-active .checkout-step-label {
+  @apply text-primary;
+}
+
+.checkout-step-completed .checkout-step-label {
+  @apply text-gray-500;
+}
+
+.checkout-step-future .checkout-step-label {
+  @apply text-gray-500;
+}
+
+/* INFO CARDS */
+.checkout-info-card {
+  @apply p-4 rounded-xl border flex items-start gap-3 text-sm;
+}
+
+.checkout-info-primary {
+  @apply bg-primary/10 border-primary/20 text-primary/90;
+}
+
+.checkout-info-accent {
+  @apply bg-accent-color/10 border-accent-color/20 text-accent-color/90;
+}
+
+.checkout-info-neutral {
+  @apply bg-gray-100 border-gray-200 text-gray-700;
+}
+
+/* ANIMATIONS */
+@keyframes checkout-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.checkout-animate-in {
+  animation: checkout-fade-in 0.3s ease-out forwards;
+}
+
+/* RESPONSIVE ADJUSTMENTS */
+@media (max-width: 768px) {
+  .checkout-step-circle {
+    @apply w-10 h-10;
+  }
+  
+  .checkout-step-label {
+    @apply text-xs;
+  }
+}

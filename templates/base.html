@@ -42,10 +42,23 @@
         htmx.config.useTemplateFragments = true;
         htmx.config.allowEval = false;
     </script>
-    <!-- Critical CSS first for fast rendering -->
-    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
+    <!-- Tailwind CSS with CDN fallback -->
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet" onerror="console.warn('Local Tailwind CSS failed to load, falling back to CDN'); loadTailwindCDN()">
     <!-- Bootstrap Overrides -->
     <link href="{% static 'css/bootstrap-overrides.css' %}" rel="stylesheet">
+    
+    <!-- Tailwind CDN fallback script -->
+    <script>
+    function loadTailwindCDN() {
+        if (!document.querySelector('link[href^="https://cdn.tailwind"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.tailwindcss.com';
+            document.head.appendChild(link);
+            console.log('Loaded Tailwind CSS from CDN');
+        }
+    }
+    </script>
     
     <!-- FontAwesome - defer non-critical -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">

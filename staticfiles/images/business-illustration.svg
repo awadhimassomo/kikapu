@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background shapes -->
+  <circle cx="400" cy="300" r="250" fill="#F0EBCE" opacity="0.3"/>
+  <circle cx="200" cy="400" r="100" fill="#4E6C50" opacity="0.1"/>
+  <circle cx="600" cy="200" r="150" fill="#AA8B56" opacity="0.1"/>
+  
+  <!-- Storefront building -->
+  <rect x="250" y="200" width="300" height="240" fill="#F0EBCE" stroke="#395144" stroke-width="3"/>
+  <rect x="250" y="200" width="300" height="40" fill="#4E6C50"/>
+  <text x="400" y="228" font-family="Arial" font-size="20" fill="white" text-anchor="middle">KIKAPU MARKETPLACE</text>
+  
+  <!-- Door -->
+  <rect x="375" y="340" width="50" height="100" fill="#AA8B56"/>
+  <circle cx="415" cy="390" r="5" fill="#395144"/>
+  
+  <!-- Windows -->
+  <rect x="280" y="260" width="80" height="80" fill="white" stroke="#395144" stroke-width="2"/>
+  <rect x="280" y="260" width="80" height="5" fill="#4E6C50"/>
+  <line x1="320" y1="260" x2="320" y2="340" stroke="#395144" stroke-width="2"/>
+  <line x1="280" y1="300" x2="360" y2="300" stroke="#395144" stroke-width="2"/>
+  
+  <rect x="440" y="260" width="80" height="80" fill="white" stroke="#395144" stroke-width="2"/>
+  <rect x="440" y="260" width="80" height="5" fill="#4E6C50"/>
+  <line x1="480" y1="260" x2="480" y2="340" stroke="#395144" stroke-width="2"/>
+  <line x1="440" y1="300" x2="520" y2="300" stroke="#395144" stroke-width="2"/>
+  
+  <!-- Awning -->
+  <path d="M240,200 L250,200 L250,240 L240,230 Z" fill="#AA8B56"/>
+  <path d="M560,200 L550,200 L550,240 L560,230 Z" fill="#AA8B56"/>
+  
+  <!-- Business owner figure -->
+  <circle cx="180" cy="390" r="30" fill="#F0EBCE" stroke="#395144" stroke-width="2"/>
+  <rect x="160" y="420" width="40" height="60" fill="#4E6C50" rx="5"/>
+  <rect x="150" y="420" width="60" height="10" fill="#4E6C50"/>
+  <line x1="160" y1="470" x2="150" y2="520" stroke="#395144" stroke-width="3"/>
+  <line x1="200" y1="470" x2="210" y2="520" stroke="#395144" stroke-width="3"/>
+  
+  <!-- Basket with products -->
+  <path d="M580,380 Q600,350 620,380 L620,420 Q600,430 580,420 Z" fill="#AA8B56" stroke="#395144" stroke-width="2"/>
+  <circle cx="590" cy="390" r="8" fill="#4E6C50"/>
+  <circle cx="605" cy="395" r="8" fill="#395144"/>
+  <circle cx="600" cy="380" r="8" fill="#F0EBCE"/>
+  <circle cx="610" cy="385" r="8" fill="#4E6C50"/>
+  
+  <!-- Connection lines representing digital marketplace -->
+  <line x1="220" y1="400" x2="360" y2="400" stroke="#395144" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="425" y1="400" x2="570" y2="400" stroke="#395144" stroke-width="2" stroke-dasharray="5,5"/>
+  
+  <!-- Mobile device -->
+  <rect x="360" y="380" width="65" height="110" rx="10" fill="white" stroke="#395144" stroke-width="3"/>
+  <rect x="365" y="390" width="55" height="85" fill="#F0EBCE"/>
+  <circle cx="393" cy="485" r="5" fill="#395144"/>
+  
+  <!-- Shopping icons on screen -->
+  <rect x="375" y="400" width="15" height="15" fill="#4E6C50" rx="2"/>
+  <rect x="395" y="400" width="15" height="15" fill="#4E6C50" rx="2"/>
+  <rect x="375" y="420" width="15" height="15" fill="#4E6C50" rx="2"/>
+  <rect x="395" y="420" width="15" height="15" fill="#4E6C50" rx="2"/>
+  <rect x="375" y="440" width="35" height="10" fill="#AA8B56" rx="2"/>
+  <rect x="375" y="455" width="35" height="10" fill="#AA8B56" rx="2"/>
+  
+  <!-- Text labels -->
+  <text x="400" y="530" font-family="Arial" font-size="18" fill="#395144" text-anchor="middle">Connect with Local Businesses</text>
+  <text x="400" y="560" font-family="Arial" font-size="14" fill="#4E6C50" text-anchor="middle">Sell your products on the Kikapu Marketplace</text>
+</svg>

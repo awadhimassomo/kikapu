@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for Kikapu */
+:root {
+  --primary: #395144;
+  --secondary: #4E6C50;
+  --accent: #AA8B56;
+  --light: #F0EBCE;
+}
+
+/* You can add additional custom styles here */

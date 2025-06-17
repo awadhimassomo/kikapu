@@ -10,15 +10,15 @@ class SecurityHeadersMiddleware:
         response = self.get_response(request)
         
         # Add security headers
-        response['Cross-Origin-Opener-Policy'] = 'same-origin'
-        response['Cross-Origin-Embedder-Policy'] = 'require-corp'
         response['X-Content-Type-Options'] = 'nosniff'
         response['X-Frame-Options'] = 'DENY'
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         
-        # Only add HSTS header in non-debug mode (when using HTTPS)
+        # Only add strict security headers in production
         from django.conf import settings
         if not settings.DEBUG:
+            response['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         
         return response

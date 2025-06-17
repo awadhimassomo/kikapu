@@ -31,6 +31,15 @@ SECRET_KEY = 'django-insecure-*%b&!$n*n=q)t=dha6ngev)!x$4yvb^ipc+v(_hoepdpf%fh6u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # Set to True for local development to enable static file serving
 
+# Security settings for development
+# These settings help with local development and COEP issues
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'unsafe-none'
+SECURE_CROSS_ORIGIN_EMBEDDER_POLICY = 'unsafe-none'
+
+# Security settings for production
+# Ensure these are properly configured in production
+SECURE_SSL_REDIRECT = False  # Set to True in production with HTTPS
+
 ALLOWED_HOSTS = ['kikapu.co.tz', 'www.kikapu.co.tz', '127.0.0.1', 'localhost','192.168.1.199','192.168.1.197','192.168.1.200']
 
 
@@ -63,6 +72,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add WhiteNoise middleware
     'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware before CommonMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -197,10 +207,13 @@ ADMIN_EMAILS = [
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    os.path.join(BASE_DIR, 'static'),
 ]
+
+# WhiteNoise configuration
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
