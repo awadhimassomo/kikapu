@@ -1,0 +1,388 @@
+{% extends 'website/base.html' %}
+
+{% block title %}KIKAPU - About Us{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="pt-32 pb-20 bg-gradient-to-r from-green-50 to-gray-50 relative overflow-hidden">
+    <div class="absolute top-1/3 right-0 w-96 h-96 bg-green-100 rounded-full mix-blend-multiply opacity-60 blur-3xl -z-0"></div>
+    <div class="absolute bottom-1/4 left-0 w-96 h-96 bg-yellow-100 rounded-full mix-blend-multiply opacity-60 blur-3xl -z-0"></div>
+    
+    <div class="max-w-7xl mx-auto px-4 relative z-1">
+        <div class="flex flex-col md:flex-row items-center">
+            <div class="w-full md:w-1/2 mb-10 md:mb-0">
+                <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Story</div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">The Team Behind <span class="text-primary">KIKAPU</span></h1>
+                <p class="text-lg text-gray-600 mb-6">We're a passionate group of technologists, nutritionists, and community advocates working to transform food systems and improve health outcomes through technology.</p>
+                <p class="text-lg text-gray-600 mb-8">Our diverse experiences and shared vision drive us to create innovative solutions that connect local vendors, health specialists, and conscious consumers.</p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="#team" class="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-green-600 transition-all transform hover:-translate-y-0.5">Meet Our Team</a>
+                    <a href="#journey" class="bg-white text-primary border-2 border-primary px-6 py-3 rounded-full font-semibold hover:bg-green-50 transition-all transform hover:-translate-y-0.5">Our Journey</a>
+                </div>
+            </div>
+            <div class="w-full md:w-1/2 flex justify-center">
+                <img src="/api/placeholder/500/400" alt="KIKAPU Team" class="rounded-2xl shadow-xl w-full max-w-lg object-cover">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Story Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Roots</div>
+            <h2 class="text-3xl font-bold mb-6">How KIKAPU Began</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">A story of personal experience, community needs, and a vision for healthier food systems.</p>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-center gap-12 mb-20">
+            <div class="w-full md:w-1/2">
+                <h3 class="text-2xl font-bold mb-4">From Challenge to Solution</h3>
+                <p class="text-gray-600 mb-4">KIKAPU was born from a personal challenge faced by our founder, who struggled to find fresh, locally grown produce and proper nutrition guidance while managing a chronic health condition.</p>
+                <p class="text-gray-600 mb-4">After connecting with local farmers and nutritionists through community networks, the idea emerged: what if technology could bridge these gaps for everyone, not just those with insider connections?</p>
+                <p class="text-gray-600">In 2022, a small team of technologists, health specialists, and food sustainability experts came together to create KIKAPU – a platform that would democratize access to healthy local food and specialized nutrition knowledge.</p>
+            </div>
+            <div class="w-full md:w-1/2">
+                <img src="/api/placeholder/600/400" alt="Founder's Story" class="rounded-xl shadow-lg w-full">
+            </div>
+        </div>
+        
+        <div class="flex flex-col-reverse md:flex-row items-center gap-12">
+            <div class="w-full md:w-1/2">
+                <img src="/api/placeholder/600/400" alt="Community Impact" class="rounded-xl shadow-lg w-full">
+            </div>
+            <div class="w-full md:w-1/2">
+                <h3 class="text-2xl font-bold mb-4">Our Name and Values</h3>
+                <p class="text-gray-600 mb-4">The name "KIKAPU" comes from the Swahili word for "basket," symbolizing our goal to fill households with nutritious food and knowledge. It represents our commitment to carrying and preserving the best practices of local food systems while innovating for the future.</p>
+                <p class="text-gray-600 mb-4">Our core values of community connection, health equity, environmental stewardship, and technological innovation guide every feature we build and every partnership we form.</p>
+                <p class="text-gray-600">Today, KIKAPU serves thousands of users across multiple regions, but our mission remains the same: to create technology that heals rather than harms, connects rather than isolates, and empowers communities to take control of their health and environmental impact.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Journey Timeline -->
+<section id="journey" class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Journey</div>
+            <h2 class="text-3xl font-bold mb-6">From Idea to Impact</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">The key milestones in our mission to transform food systems and improve community health.</p>
+        </div>
+        
+        <div class="space-y-12 pl-10">
+            <!-- Timeline Item 1 -->
+            <div class="timeline-item pl-8">
+                <div class="flex items-center">
+                    <div class="timeline-dot w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-bold">2022: The Idea</h3>
+                        <p class="text-gray-500">Founder's personal health journey leads to the concept of KIKAPU</p>
+                    </div>
+                </div>
+                <div class="mt-4 ml-16">
+                    <p class="text-gray-600">After experiencing the challenges of finding fresh, locally grown produce and proper nutrition guidance while managing a chronic health condition, our founder envisioned a platform that would bridge these gaps for everyone.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 2 -->
+            <div class="timeline-item pl-8">
+                <div class="flex items-center">
+                    <div class="timeline-dot w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-bold">2022: Team Formation</h3>
+                        <p class="text-gray-500">Assembling the founding team of experts</p>
+                    </div>
+                </div>
+                <div class="mt-4 ml-16">
+                    <p class="text-gray-600">A diverse team of technologists, nutritionists, environmental scientists, and community organizers came together, united by the vision of transforming local food systems through technology.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 3 -->
+            <div class="timeline-item pl-8">
+                <div class="flex items-center">
+                    <div class="timeline-dot w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-bold">2023: First Prototype</h3>
+                        <p class="text-gray-500">Development of the initial KIKAPU app</p>
+                    </div>
+                </div>
+                <div class="mt-4 ml-16">
+                    <p class="text-gray-600">After months of research and development, the first version of the KIKAPU app was created, featuring basic vendor listings and nutrition resources. It was tested with a small community of early adopters.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 4 -->
+            <div class="timeline-item pl-8">
+                <div class="flex items-center">
+                    <div class="timeline-dot w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-bold">2024: Official Launch</h3>
+                        <p class="text-gray-500">KIKAPU launched in three initial markets</p>
+                    </div>
+                </div>
+                <div class="mt-4 ml-16">
+                    <p class="text-gray-600">Based on feedback from our pilot program, we refined the platform and officially launched KIKAPU in three urban markets, connecting hundreds of local vendors with thousands of consumers.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 5 -->
+            <div class="timeline-item pl-8">
+                <div class="flex items-center">
+                    <div class="timeline-dot w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-bold">2025: Recognition & Expansion</h3>
+                        <p class="text-gray-500">Award-winning platform expands to new regions</p>
+                    </div>
+                </div>
+                <div class="mt-4 ml-16">
+                    <p class="text-gray-600">KIKAPU received recognition for innovation in sustainability and health tech, allowing us to expand our platform to additional markets and enhance our feature set with specialized nutrition resources.</p>
+                </div>
+            </div>
+            
+            <!-- Timeline Item 6 -->
+            <div class="timeline-item pl-8">
+                <div class="flex items-center">
+                    <div class="timeline-dot w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center">
+                        <i class="fas fa-forward"></i>
+                    </div>
+                    <div class="ml-6">
+                        <h3 class="text-xl font-bold">Today & Beyond</h3>
+                        <p class="text-gray-500">Continuing our mission with ambitious goals</p>
+                    </div>
+                </div>
+                <div class="mt-4 ml-16">
+                    <p class="text-gray-600">Today, KIKAPU serves over 10,000 users across multiple regions, with plans to expand nationally and introduce innovative features like community garden support, carbon footprint tracking, and specialized health condition resources.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Team -->
+<section id="team" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Team</div>
+            <h2 class="text-3xl font-bold mb-6">The People Behind KIKAPU</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Meet our diverse team of passionate professionals working together to transform food systems and improve community health.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Team Member 1 -->
+            <div class="team-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                <div class="h-64 bg-gray-200">
+                    <img src="/api/placeholder/400/300" alt="Team Member" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Sarah Kamau</h3>
+                    <p class="text-primary font-medium mb-3">Founder & CEO</p>
+                    <p class="text-gray-600 text-sm mb-4">With a background in health technology and personal experience with chronic illness, Sarah leads KIKAPU's mission to transform food systems.</p>
+                    <div class="social-links flex space-x-3">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Member 2 -->
+            <div class="team-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                <div class="h-64 bg-gray-200">
+                    <img src="/api/placeholder/400/300" alt="Team Member" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">David Ochieng</h3>
+                    <p class="text-primary font-medium mb-3">CTO</p>
+                    <p class="text-gray-600 text-sm mb-4">A software engineer with experience at major tech companies, David leads KIKAPU's technology development with a focus on accessibility.</p>
+                    <div class="social-links flex space-x-3">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Member 3 -->
+            <div class="team-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                <div class="h-64 bg-gray-200">
+                    <img src="/api/placeholder/400/300" alt="Team Member" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Dr. Emily Ngugi</h3>
+                    <p class="text-primary font-medium mb-3">Head of Nutrition</p>
+                    <p class="text-gray-600 text-sm mb-4">A registered dietitian with a PhD in nutrition science, Emily ensures that KIKAPU's health resources are evidence-based and accessible.</p>
+                    <div class="social-links flex space-x-3">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Member 4 -->
+            <div class="team-card bg-gray-50 rounded-xl overflow-hidden shadow-md">
+                <div class="h-64 bg-gray-200">
+                    <img src="/api/placeholder/400/300" alt="Team Member" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-xl font-bold mb-1">Michael Maina</h3>
+                    <p class="text-primary font-medium mb-3">Community Partnerships</p>
+                    <p class="text-gray-600 text-sm mb-4">With a background in community organizing and sustainable agriculture, Michael builds relationships with vendors and local organizations.</p>
+                    <div class="social-links flex space-x-3">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-16 text-center">
+            <a href="#" class="inline-block border-2 border-primary text-primary px-8 py-3 rounded-full font-semibold hover:bg-green-50 transition-all">View Full Team</a>
+        </div>
+    </div>
+</section>
+
+<!-- Our Values -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Values</div>
+            <h2 class="text-3xl font-bold mb-6">What Drives Us Every Day</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">These core principles guide our decisions, shape our features, and inspire our team.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Value 1 -->
+            <div class="highlight-card relative bg-white p-6 rounded-xl shadow-md">
+                <div class="text-primary text-4xl mb-4">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Community Connection</h3>
+                <p class="text-gray-600">We believe in the power of direct relationships between producers, health experts, and consumers to create resilient local food systems.</p>
+            </div>
+            
+            <!-- Value 2 -->
+            <div class="highlight-card relative bg-white p-6 rounded-xl shadow-md">
+                <div class="text-primary text-4xl mb-4">
+                    <i class="fas fa-balance-scale"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Health Equity</h3>
+                <p class="text-gray-600">We're committed to making nutritious food and quality health guidance accessible to all, regardless of location, income, or background.</p>
+            </div>
+            
+            <!-- Value 3 -->
+            <div class="highlight-card relative bg-white p-6 rounded-xl shadow-md">
+                <div class="text-primary text-4xl mb-4">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Environmental Stewardship</h3>
+                <p class="text-gray-600">Every feature we build considers its environmental impact, promoting sustainable practices from farm to table.</p>
+            </div>
+            
+            <!-- Value 4 -->
+            <div class="highlight-card relative bg-white p-6 rounded-xl shadow-md">
+                <div class="text-primary text-4xl mb-4">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Innovation With Purpose</h3>
+                <p class="text-gray-600">We harness technology not for its own sake, but as a powerful tool to solve real problems in food systems and healthcare.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recognition Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16">
+            <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Recognition</div>
+            <h2 class="text-3xl font-bold mb-6">Our Impact & Recognition</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">We're honored to be recognized for our contributions to health, sustainability, and community development.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Award 1 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow-md">
+                <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-500 text-2xl mb-4">
+                    <i class="fas fa-award"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Health Tech Innovator 2024</h3>
+                <p class="text-gray-500 mb-4">East Africa Technology Summit</p>
+                <p class="text-gray-600">Recognized for our innovative approach to addressing lifestyle diseases through technology and community connections.</p>
+            </div>
+            
+            <!-- Award 2 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow-md">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-500 text-2xl mb-4">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Sustainability Champion</h3>
+                <p class="text-gray-500 mb-4">Global Climate Action Network</p>
+                <p class="text-gray-600">Honored for our work in reducing carbon emissions in food systems through local sourcing and sustainable logistics.</p>
+            </div>
+            
+            <!-- Award 3 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow-md">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 text-2xl mb-4">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-2">Community Impact Award</h3>
+                <p class="text-gray-500 mb-4">Regional Development Council</p>
+                <p class="text-gray-600">Acknowledged for our role in strengthening local economies and improving access to nutrition in underserved communities.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Join Our Team -->
+<section class="py-20 bg-gradient-to-b from-gray-50 to-gray-100">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="flex flex-col md:flex-row">
+                <div class="w-full md:w-1/2 bg-gradient-to-br from-primary to-green-700 p-12 text-white">
+                    <h2 class="text-3xl font-bold mb-4">Join Our Team</h2>
+                    <p class="text-lg mb-6">We're looking for passionate individuals who share our vision for healthier communities and more sustainable food systems.</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2"></i>
+                            <span>Work on meaningful problems with real-world impact</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2"></i>
+                            <span>Collaborate with a diverse, mission-driven team</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2"></i>
+                            <span>Flexible work environment and competitive benefits</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle mt-1 mr-2"></i>
+                            <span>Opportunities for growth and professional development</span>
+                        </li>
+                    </ul>
+                    <a href="#" class="inline-block bg-white text-primary px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all">View Open Positions</a>
+                </div>
+                <div class="w-full md:w-1/2 p-12">
+                    <h3 class="text-2xl font-bold mb-6">Contact Us</h3>
+                    <p class="text-gray-600 mb-8">Have questions about KIKAPU or want to explore partnership opportunities? Get in touch with our team.</p>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-primary mr-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

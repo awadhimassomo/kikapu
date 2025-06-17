@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KIKAPU{% endblock %}</title>
+    
+    <!-- Tailwind CSS - Load first to take priority -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#395144',
+                        secondary: '#4E6C50',
+                        accent: '#AA8B56',
+                        light: '#F0EBCE'
+                    }
+                }
+            },
+            important: true // Make Tailwind styles override other styles
+        }
+    </script>
+    
+    <!-- Fallback to local Tailwind if CDN fails -->
+    <script>
+        // Check if Tailwind loaded successfully
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                // If tailwind didn't load properly, we'll fallback to a local version
+                if (!window.tailwind || document.body.classList.contains('no-tailwind')) {
+                    console.log('Loading local Tailwind CSS fallback...');
+                    var link = document.createElement('link');
+                    link.href = 'https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css';
+                    link.rel = 'stylesheet';
+                    document.head.appendChild(link);
+                }
+            }, 500);
+        });
+    </script>
+    
+    <!-- Bootstrap CSS (after Tailwind) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+    {% load static %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .job-card {
+            transition: all 0.3s ease;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .animate-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stagger-delay-1 { animation-delay: 0.1s; }
+        .stagger-delay-2 { animation-delay: 0.2s; }
+        .stagger-delay-3 { animation-delay: 0.3s; }
+        .stagger-delay-4 { animation-delay: 0.4s; }
+        .stagger-delay-5 { animation-delay: 0.5s; }
+        .stagger-delay-6 { animation-delay: 0.6s; }
+        
+        /* Custom button styles */
+        .btn-primary-outline {
+            color: #395144;
+            border: 1px solid #395144;
+            padding: 0.375rem 1rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-outline:hover {
+            background-color: #395144;
+            color: #F0EBCE;
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background-color: #395144;
+            color: #F0EBCE;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background-color: #4E6C50;
+            transform: translateY(-2px);
+        }
+        
+        /* Nav link hover effect */
+        .nav-link {
+            position: relative;
+            font-weight: 500;
+            color: #333;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #395144;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            display: block;
+            width: 0;
+            height: 2px;
+            background-color: #395144;
+            left: 0;
+            bottom: -4px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .logo-image {
+            min-width: 55px;
+        }
+        
+        /* Make sure form inputs are interactive */
+        #waitlistForm input, 
+        #waitlistForm select, 
+        #waitlistForm button {
+            opacity: 1 !important;
+            background-color: white !important;
+            pointer-events: auto !important;
+            cursor: auto !important;
+        }
+        
+        #waitlistForm button[type="submit"] {
+            background-color: #395144 !important;
+            cursor: pointer !important;
+        }
+
+        /* Ensure all buttons have proper styling */
+        .bg-\[\#395144\], 
+        a.bg-\[\#395144\],
+        button.bg-\[\#395144\],
+        .btn-primary,
+        a.btn-primary,
+        button.btn-primary,
+        [href="#download"].bg-\[\#395144\],
+        [type="submit"].bg-\[\#395144\] {
+            background-color: #395144 !important;
+            color: #F0EBCE !important;
+        }
+
+        .bg-\[\#AA8B56\], 
+        a.bg-\[\#AA8B56\],
+        button.bg-\[\#AA8B56\] {
+            background-color: #AA8B56 !important;
+            color: white !important;
+        }
+
+        /* Ensure hover states work */
+        .hover\:bg-\[\#4E6C50\]:hover {
+            background-color: #4E6C50 !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="text-gray-800 leading-relaxed">
+    <!-- Header -->
+    <header class="bg-white shadow-sm fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex flex-col md:flex-row justify-between items-center py-3">
+                <!-- Logo -->
+                <div class="flex items-center text-2xl font-bold text-[#395144] mb-4 md:mb-0">
+                    <div class="flex items-center">
+                        <img src="{% static 'website/images/kikapuu.png' %}" alt="Kikapu Logo" class="h-14 w-auto mr-3 transition-transform duration-300 hover:scale-105 logo-image">
+                        <a href="{% url 'website:index' %}" class="flex items-center hover:opacity-90 transition-opacity" title="Home">KIKAPU</a>
+                    </div>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <button class="md:hidden absolute right-5 top-6 text-gray-700 hover:text-[#395144] transition-colors" id="mobile-menu-button" title="Toggle Menu" aria-label="Toggle navigation menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="nav-link" title="Features">Features</a>
+                    <a href="#how-it-works" class="nav-link" title="How it Works">How it Works</a>
+                    <a href="/marketplace/" class="nav-link" title="Marketplace">Marketplace</a>
+                    <a href="/tradepoint/" class="nav-link" title="Tradepoint">Tradepoint</a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'operations:login' %}" class="nav-link flex items-center text-[#AA8B56]" title="Operations Dashboard">
+                        <i class="fas fa-cog mr-1.5 text-lg"></i>
+                        <span>Ops</span>
+                    </a>
+                    {% endif %}
+                    <div class="ml-4 flex items-center space-x-4">
+                        <a href="{% url 'registration:business_register' %}" class="text-white border border-[#AA8B56] bg-[#AA8B56] hover:bg-[#AA8B56]/90 px-4 py-1.5 rounded-3xl font-medium transition-all transform hover:-translate-y-0.5 shadow-md" title="Register your business">For Businesses</a>
+                        <a href="#download" class="bg-[#395144] text-[#F0EBCE] border border-[#395144] hover:bg-[#4E6C50] px-6 py-2 rounded-3xl font-medium transition-all transform hover:-translate-y-0.5 shadow-md" title="Download Kikapu app">Download App</a>
+                    </div>
+                </div>
+                
+                <!-- Mobile Navigation -->
+                <div class="md:hidden w-full mt-3 pb-3 hidden bg-white border-t border-gray-100" id="mobile-menu">
+                    <div class="flex flex-col space-y-3 mt-3">
+                        <a href="#features" class="py-2 nav-link" title="Features">Features</a>
+                        <a href="#how-it-works" class="py-2 nav-link" title="How it Works">How it Works</a>
+                        <a href="/marketplace/" class="py-2 nav-link" title="Marketplace">Marketplace</a>
+                        <a href="/tradepoint/" class="py-2 nav-link" title="Tradepoint">Tradepoint</a>
+                        
+                        <!-- Mobile Partnerships Section -->
+                        <div class="py-2">
+                            <p class="font-semibold text-[#395144] mb-1">Partnerships</p>
+                            <div class="pl-3 flex flex-col space-y-2 pt-1">
+                                <a href="{% url 'call_to_action:schedule_pitch' %}" class="text-gray-700 hover:text-[#395144] text-sm">Schedule Pitch Meeting</a>
+                                <a href="{% url 'call_to_action:request_investor_pack' %}" class="text-gray-700 hover:text-[#395144] text-sm">Request Investor Pack</a>
+                                <a href="{% url 'call_to_action:request_partnership' %}" class="text-gray-700 hover:text-[#395144] text-sm">Request Partnership Proposal</a>
+                                <a href="{% url 'call_to_action:explore_development' %}" class="text-gray-700 hover:text-[#395144] text-sm">Explore Development</a>
+                            </div>
+                        </div>
+                        
+                        {% if user.is_staff %}
+                        <a href="{% url 'operations:login' %}" class="py-2 nav-link flex items-center text-[#AA8B56]" title="Operations Dashboard">
+                            <i class="fas fa-cog mr-2 text-lg"></i>
+                            <span>Operations</span>
+                        </a>
+                        {% endif %}
+                        <div class="pt-2 flex flex-col space-y-3">
+                            <a href="{% url 'registration:business_register' %}" class="text-[#AA8B56] border border-[#AA8B56] bg-transparent hover:bg-[#AA8B56]/10 px-4 py-1.5 rounded-3xl font-medium transition-all text-center" title="Register your business">For Businesses</a>
+                            <a href="#download" class="bg-[#395144] text-[#F0EBCE] border border-[#395144] hover:bg-[#4E6C50] px-6 py-2 rounded-3xl font-medium transition-all text-center" title="Download Kikapu app">Download App</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center text-2xl font-bold text-white mb-4">
+                        <div class="flex items-center">
+                            <img src="{% static 'website/images/kikapuu.png' %}" alt="Kikapu Logo" class="h-14 w-auto mr-3" style="min-width: 55px;">
+                            <span>KIKAPU</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">Connecting local food ecosystems for a healthier community and planet.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-accent transition-colors"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-accent transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-accent transition-colors"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-accent transition-colors"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'website:about' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="About Kikapu">About Us</a></li>
+                        <li><a href="{% url 'website:how_it_works' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="How Kikapu Works">How It Works</a></li>
+                        <li><a href="{% url 'website:careers' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Career Opportunities">Careers</a></li>
+                        <li><a href="{% url 'website:blog' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Kikapu Blog">Blog</a></li>
+                        <li><a href="{% url 'website:contact' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Contact Kikapu">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Features -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Features</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'website:local_marketplace' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Explore Local Marketplace">Local Marketplace</a></li>
+                        <li><a href="{% url 'website:earn_credits' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Learn how to earn Kikapu credits">Earn Credits</a></li>
+                        <li><a href="{% url 'website:become_supplier' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Become a Kikapu Supplier">Become a Supplier</a></li>
+                        <li><a href="{% url 'website:nutrition_guides' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Kikapu Nutrition Guides">Nutrition Guides</a></li>
+                        <li><a href="{% url 'website:community_events' %}" class="text-gray-400 hover:text-[#AA8B56] transition-colors" title="Empower farmers with data">Empower farmers with data</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Newsletter -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Stay Updated</h3>
+                    <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest updates and offers.</p>
+                    <form class="space-y-2">
+                        <div>
+                            <input type="email" placeholder="Your email address" class="w-full px-4 py-2 rounded-full bg-gray-800 border border-gray-700 focus:outline-none focus:border-accent">
+                        </div>
+                        <button type="submit" class="bg-[#395144] text-light px-6 py-2 rounded-full font-semibold hover:bg-secondary transition-all w-full">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">&copy; {% now "Y" %} KIKAPU. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="{% url 'website:privacy_policy' %}" class="text-gray-400 hover:text-accent transition-colors text-sm">Privacy Policy</a>
+                    <a href="{% url 'website:terms' %}" class="text-gray-400 hover:text-accent transition-colors text-sm">Terms of Service</a>
+                    <a href="{% url 'website:faq' %}" class="text-gray-400 hover:text-accent transition-colors text-sm">FAQ</a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'operations:login' %}" class="text-gray-400 hover:text-white transition-colors text-sm flex items-center">
+                        <i class="fas fa-cog mr-1.5 text-lg"></i>
+                        <span>Operations</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Waitlist Modal -->
+    <div class="fixed inset-0 z-50 hidden" id="waitlistModal">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="relative top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-2xl max-w-md w-full mx-auto p-6">
+            <!-- Form container -->
+            <div id="waitlistForm" class="space-y-6">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-leaf text-white text-3xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-[#395144]">Join Our Waitlist</h3>
+                    <p class="text-gray-600 mt-2">
+                        <span class="font-semibold text-accent">Only 500 spots left!</span> Sign up now to be among the first to experience KIKAPU and earn 500 food credits.
+                    </p>
+                </div>
+                
+                <form class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label for="waitlistName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" id="waitlistName" name="name" placeholder="Enter your name" 
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#395144] focus:border-transparent" required>
+                    </div>
+                    
+                    <div>
+                        <label for="waitlistEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                        <input type="email" id="waitlistEmail" name="email" placeholder="Enter your email" 
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#395144] focus:border-transparent" required>
+                    </div>
+                    
+                    <div>
+                        <label for="waitlistLocation" class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                        <select id="waitlistLocation" name="location" 
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#395144] focus:border-transparent" required>
+                            <option value="">Select your location</option>
+                            <option value="dar-es-salaam">Dar es Salaam</option>
+                            <option value="arusha">Arusha</option>
+                            <option value="mwanza">Mwanza</option>
+                            <option value="zanzibar">Zanzibar</option>
+                            <option value="dodoma">Dodoma</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <input type="checkbox" id="waitlistConsent" name="consent" class="h-5 w-5 text-[#395144] rounded border-gray-300 focus:ring-[#395144] mt-1" required>
+                        <label for="waitlistConsent" class="ml-2 block text-sm text-gray-600">
+                            I agree to receive updates about KIKAPU and understand my data will be processed according to the 
+                            <a href="{% url 'website:privacy_policy' %}" class="text-[#395144] hover:underline">Privacy Policy</a>.
+                        </label>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-[#395144] text-[#F0EBCE] font-bold py-3 px-4 rounded-3xl hover:bg-[#4E6C50] transition-all transform hover:-translate-y-0.5 shadow-md" title="Join the waitlist">
+                            Join Waitlist & Earn 500 Credits
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center text-sm text-gray-500 flex items-center justify-center space-x-2">
+                    <span class="flex items-center">
+                        <i class="fas fa-shield-alt text-[#395144] mr-1"></i>
+                        Secure submission
+                    </span>
+                    <span>•</span>
+                    <span class="flex items-center">
+                        <i class="fas fa-user-shield text-[#395144] mr-1"></i>
+                        Privacy protected
+                    </span>
+                </div>
+                
+                <button type="button" data-dismiss="waitlist-modal" class="absolute top-3 right-3 text-gray-400 hover:text-[#395144] transition-colors" title="Close">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Success message -->
+            <div id="waitlistSuccess" class="py-8 text-center space-y-6 hidden">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                    <i class="fas fa-check-circle text-secondary text-4xl"></i>
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl font-bold text-[#395144]">You're on the list!</h3>
+                    <p class="text-gray-600 mt-3 max-w-sm mx-auto">
+                        Thanks for joining our waitlist! We'll notify you when KIKAPU launches in your area with your 500 food credits ready to use.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 max-w-sm mx-auto">
+                    <h4 class="font-medium text-[#395144]">Share with friends:</h4>
+                    <div class="flex justify-center space-x-4 mt-3">
+                        <a href="#" class="text-[#395144] hover:text-[#AA8B56] transition-colors w-10 h-10 bg-[#F0EBCE]/30 rounded-full flex items-center justify-center" title="Share on Facebook"><i class="fab fa-facebook-f text-xl"></i></a>
+                        <a href="#" class="text-[#395144] hover:text-[#AA8B56] transition-colors w-10 h-10 bg-[#F0EBCE]/30 rounded-full flex items-center justify-center" title="Share on Twitter"><i class="fab fa-twitter text-xl"></i></a>
+                        <a href="#" class="text-[#395144] hover:text-[#AA8B56] transition-colors w-10 h-10 bg-[#F0EBCE]/30 rounded-full flex items-center justify-center" title="Share on WhatsApp"><i class="fab fa-whatsapp text-xl"></i></a>
+                        <a href="#" class="text-[#395144] hover:text-[#AA8B56] transition-colors w-10 h-10 bg-[#F0EBCE]/30 rounded-full flex items-center justify-center" title="Share via Email"><i class="far fa-envelope text-xl"></i></a>
+                    </div>
+                </div>
+                
+                <button id="successCloseBtn" type="button" class="inline-flex items-center px-6 py-3 bg-gray-100 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors">
+                    <span>Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+            
+            // Waitlist Modal functionality
+            const downloadButtons = document.querySelectorAll('[href="#download"]');
+            const waitlistModal = document.getElementById('waitlistModal');
+            const waitlistForm = document.getElementById('waitlistForm');
+            const waitlistSuccess = document.getElementById('waitlistSuccess');
+            const closeButtons = document.querySelectorAll('[data-dismiss="waitlist-modal"]');
+            const successCloseBtn = document.getElementById('successCloseBtn');
+            
+            if (waitlistModal) {
+                // Show modal when download buttons are clicked
+                downloadButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        waitlistModal.classList.remove('hidden');
+                        
+                        // Ensure form is interactive
+                        const formInputs = waitlistForm.querySelectorAll('input, select, button');
+                        formInputs.forEach(input => {
+                            input.disabled = false;
+                        });
+                    });
+                });
+                
+                // Close modal when close buttons are clicked
+                closeButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        waitlistModal.classList.add('hidden');
+                    });
+                });
+                
+                // Close modal when clicking outside
+                waitlistModal.addEventListener('click', function(e) {
+                    if (e.target === waitlistModal) {
+                        waitlistModal.classList.add('hidden');
+                    }
+                });
+                
+                // Handle form submission
+                if (waitlistForm) {
+                    waitlistForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        // Show success message
+                        waitlistForm.classList.add('hidden');
+                        waitlistSuccess.classList.remove('hidden');
+                    });
+                }
+                
+                // Close modal from success screen
+                if (successCloseBtn) {
+                    successCloseBtn.addEventListener('click', function() {
+                        waitlistModal.classList.add('hidden');
+                        // Reset form after closing
+                        setTimeout(() => {
+                            waitlistForm.classList.remove('hidden');
+                            waitlistSuccess.classList.add('hidden');
+                            waitlistForm.reset();
+                        }, 300);
+                    });
+                }
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

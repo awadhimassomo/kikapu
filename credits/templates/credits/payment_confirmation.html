@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment Confirmation | Kikapu Card{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-container {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: transform 0.3s;
+    }
+    
+    .btn-kikapu {
+        background-color: #395144;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-kikapu:hover {
+        background-color: #4E6C50;
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline-kikapu {
+        border: 2px solid #395144;
+        color: #395144;
+        transition: all 0.3s;
+    }
+    
+    .btn-outline-kikapu:hover {
+        background-color: #395144;
+        color: white;
+    }
+    
+    .transaction-info {
+        background-color: rgba(240, 235, 206, 0.3);
+        border-radius: 8px;
+        padding: 20px;
+    }
+    
+    .transaction-info .row {
+        margin-bottom: 10px;
+    }
+    
+    .transaction-info .col-6:first-child {
+        color: #666;
+    }
+    
+    .transaction-info .col-6:last-child {
+        font-weight: 500;
+        text-align: right;
+    }
+    
+    .payment-methods {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    .payment-method {
+        flex: 1;
+        min-width: 120px;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .payment-method:hover {
+        border-color: #4E6C50;
+    }
+    
+    .payment-method.selected {
+        border-color: #395144;
+        background-color: rgba(57, 81, 68, 0.05);
+    }
+    
+    .payment-method img {
+        height: 40px;
+        margin-bottom: 8px;
+    }
+    
+    .tanzanian-flag {
+        width: 28px;
+        height: auto;
+        margin-right: 8px;
+    }
+    
+    .location-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #212529;
+        background-color: rgba(240, 235, 206, 0.5);
+        border-radius: 50rem;
+    }
+    
+    .success-check {
+        width: 80px;
+        height: 80px;
+        background-color: #4E6C50;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    
+    .success-check i {
+        color: white;
+        font-size: 40px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'credits:kikapu_card_home' %}">Kikapu Card</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Payment Confirmation</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h1 class="h3 mb-0">Payment Confirmation</h1>
+                <div class="location-badge">
+                    <img src="{% static 'images/tanzania-flag.png' %}" alt="Tanzania" class="tanzanian-flag" onerror="this.src='https://flagcdn.com/w40/tz.png'">
+                    Arusha, Tanzania
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if payment_success %}
+    <!-- Payment Success -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card-container text-center p-5 mb-4">
+                <div class="success-check">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h3 class="mb-3">Payment Successful!</h3>
+                <p class="text-muted mb-4">Your {{ card_type|lower }} card application has been processed successfully.</p>
+                
+                <div class="transaction-info mb-4">
+                    <div class="row">
+                        <div class="col-6">Transaction ID</div>
+                        <div class="col-6">{{ transaction_id }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">Date</div>
+                        <div class="col-6">{{ transaction_date }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">Amount</div>
+                        <div class="col-6">TSh {{ amount }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">Payment Method</div>
+                        <div class="col-6">{{ payment_method }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">Status</div>
+                        <div class="col-6"><span class="badge bg-success">Successful</span></div>
+                    </div>
+                </div>
+                
+                <p class="mb-4">We're processing your application and your card will be activated within 24 hours. 
+                   You'll receive a notification once it's ready to use.</p>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a href="{% url 'credits:kikapu_card_home' %}" class="btn btn-kikapu px-4">Go to Your Card Dashboard</a>
+                    <a href="{% url 'shop:product_list' %}" class="btn btn-outline-kikapu px-4">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Payment Page -->
+    <div class="row">
+        <div class="col-md-5 order-md-2 mb-4">
+            <div class="card-container">
+                <div class="card-header bg-white border-bottom p-3">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>{{ card_type }} Card Fee</span>
+                        {% if card_type == 'Prepaid' %}
+                        <span>TSh 0</span>
+                        {% else %}
+                        <span>TSh 2,000</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if card_type == 'Prepaid' %}
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Initial Deposit</span>
+                        <span>TSh {{ initial_deposit }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total</strong>
+                        {% if card_type == 'Prepaid' %}
+                        <strong>TSh {{ initial_deposit }}</strong>
+                        {% else %}
+                        <strong>TSh 2,000</strong>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-container mt-4">
+                <div class="card-body p-4">
+                    <h6 class="mb-3">Need Help?</h6>
+                    <p class="mb-3 text-muted small">If you have any questions about your card application or payment, our support team is always ready to help.</p>
+                    <div class="d-grid">
+                        <a href="#" class="btn btn-outline-kikapu btn-sm">
+                            <i class="fas fa-headset me-2"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-7 order-md-1 mb-4">
+            <div class="card-container">
+                <div class="card-header bg-white border-bottom p-3">
+                    <h5 class="mb-0">Payment Method</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" id="paymentForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Select Payment Method</label>
+                            <div class="payment-methods">
+                                <div class="payment-method" data-method="mpesa">
+                                    <img src="{% static 'images/mpesa-logo.png' %}" alt="M-Pesa" onerror="this.src='https://upload.wikimedia.org/wikipedia/en/thumb/1/15/M-PESA_LOGO-01.svg/200px-M-PESA_LOGO-01.svg.png'; this.onerror=null;">
+                                    <div>M-Pesa</div>
+                                </div>
+                                <div class="payment-method" data-method="tigo">
+                                    <img src="{% static 'images/tigo-pesa-logo.png' %}" alt="Tigo Pesa" onerror="this.src='https://www.technobezz.com/files/uploads/2015/02/LogoDigi-1.png'; this.onerror=null;">
+                                    <div>Tigo Pesa</div>
+                                </div>
+                                <div class="payment-method" data-method="airtel">
+                                    <img src="{% static 'images/airtel-money-logo.png' %}" alt="Airtel Money" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Airtel_logo.svg/200px-Airtel_logo.svg.png'; this.onerror=null;">
+                                    <div>Airtel Money</div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="">
+                        </div>
+                        
+                        <div id="mpesaForm" class="payment-form" style="display: none;">
+                            <div class="mb-3">
+                                <label for="mobileNumber" class="form-label">M-Pesa Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+255</span>
+                                    <input type="text" class="form-control" id="mobileNumber" placeholder="712345678">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="tigoForm" class="payment-form" style="display: none;">
+                            <div class="mb-3">
+                                <label for="tigoNumber" class="form-label">Tigo Pesa Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+255</span>
+                                    <input type="text" class="form-control" id="tigoNumber" placeholder="652345678">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="airtelForm" class="payment-form" style="display: none;">
+                            <div class="mb-3">
+                                <label for="airtelNumber" class="form-label">Airtel Money Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">+255</span>
+                                    <input type="text" class="form-control" id="airtelNumber" placeholder="782345678">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i> You'll receive a prompt on your phone to complete the payment.
+                        </div>
+                        
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-lg btn-kikapu" id="payNowBtn" disabled>
+                                Pay Now
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethods = document.querySelectorAll('.payment-method');
+    const selectedPaymentMethodInput = document.getElementById('selectedPaymentMethod');
+    const payNowBtn = document.getElementById('payNowBtn');
+    const paymentForms = document.querySelectorAll('.payment-form');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('click', function() {
+            // Remove selected class from all methods
+            paymentMethods.forEach(m => m.classList.remove('selected'));
+            
+            // Add selected class to clicked method
+            this.classList.add('selected');
+            
+            // Set the hidden input value
+            selectedPaymentMethodInput.value = this.dataset.method;
+            
+            // Hide all payment forms
+            paymentForms.forEach(form => form.style.display = 'none');
+            
+            // Show the relevant payment form
+            document.getElementById(this.dataset.method + 'Form').style.display = 'block';
+            
+            // Enable the pay now button
+            payNowBtn.disabled = false;
+        });
+    });
+});
+</script>
+{% endblock %}

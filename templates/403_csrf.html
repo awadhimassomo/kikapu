@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head_title %}CSRF Verification Failed - KIKAPU{% endblock %}
+
+{% block content %}
+<div class="container mx-auto max-w-6xl px-4 py-12 min-h-[70vh] flex items-center justify-center">
+    <div class="bg-white rounded-3xl shadow-xl p-6 md:p-10 flex flex-col items-center text-center animate-fade-in-up max-w-xl w-full">
+        <div class="w-24 h-24 bg-[#F0EBCE] rounded-full flex items-center justify-center mb-6">
+            <i class="fas fa-shield-alt text-[#395144] text-4xl"></i>
+        </div>
+        
+        <h1 class="text-3xl font-bold text-[#395144] mb-4">Security Verification Failed</h1>
+        
+        <div class="text-gray-600 mb-8 space-y-4">
+            <p>For your security, we couldn't process this form submission.</p>
+            <p class="text-[#AA8B56]">This might be because your session expired or you're using multiple browser windows.</p>
+        </div>
+        
+        <div class="w-full border-t border-gray-200 my-6 pt-6">
+            <p class="text-gray-500 mb-6">Here are some things you can try:</p>
+            
+            <div class="space-y-4 mb-8 text-left">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5">
+                        <i class="fas fa-sync-alt text-[#395144]"></i>
+                    </div>
+                    <p>Refresh the page and try again</p>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5">
+                        <i class="fas fa-cookie-bite text-[#395144]"></i>
+                    </div>
+                    <p>Make sure cookies are enabled in your browser</p>
+                </div>
+                
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex-shrink-0 flex items-center justify-center mt-0.5">
+                        <i class="fas fa-sign-in-alt text-[#395144]"></i>
+                    </div>
+                    <p>Try logging in again if you were previously logged in</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 mt-4 w-full">
+            <a href="javascript:history.back()" class="inline-flex items-center justify-center gap-2 bg-[#F0EBCE] text-[#395144] font-medium py-3 px-6 rounded-xl hover:bg-[#395144] hover:text-white transition-colors flex-1">
+                <i class="fas fa-arrow-left"></i>
+                <span>Go Back</span>
+            </a>
+            
+            <a href="javascript:window.location.reload()" class="inline-flex items-center justify-center gap-2 bg-[#395144] text-white font-medium py-3 px-6 rounded-xl hover:bg-[#4E6C50] transition-colors flex-1">
+                <i class="fas fa-sync-alt"></i>
+                <span>Refresh Page</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,377 @@
+{% extends 'operations/base.html' %}
+
+{% block title %}Manage Related Products - KIKAPU Operations{% endblock %}
+{% block page_title %}Manage Related Products{% endblock %}
+
+{% block extra_css %}
+<style>
+    .relationship-badge {
+        @apply px-2 py-1 rounded-full text-xs font-medium;
+    }
+    
+    .complementary {
+        @apply bg-green-100 text-green-800;
+    }
+    
+    .substitute {
+        @apply bg-blue-100 text-blue-800;
+    }
+    
+    .accessory {
+        @apply bg-purple-100 text-purple-800;
+    }
+    
+    .similar {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+    
+    .alternative {
+        @apply bg-indigo-100 text-indigo-800;
+    }
+    
+    .bundle {
+        @apply bg-pink-100 text-pink-800;
+    }
+    
+    /* Fix for modals and forms */
+    #editModal, #deleteModal {
+        z-index: 60 !important; /* Higher than sidebar */
+    }
+    
+    .modal-backdrop {
+        z-index: 59 !important;
+    }
+    
+    .modal-content {
+        z-index: 61 !important;
+        position: relative;
+    }
+    
+    /* Ensure form is visible */
+    .form-container {
+        position: relative;
+        z-index: 30;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column: Add New Relationship Form -->
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 form-container">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Add New Relationship</h3>
+            
+            <form action="{% url 'operations:add_related_product' %}" method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="product" class="block text-gray-700 text-sm font-medium mb-2">Main Product</label>
+                    <select id="product" name="product" required class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">Select a product</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="related_product" class="block text-gray-700 text-sm font-medium mb-2">Related Product</label>
+                    <select id="related_product" name="related_product" required class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="">Select a product</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="relationship_type" class="block text-gray-700 text-sm font-medium mb-2">Relationship Type</label>
+                    <select id="relationship_type" name="relationship_type" required class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        {% for type in relationship_types %}
+                        <option value="{{ type }}">{{ type|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="relevance_score" class="block text-gray-700 text-sm font-medium mb-2">Relevance Score (1-10)</label>
+                    <input type="number" id="relevance_score" name="relevance_score" min="1" max="10" value="8" required
+                           class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Higher scores appear first in product suggestions</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="notes" class="block text-gray-700 text-sm font-medium mb-2">Notes (Optional)</label>
+                    <textarea id="notes" name="notes" rows="3" class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Why are these products related?"></textarea>
+                </div>
+                
+                <div>
+                    <button type="submit" name="add_relationship" class="w-full py-2 px-4 btn-primary rounded-lg">
+                        <i class="fas fa-plus mr-2"></i> Add Relationship
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 form-container">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Tips for Creating Relationships</h3>
+            
+            <div class="space-y-4 text-sm text-gray-600">
+                <div class="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <p class="font-medium text-blue-800">Complementary Products</p>
+                    <p class="mt-1">Items that work well together, like eggs and flour or rice and beans.</p>
+                </div>
+                
+                <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
+                    <p class="font-medium text-yellow-800">Substitutes</p>
+                    <p class="mt-1">Alternative options if the main product is unavailable, like butter and margarine.</p>
+                </div>
+                
+                <div class="p-3 bg-green-50 rounded-lg border border-green-100">
+                    <p class="font-medium text-green-800">Relevance Scores</p>
+                    <p class="mt-1">Higher scores (8-10) should be reserved for highly relevant combinations.</p>
+                </div>
+                
+                <div class="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                    <p class="font-medium text-purple-800">Create Bidirectional Relationships</p>
+                    <p class="mt-1">If eggs suggest flour, also create a relationship where flour suggests eggs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Related Products List -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <h3 class="text-lg font-bold text-gray-800">Related Product Relationships</h3>
+                
+                <form action="{% url 'operations:related_products' %}" method="get" class="mt-3 md:mt-0 w-full md:w-auto">
+                    <div class="flex">
+                        <input type="text" name="search" value="{{ search_query }}" placeholder="Search relationships..." 
+                               class="rounded-l-lg border border-gray-300 py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <button type="submit" class="bg-primary text-white px-4 py-2 rounded-r-lg">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            {% if relationships %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Product</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Related Product</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Relevance</th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for relationship in relationships %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-800">{{ relationship.product.name }}</div>
+                                <div class="text-xs text-gray-500">ID: {{ relationship.product.id }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-800">{{ relationship.related_product.name }}</div>
+                                <div class="text-xs text-gray-500">ID: {{ relationship.related_product.id }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="relationship-badge {{ relationship.relationship_type }}">
+                                    {{ relationship.relationship_type|title }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <span class="text-sm font-medium text-gray-800">{{ relationship.relevance_score }}</span>
+                                    <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                        <div class="bg-primary rounded-full h-2" style="width: {{ relationship.relevance_score|floatformat:0|default:0 }}0%;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                <button type="button" class="text-blue-600 hover:text-blue-800 mr-3" 
+                                        onclick="openEditModal('{{ relationship.id }}', '{{ relationship.relationship_type }}', '{{ relationship.relevance_score }}', '{{ relationship.notes|escapejs }}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="text-red-600 hover:text-red-800" 
+                                        onclick="openDeleteModal('{{ relationship.id }}', '{{ relationship.product.name|escapejs }}', '{{ relationship.related_product.name|escapejs }}')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="py-12 flex flex-col items-center justify-center text-center">
+                {% if search_query %}
+                <div class="text-gray-400 mb-4">
+                    <i class="fas fa-search text-5xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-800 mb-2">No results found</h3>
+                <p class="text-gray-500 max-w-md mb-4">No related products match your search "{{ search_query }}".</p>
+                <a href="{% url 'operations:related_products' %}" class="text-primary hover:underline">
+                    <i class="fas fa-arrow-left mr-1"></i> Clear search
+                </a>
+                {% else %}
+                <div class="text-gray-400 mb-4">
+                    <i class="fas fa-link text-5xl"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-800 mb-2">No related products yet</h3>
+                <p class="text-gray-500 max-w-md mb-4">Start creating product relationships to help customers discover related items.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="fixed inset-0 flex items-center justify-center z-60 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50 modal-backdrop"></div>
+    <div class="bg-white rounded-lg w-full max-w-md mx-4 modal-content">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Edit Relationship</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeEditModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="editForm" action="" method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label for="edit_relationship_type" class="block text-gray-700 text-sm font-medium mb-2">Relationship Type</label>
+                    <select id="edit_relationship_type" name="relationship_type" required class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        {% for type in relationship_types %}
+                        <option value="{{ type }}">{{ type|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="edit_relevance_score" class="block text-gray-700 text-sm font-medium mb-2">Relevance Score (1-10)</label>
+                    <input type="number" id="edit_relevance_score" name="relevance_score" min="1" max="10" required
+                           class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                
+                <div class="mb-6">
+                    <label for="edit_notes" class="block text-gray-700 text-sm font-medium mb-2">Notes (Optional)</label>
+                    <textarea id="edit_notes" name="notes" rows="3" class="rounded-lg border border-gray-300 w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="button" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg mr-2" onclick="closeEditModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary py-2 px-4 rounded-lg">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 flex items-center justify-center z-60 hidden">
+    <div class="absolute inset-0 bg-black bg-opacity-50 modal-backdrop"></div>
+    <div class="bg-white rounded-lg w-full max-w-md mx-4 modal-content">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Delete Relationship</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <p class="text-gray-600 mb-6">Are you sure you want to delete the relationship between <span id="deleteProduct1" class="font-medium"></span> and <span id="deleteProduct2" class="font-medium"></span>?</p>
+            
+            <form id="deleteForm" action="" method="post">
+                {% csrf_token %}
+                
+                <div class="flex justify-end">
+                    <button type="button" class="bg-gray-200 text-gray-800 py-2 px-4 rounded-lg mr-2" onclick="closeDeleteModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg">
+                        Delete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Edit Modal
+    function openEditModal(id, relationshipType, relevanceScore, notes) {
+        document.getElementById('editForm').action = "{% url 'operations:edit_related_product' 0 %}".replace('0', id);
+        document.getElementById('edit_relationship_type').value = relationshipType;
+        document.getElementById('edit_relevance_score').value = relevanceScore;
+        document.getElementById('edit_notes').value = notes;
+        
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+    
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+    
+    // Delete Modal
+    function openDeleteModal(id, product1Name, product2Name) {
+        document.getElementById('deleteForm').action = "{% url 'operations:delete_related_product' 0 %}".replace('0', id);
+        document.getElementById('deleteProduct1').textContent = product1Name;
+        document.getElementById('deleteProduct2').textContent = product2Name;
+        
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+    
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+    
+    // Close modals when clicking outside
+    document.addEventListener('click', function(event) {
+        const editModal = document.getElementById('editModal');
+        const deleteModal = document.getElementById('deleteModal');
+        
+        if (event.target === editModal) {
+            closeEditModal();
+        }
+        
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+    });
+    
+    // Select product filtering
+    const mainProductSelect = document.getElementById('product');
+    const relatedProductSelect = document.getElementById('related_product');
+    
+    mainProductSelect.addEventListener('change', function() {
+        const selectedValue = this.value;
+        
+        // Reset the options in the related product select
+        Array.from(relatedProductSelect.options).forEach(option => {
+            option.disabled = false;
+        });
+        
+        // Disable the selected main product in the related product select
+        if (selectedValue) {
+            const option = relatedProductSelect.querySelector(`option[value="${selectedValue}"]`);
+            if (option) option.disabled = true;
+        }
+    });
+</script>
+{% endblock %}

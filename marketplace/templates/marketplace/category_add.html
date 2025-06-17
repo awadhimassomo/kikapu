@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add New Category | Kikapu Marketplace{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Animation utilities */
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+  
+  /* Custom animations */
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Image upload area */
+  .drag-drop-area {
+    border: 2px dashed #d1d5db;
+    padding: 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    background-color: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .drag-drop-area:hover {
+    border-color: #AA8B56;
+  }
+  
+  .image-preview {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    display: inline-block;
+    margin: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Marketplace Header with Logo -->
+<div class="bg-[#F0EBCE] py-6">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center gap-3 mb-4">
+            <img src="{% static 'website/images/kikapuu.png' %}" alt="Kikapu Logo" class="h-12 w-auto object-contain" />
+            <h1 class="text-3xl font-bold text-[#395144]">Add New Category</h1>
+        </div>
+        <p class="text-gray-700 mb-4">Create a category for organizing your products</p>
+    </div>
+</div>
+
+<!-- Location Banner -->
+<div class="container mx-auto px-4 py-3 flex justify-between items-center border-b border-gray-200">
+  <div class="flex items-center text-sm">
+    <i class="fas fa-map-marker-alt text-primary mr-2"></i>
+    <span class="text-gray-700">Your location: <span id="user-location" class="font-medium">Arusha, Tanzania</span></span>
+  </div>
+  <div>
+    <a href="{% url 'marketplace:business_product_add' %}" class="text-[#AA8B56] hover:underline flex items-center text-sm">
+      <i class="fas fa-arrow-left mr-1"></i> Back to Product Add
+    </a>
+  </div>
+</div>
+
+<!-- Alerts and notifications -->
+{% if messages %}
+<div class="container mx-auto px-4 py-3">
+    {% for message in messages %}
+        {% if message.tags == 'error' %}
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded" role="alert">
+        {% elif message.tags == 'success' %}
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded" role="alert">
+        {% elif message.tags == 'warning' %}
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 rounded" role="alert">
+        {% else %}
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4 rounded" role="alert">
+        {% endif %}
+            <div class="flex items-center">
+                <p class="font-medium">{{ message }}</p>
+                <button type="button" class="ml-auto" onclick="this.parentElement.parentElement.remove()" title="Close notification" aria-label="Close notification">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container mx-auto px-4 py-6">
+    <div class="flex flex-col md:flex-row gap-6">
+        <!-- Left Column: Form -->
+        <div class="md:w-2/3">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden h-full">
+                <div class="border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold text-[#395144] flex items-center">
+                        <i class="fas fa-folder-plus mr-2"></i> New Category Details
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <form method="post" enctype="multipart/form-data" id="categoryForm" class="space-y-4" novalidate>
+                        {% csrf_token %}
+                        
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Category Name <span class="text-red-600">*</span></label>
+                            <input type="text" id="name" name="name" placeholder="e.g. Fresh Vegetables" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#395144]">
+                            <p class="text-gray-500 text-xs mt-1">Keep it concise and clear</p>
+                        </div>
+                        
+                        <div>
+                            <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <textarea id="description" name="description" rows="3" placeholder="Brief description of this category"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#395144]"></textarea>
+                            <p class="text-gray-500 text-xs mt-1">Optional but helpful for users</p>
+                        </div>
+                        
+                        <div>
+                            <label for="parent" class="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
+                            <div class="relative">
+                                <select id="parent" name="parent"
+                                        class="w-full appearance-none px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#395144] pr-8">
+                                    <option value="">No Parent (Top-Level Category)</option>
+                                    {% for category in parent_categories %}
+                                        <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-500 text-xs mt-1">Leave empty for a top-level category</p>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-[#395144] hover:bg-[#2A3C33] text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors duration-200">
+                                <i class="fas fa-save mr-2"></i> Save Category
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Image Upload and Preview -->  
+        <div class="md:w-1/3">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden h-full">
+                <div class="border-b border-gray-100 px-6 py-4">
+                    <h2 class="text-xl font-semibold text-[#395144] flex items-center">
+                        <i class="fas fa-image mr-2"></i> Category Image
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="drag-drop-area h-56 flex flex-col justify-center" id="dragDropArea">
+                        <div id="initialUploadText" class="text-center">
+                            <i class="fas fa-cloud-upload-alt text-4xl mb-3 text-[#AA8B56]"></i>
+                            <p class="mb-1 font-medium">Drag & drop or click to upload</p>
+                            <p class="text-xs text-gray-500">(Recommended size: 400x300px)</p>
+                        </div>
+                        <div id="imagePreview" class="text-center hidden"></div>
+                    </div>
+                    <input type="file" class="hidden" id="image" name="image" accept="image/*">
+                    
+                    <div class="mt-4 text-center">
+                        <p class="text-sm text-gray-600">Supported formats: JPG, PNG, GIF</p>
+                        <p class="text-sm text-gray-600 mt-1">Max size: 5MB</p>
+                    </div>
+                    
+                    <div class="mt-6 border-t border-gray-100 pt-4">
+                        <h3 class="text-md font-medium text-gray-700 mb-2">Tips for great category images:</h3>
+                        <ul class="text-sm text-gray-600 space-y-1 pl-5 list-disc">
+                            <li>Use high-quality, clear images</li>
+                            <li>Choose images that represent the category</li>
+                            <li>Maintain consistent style across categories</li>
+                            <li>Avoid text in the images when possible</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Image upload handling
+    const dragDropArea = document.getElementById('dragDropArea');
+    const imageInput = document.getElementById('image');
+    const imagePreview = document.getElementById('imagePreview');
+    const initialUploadText = document.getElementById('initialUploadText');
+    
+    // Click on drag area to trigger file input
+    dragDropArea.addEventListener('click', function() {
+        imageInput.click();
+    });
+    
+    // Handle file selection
+    imageInput.addEventListener('change', function() {
+        handleFiles(this.files);
+    });
+    
+    // Handle drag and drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dragDropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dragDropArea.classList.add('border-[#AA8B56]');
+    }
+    
+    function unhighlight() {
+        dragDropArea.classList.remove('border-[#AA8B56]');
+    }
+    
+    dragDropArea.addEventListener('drop', function(e) {
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+    
+    function handleFiles(files) {
+        if (files.length > 0) {
+            const file = files[0]; // Only handle the first file
+            
+            // Only handle image files
+            if (file.type.match('image.*')) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    // Clear previous preview
+                    imagePreview.innerHTML = '';
+                    
+                    // Create preview image
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'image-preview';
+                    img.title = file.name;
+                    
+                    // Add remove button
+                    const removeBtn = document.createElement('div');
+                    removeBtn.innerHTML = '<button type="button" class="mt-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm"><i class="fas fa-times mr-1"></i> Remove</button>';
+                    removeBtn.onclick = function() {
+                        imageInput.value = '';
+                        imagePreview.classList.add('hidden');
+                        initialUploadText.classList.remove('hidden');
+                    };
+                    
+                    // Show preview
+                    imagePreview.appendChild(img);
+                    imagePreview.appendChild(removeBtn);
+                    imagePreview.classList.remove('hidden');
+                    initialUploadText.classList.add('hidden');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+    
+    // Form validation
+    const form = document.getElementById('categoryForm');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Highlight invalid fields with Tailwind classes
+            const invalidFields = form.querySelectorAll(':invalid');
+            invalidFields.forEach(field => {
+                field.classList.add('border-red-500', 'ring-red-500');
+                
+                // Add error message if not already present
+                const parent = field.parentElement;
+                if (!parent.querySelector('.error-message')) {
+                    const errorMsg = document.createElement('p');
+                    errorMsg.className = 'text-red-500 text-xs mt-1 error-message';
+                    errorMsg.textContent = field.validationMessage || 'This field is required';
+                    parent.appendChild(errorMsg);
+                }
+            });
+        }
+    });
+    
+    // Clear validation styling on input
+    form.querySelectorAll('input, textarea, select').forEach(field => {
+        field.addEventListener('input', function() {
+            this.classList.remove('border-red-500', 'ring-red-500');
+            const errorMsg = this.parentElement.querySelector('.error-message');
+            if (errorMsg) {
+                errorMsg.remove();
+            }
+        });
+    });
+    
+    // Initialize location display
+    const userLocation = document.getElementById('user-location');
+    if (userLocation) {
+        userLocation.textContent = 'Arusha, Tanzania';
+    }
+});
+</script>
+{% endblock %}

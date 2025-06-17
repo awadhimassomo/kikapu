@@ -1,0 +1,510 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Kikapu Marketplace{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=5.0">
+    {% load static %}
+    {% load cart_tags %}
+
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#395144">
+    <meta name="description" content="Connect with local farmers and buy fresh produce">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kikapu">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Tailwind CSS -->
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom Cart Styles -->
+    <link href="{% static 'css/cart-styles.css' %}" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #395144;
+            --secondary-color: #4E6C50;
+            --accent-color: #AA8B56;
+            --light-color: #F0EBCE;
+        }  
+        
+        /* Animation classes */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* Custom color classes */
+        .text-primary {
+            color: var(--primary-color);
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color);
+        }
+        
+        .border-primary {
+            border-color: var(--primary-color);
+        }
+        
+        .text-secondary {
+            color: var(--secondary-color);
+        }
+        
+        .bg-secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        /* Button styles */
+        .btn {
+            @apply px-6 py-3 rounded-lg font-medium transition-all duration-200 inline-block text-center;
+        }
+        
+        .btn-sm {
+            @apply px-4 py-2 rounded-md text-sm;
+        }
+        
+        .btn-primary {
+            @apply bg-primary text-white hover:bg-secondary;
+        }
+        
+        .btn-outline {
+            @apply border-2 border-primary text-primary hover:bg-primary hover:text-white;
+        }
+        
+        .btn-accent {
+            @apply bg-accent-color text-white hover:bg-opacity-90;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-[#F0EBCE] text-[#395144]">
+    <!-- Header -->
+    <header class="bg-white shadow-sm fixed w-full z-10 transition-all duration-200">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="{% url 'website:index' %}" class="flex items-center space-x-3">
+                    <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-10">
+                    <span class="font-bold text-2xl text-primary">KIKAPU</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="{% url 'website:index' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Home</a>
+                    <a href="{% url 'marketplace:marketplace' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Marketplace</a>
+                    <a href="{% url 'credits:kikapu_card_home' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Kikapu Card</a>
+                    <a href="{% url 'website:about' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">About</a>
+                    <a href="{% url 'website:contact' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Contact</a>
+                </nav>
+                
+                <!-- Location Selector -->
+                <div class="hidden md:flex items-center ml-4 relative group">
+                    <button id="location-dropdown-toggle" class="flex items-center gap-1 text-sm text-gray-700 hover:text-primary py-1 px-2 rounded-lg transition-colors group-hover:bg-gray-100">
+                        <i class="fas fa-map-marker-alt text-[#AA8B56]"></i>
+                        <span id="current-location-text">Arusha</span>
+                        <i class="fas fa-chevron-down text-xs ml-1 transition-transform group-hover:rotate-180"></i>
+                    </button>
+                    
+                    <!-- Location Dropdown -->
+                    <div id="location-dropdown" class="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 w-48 z-50 hidden opacity-0 transform -translate-y-2 transition-all">
+                        <div class="px-3 py-2 border-b border-gray-100">
+                            <h3 class="text-xs font-medium text-gray-500 uppercase">Select Location</h3>
+                        </div>
+                        
+                        <!-- Use current location -->
+                        <button id="use-current-location" class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors">
+                            <i class="fas fa-crosshairs text-[#395144]"></i>
+                            <span>Detect My Location</span>
+                        </button>
+                        
+                        <!-- Divider -->
+                        <div class="border-t border-gray-100 my-1"></div>
+                        
+                        <!-- Cities -->
+                        <button data-city="Arusha, Tanzania" class="location-option w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Arusha</button>
+                        <button data-city="Dar es Salaam, Tanzania" class="location-option w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Dar es Salaam</button>
+                        <button data-city="Dodoma, Tanzania" class="location-option w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Dodoma</button>
+                        <button data-city="Mwanza, Tanzania" class="location-option w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Mwanza</button>
+                        <button data-city="Zanzibar, Tanzania" class="location-option w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Zanzibar</button>
+                        <button data-city="Mbeya, Tanzania" class="location-option w-full text-left px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">Mbeya</button>
+                        
+                        <!-- Loading indicator (hidden by default) -->
+                        <div id="location-loading" class="hidden px-3 py-2 text-xs text-center">
+                            <i class="fas fa-circle-notch fa-spin mr-1 text-[#395144]"></i> Detecting location...
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <button class="md:hidden flex items-center text-gray-700 hover:text-primary" id="mobile-menu-button">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- User Actions -->
+                <div class="hidden md:flex items-center space-x-4">
+                    {% cart_icon id_suffix="desktop" custom_class="mr-3" %}
+                    {% if user.is_authenticated %}
+                        <div class="relative dropdown-wrapper">
+                            <button class="flex items-center space-x-2 text-gray-700 hover:text-primary transition-colors dropdown-toggle">
+                                <i class="fas fa-user-circle text-xl"></i>
+                                <span class="font-medium">{{ user.firstName|default:user.username }}</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg py-2 hidden dropdown-menu border border-gray-100 z-50">
+                                <a href="{% url 'registration:profile' %}" class="flex items-center px-4 py-2 text-gray-700 hover:bg-light hover:text-primary">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                    <span>Profile</span>
+                                </a>
+                                <a href="{% url 'marketplace:order_history' %}" class="flex items-center px-4 py-2 text-gray-700 hover:bg-light hover:text-primary">
+                                    <i class="fas fa-clipboard-list mr-3"></i>
+                                    <span>Orders</span>
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="{% url 'registration:logout' %}" class="flex items-center px-4 py-2 text-gray-700 hover:bg-light hover:text-primary">
+                                    <i class="fas fa-sign-out-alt mr-3 text-gray-500"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'registration:login' %}" class="btn-sm btn-outline">Log In</a>
+                        <a href="{% url 'registration:customer_register' %}" class="btn-sm btn-primary">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div class="md:hidden hidden bg-white border-t border-gray-100 py-3" id="mobile-menu">
+            <div class="container mx-auto px-4">
+                <nav class="flex flex-col space-y-3">
+                    <a href="{% url 'website:index' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-home mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="{% url 'marketplace:marketplace' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-store mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Marketplace</span>
+                    </a>
+                    <a href="{% url 'credits:kikapu_card_home' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-credit-card mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Kikapu Card</span>
+                    </a>
+                    <a href="{% url 'website:about' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-info-circle mr-3 w-6 text-center text-gray-500"></i>
+                        <span>About</span>
+                    </a>
+                    <a href="{% url 'website:contact' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-envelope mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Contact</span>
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="border-t border-gray-100 pt-3 mt-1 flex flex-col space-y-3">
+                            <div class="ml-2">
+                                {% cart_icon id_suffix="mobile" custom_class="inline-flex" %}
+                            </div>
+                            
+                            <a href="{% url 'registration:profile' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-user-circle mr-3 w-6 text-center text-gray-500"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="{% url 'marketplace:order_history' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-clipboard-list mr-3 w-6 text-center text-gray-500"></i>
+                                <span>Orders</span>
+                            </a>
+                            <a href="{% url 'registration:logout' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-sign-out-alt mr-3 w-6 text-center text-gray-500"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="border-t border-gray-100 pt-3 mt-1 flex flex-col space-y-4">
+                            <a href="{% url 'registration:login' %}" class="btn btn-outline text-center py-2.5">Log In</a>
+                            <a href="{% url 'registration:customer_register' %}" class="btn btn-primary text-center py-2.5">Sign Up</a>
+                        </div>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content - FULL WIDTH BY DEFAULT -->
+    <main class="flex-grow pt-24 pb-16">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-16 relative">
+        <div class="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <!-- Company Info -->
+                <div class="animate-in stagger-delay-1">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-10">
+                        <span class="font-bold text-2xl text-white">KIKAPU</span>
+                    </div>
+                    <p class="text-gray-300 mb-6 text-base leading-relaxed">Connecting local food ecosystems for healthier communities and a more sustainable future.</p>
+                    <div class="flex space-x-8">
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="animate-in stagger-delay-2">
+                    <h3 class="font-bold text-xl mb-6 text-white">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'website:index' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Home
+                        </a></li>
+                        <li><a href="{% url 'marketplace:marketplace' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Marketplace
+                        </a></li>
+                        <li><a href="{% url 'website:about' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>About Us
+                        </a></li>
+                        <li><a href="{% url 'website:contact' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Contact
+                        </a></li>
+                        <li><a href="{% url 'website:blog' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Blog
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div class="animate-in stagger-delay-3">
+                    <h3 class="font-bold text-xl mb-6 text-white">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'website:privacy_policy' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Privacy Policy
+                        </a></li>
+                        <li><a href="{% url 'website:terms' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Terms of Service
+                        </a></li>
+                        <li><a href="{% url 'website:cookies' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Cookie Policy
+                        </a></li>
+                        <li><a href="{% url 'website:refund' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Refund Policy
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div class="animate-in stagger-delay-4">
+                    <h3 class="font-bold text-xl mb-6 text-white">Contact</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt text-accent-color mt-1.5 mr-3 text-lg"></i>
+                            <span class="text-gray-300">1730 Illazo, Dodoma, Tanzania</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone text-accent-color mt-1.5 mr-3 text-lg"></i>
+                            <span class="text-gray-300">+255 687 046 323</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope text-accent-color mt-1.5 mr-3 text-lg"></i>
+                            <span class="text-gray-300">info@kikapu.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">&copy; 2025 KIKAPU. All rights reserved.</p>
+                <div class="flex items-center space-x-8 mt-4 md:mt-0">
+                    <a href="{% url 'website:privacy_policy' %}" class="text-gray-400 hover:text-accent-color transition-colors text-sm">Privacy</a>
+                    <a href="{% url 'website:terms' %}" class="text-gray-400 hover:text-accent-color transition-colors text-sm">Terms</a>
+                    <a href="{% url 'website:faq' %}" class="text-gray-400 hover:text-accent-color transition-colors text-sm">FAQ</a>
+                    <a href="{% url 'operations:login' %}" class="text-gray-300 hover:text-accent-color transition-colors" title="Staff Operations">
+                        <i class="fas fa-cog text-base"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // User dropdown toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            // Find all dropdown toggles
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            
+            // Add click event listeners to each toggle
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Find the dropdown menu
+                    const dropdown = toggle.closest('.dropdown-wrapper').querySelector('.dropdown-menu');
+                    
+                    // Toggle the menu
+                    dropdown.classList.toggle('hidden');
+                });
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                // Check if click is outside dropdown
+                if (!e.target.closest('.dropdown-wrapper')) {
+                    // Close all dropdowns
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.classList.add('hidden');
+                    });
+                }
+            });
+        });
+        
+        // Intersection Observer for animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.animate-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            animatedElements.forEach(el => {
+                el.style.animationPlayState = 'paused';
+                observer.observe(el);
+            });
+        });
+
+        // Cart functions - to update the cart icon count when items are added
+        // Using a flag to prevent infinite recursion
+        window.isUpdatingCartCount = false;
+
+        function updateCartCount(count, isOptimistic = false) {
+            // Prevent infinite recursion
+            if (window.isUpdatingCartCount) {
+                console.log('Prevented recursive cart count update');
+                return;
+            }
+            
+            // Set the flag to indicate we're currently updating
+            window.isUpdatingCartCount = true;
+            
+            try {
+                console.log('Updating cart count to:', count);
+                // Get all cart badges (desktop and mobile)
+                const cartBadges = document.querySelectorAll('#cart-badge-desktop, #cart-count-mobile, .cart-badge');
+                
+                // Store the previous count for possible rollback
+                if (isOptimistic) {
+                    window.previousCartCount = cartBadges.length > 0 ? 
+                        cartBadges[0].textContent : '0';
+                }
+                
+                cartBadges.forEach(badge => {
+                    // Only update if the count has changed
+                    if (badge.textContent != count) {
+                        badge.textContent = count || '0';
+                        
+                        // Add animation class
+                        badge.classList.add('cart-animation');
+                        
+                        // Remove animation class after animation is complete
+                        setTimeout(() => {
+                            badge.classList.remove('cart-animation');
+                        }, 500);
+                    }
+                });
+                
+                // Also update any elements with the specific class for cart counts
+                const cartCountElements = document.querySelectorAll('.cart-count');
+                cartCountElements.forEach(element => {
+                    element.textContent = count || '0';
+                });
+                
+                const mobileCartElements = document.querySelectorAll('.mobile-cart-count');
+                mobileCartElements.forEach(element => {
+                    element.textContent = count || '0';
+                });
+                
+                // Dispatch a custom event for other components to listen ONLY if this wasn't 
+                // triggered by the event itself - this prevents circular references
+                if (!isOptimistic || isOptimistic === 'directCall') {
+                    document.dispatchEvent(new CustomEvent('cart:updated', { 
+                        detail: { count: count, isOptimistic: isOptimistic }
+                    }));
+                }
+            } finally {
+                // Always reset the flag when we're done, even if there was an error
+                window.isUpdatingCartCount = false;
+            }
+        }
+        
+        // Function to rollback cart count in case of error
+        function rollbackCartCount() {
+            if (window.previousCartCount !== undefined) {
+                updateCartCount(window.previousCartCount);
+            }
+        }
+
+        // Listen for custom event from add-to-cart actions
+        document.addEventListener('cart:updated', function(e) {
+            if (e.detail && e.detail.count !== undefined) {
+                updateCartCount(e.detail.count);
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

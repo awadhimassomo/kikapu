@@ -1,0 +1,75 @@
+{% extends "marketplace/base.html" %}
+{% load static %}
+
+{% block title %}Apply for Prepaid Kikapu Card{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6 border border-[#F0EBCE]/50">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-[#395144] mb-4">Apply for Prepaid Kikapu Card</h1>
+            <p class="text-gray-600">Complete the form below to apply for your prepaid Kikapu Card.</p>
+        </div>
+
+        <div class="bg-[#F0EBCE]/20 p-4 rounded-lg mb-6 border border-[#F0EBCE]">
+            <h3 class="font-semibold text-[#395144] mb-2">Benefits of Prepaid Card:</h3>
+            <ul class="list-disc pl-5 text-gray-700 space-y-1">
+                <li>Convenient cashless payments at all Kikapu partner locations</li>
+                <li>Easy reload options via mobile money or bank transfer</li>
+                <li>Special discounts at select vendors</li>
+                <li>Secure transactions with PIN protection</li>
+                <li>Earn recycling rewards directly to your card</li>
+            </ul>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-6">
+                <h3 class="font-semibold text-gray-800 mb-3">Personal Information</h3>
+                <p class="text-sm text-gray-600 mb-4">Your personal information will be pulled from your existing Kikapu account.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Name</p>
+                        <p class="font-medium">{{ request.user.get_full_name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Phone Number</p>
+                        <p class="font-medium">{{ request.user.phoneNumber }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+                <h3 class="font-semibold text-gray-800 mb-3">Terms & Conditions</h3>
+                <div class="mb-4">
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">
+                            <input id="terms" name="terms" type="checkbox" required class="h-4 w-4 text-[#395144] focus:ring-[#4E6C50] border-gray-300 rounded">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="terms" class="font-medium text-gray-700">I agree to the <a href="#" class="text-[#AA8B56] hover:underline">Terms and Conditions</a> and <a href="#" class="text-[#AA8B56] hover:underline">Privacy Policy</a></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center">
+                <button type="submit" class="bg-[#395144] hover:bg-[#4E6C50] text-white font-semibold py-3 px-6 rounded-full shadow-md transition-all transform hover:-translate-y-0.5">
+                    Submit Application
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'credits:check_eligibility' %}" class="inline-flex items-center text-[#AA8B56] hover:text-[#395144]">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Eligibility Check
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Kikapu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">{{ title }}</h1>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        {% for experience in experiences %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if experience.image %}
+                <img src="{{ experience.image.url }}" class="card-img-top" alt="{{ experience.title }}">
+                {% else %}
+                <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-image fa-3x"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ experience.title }}</h5>
+                    <p class="card-text text-muted">{{ experience.location }}</p>
+                    <p class="card-text">{{ experience.description|truncatechars:100 }}</p>
+                    <p class="card-text"><strong>Price:</strong> KSh {{ experience.price_per_day }} 
+                    {% if experience.experience_type == 'FARMHOUSE' %}per night{% else %}per person{% endif %}</p>
+                    
+                    <!-- Quick Booking Form -->
+                    <form method="post" action="{% url 'marketplace:add_experience_to_cart' experience.id %}" class="mt-3 border-top pt-3">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <label for="start_date_{{ experience.id }}" class="form-label">Date{% if experience.experience_type == 'FARMHOUSE' %} of Arrival{% endif %}</label>
+                            <input type="date" class="form-control" id="start_date_{{ experience.id }}" name="start_date" required min="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        
+                        {% if experience.experience_type == 'FARMHOUSE' %}
+                        <div class="mb-2">
+                            <label for="end_date_{{ experience.id }}" class="form-label">Date of Departure</label>
+                            <input type="date" class="form-control" id="end_date_{{ experience.id }}" name="end_date" required min="{{ today|date:'Y-m-d' }}">
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-2">
+                            <label for="party_size_{{ experience.id }}" class="form-label">Number of People</label>
+                            <input type="number" class="form-control" id="party_size_{{ experience.id }}" name="party_size" value="1" min="1" max="10" required>
+                        </div>
+                        
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-success">Book Now</button>
+                        </div>
+                    </form>
+                    
+                    <div class="d-grid mt-2">
+                        <a href="{% url 'marketplace:tourism_experience_detail' experience.id %}" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No experiences available at the moment. Please check back later!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set minimum date for all date inputs to today
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('input[type="date"]').forEach(function(input) {
+            input.min = today;
+            if (!input.value) input.value = today;
+        });
+        
+        // For farmhouse stays, ensure end_date is after start_date
+        {% for experience in experiences %}
+            {% if experience.experience_type == 'FARMHOUSE' %}
+                const startDateInput{{ experience.id }} = document.getElementById('start_date_{{ experience.id }}');
+                const endDateInput{{ experience.id }} = document.getElementById('end_date_{{ experience.id }}');
+                
+                if (startDateInput{{ experience.id }} && endDateInput{{ experience.id }}) {
+                    startDateInput{{ experience.id }}.addEventListener('change', function() {
+                        endDateInput{{ experience.id }}.min = this.value;
+                        // If end date is now before start date, reset it
+                        if (endDateInput{{ experience.id }}.value && endDateInput{{ experience.id }}.value < this.value) {
+                            endDateInput{{ experience.id }}.value = this.value;
+                        }
+                    });
+                }
+            {% endif %}
+        {% endfor %}
+    });
+</script>
+{% endblock %}

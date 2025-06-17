@@ -1,0 +1,896 @@
+{% extends 'operations/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - KIKAPU Operations{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  .card-icon {
+    transition: transform 0.3s ease;
+  }
+  .badge-bronze {
+    background-color: #CD7F32;
+    color: white;
+  }
+  .badge-silver {
+    background-color: #C0C0C0;
+    color: white;
+  }
+  .badge-gold {
+    background-color: #FFD700;
+    color: black;
+  }
+  .badge-platinum {
+    background-color: #E5E4E2;
+    color: black;
+  }
+  .badge-diamond {
+    background-color: #B9F2FF;
+    color: black;
+  }
+    .select-container {
+    position: relative;
+  }
+  .select-container select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+
+  .modal-card {
+    width: 600px;
+    max-width: 95%;
+  }
+
+
+
+
+  .animate-slide-in {
+    animation: slideIn 0.4s ease-out forwards;
+  }
+
+  .animate-slide-out {
+    animation: slideOut 0.3s ease-in forwards;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+  }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="relative bg-gradient-to-r from-primary to-secondary rounded-2xl shadow-lg mb-8 overflow-hidden">
+  <div class="absolute right-0 top-0 w-1/3 h-full opacity-20">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" class="w-full h-full"><path d="M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63" stroke-width="100" stroke="white" fill="none"></path></svg>
+  </div>
+  <div class="relative p-8 md:p-10 text-white z-10">
+    <h2 class="text-2xl md:text-3xl font-bold mb-2">NFC Card Management</h2>
+    <p class="text-white text-opacity-90 mb-4 max-w-2xl">Monitor and manage all NFC cards in the system. Assign cards to users, modify balances, and track usage.</p>
+    <div class="inline-flex items-center bg-white bg-opacity-20 rounded-full px-4 py-1 text-sm">
+      <i class="fas fa-credit-card mr-2"></i> {{ total_cards }} Total Cards
+    </div>
+  </div>
+</div>
+
+<!-- Key Metrics Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Total Cards -->
+    <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-indigo-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Total Cards</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ total_cards }}</h3>
+                <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div class="bg-indigo-500 h-full w-full"></div>
+                </div>
+            </div>
+            <div class="h-16 w-16 bg-indigo-500 bg-opacity-10 rounded-full flex items-center justify-center">
+                <i class="fas fa-credit-card text-2xl text-indigo-500"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Cards -->
+    <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-green-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Active Cards</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ active_cards }}</h3>
+                <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                    {% if total_cards > 0 %}
+                    <div class="bg-green-500 h-full" style="width: 50%;"></div>
+                    {% else %}
+                    <div class="bg-green-500 h-full w-0"></div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="h-16 w-16 bg-green-500 bg-opacity-10 rounded-full flex items-center justify-center">
+                <i class="fas fa-check-circle text-2xl text-green-500"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assigned Cards -->
+    <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-amber-500">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Assigned to Users</p>
+                <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ assigned_cards }}</h3>
+                <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                    {% if total_cards > 0 %}
+                    <div class="bg-amber-500 h-full" style="width: 50%;"></div>
+                    {% else %}
+                    <div class="bg-amber-500 h-full w-0"></div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="h-16 w-16 bg-amber-500 bg-opacity-10 rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-2xl text-amber-500"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="bg-white rounded-2xl shadow mb-8 overflow-hidden">
+    <div class="bg-gray-50 py-4 px-6 border-b border-gray-200">
+        <div class="flex items-center">
+            <i class="fas fa-search text-gray-400 mr-3"></i>
+            <h3 class="text-lg font-semibold text-gray-700">Search & Filter</h3>
+        </div>
+    </div>
+    <div class="p-6">
+        <form method="get" action="{% url 'operations:manage_nfc_cards' %}">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Card Number/UID -->
+                <div class="relative">
+                    <label for="card_number" class="block text-sm font-medium text-gray-700 mb-1">Card Number/UID</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-credit-card text-gray-400"></i>
+                        </div>
+                        <input type="text" name="card_number" id="card_number" value="{{ search_query }}"
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                            placeholder="Search by card number/UID">
+                    </div>
+                </div>
+                
+                <!-- Status -->
+                <div class="relative">
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <div class="relative rounded-md shadow-sm select-container">
+                        <select name="status" id="status"
+                            class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                            <option value="">All statuses</option>
+                            <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                            <option value="assigned" {% if status_filter == 'assigned' %}selected{% endif %}>Assigned</option>
+                            <option value="unassigned" {% if status_filter == 'unassigned' %}selected{% endif %}>Unassigned</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Balance Range -->
+                <div class="relative">
+                    <label for="balance_min" class="block text-sm font-medium text-gray-700 mb-1">Balance Range</label>
+                    <div class="flex space-x-2 items-center">
+                        <div class="relative flex-1 rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-coins text-gray-400"></i>
+                            </div>
+                            <input type="number" name="balance_min" id="balance_min" value="{{ balance_min }}"
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                                placeholder="Min">
+                        </div>
+                        <span class="text-gray-500">-</span>
+                        <div class="relative flex-1 rounded-md shadow-sm">
+                            <input type="number" name="balance_max" id="balance_max" value="{{ balance_max }}"
+                                class="block w-full pl-3 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                                placeholder="Max">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Card Type -->
+                <div class="relative">
+                    <label for="card_type" class="block text-sm font-medium text-gray-700 mb-1">Card Type</label>
+                    <div class="relative rounded-md shadow-sm select-container">
+                        <select name="card_type" id="card_type"
+                            class="block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                            <option value="">All card types</option>
+                            {% for key, value in card_types.items %}
+                                <option value="{{ key }}" {% if card_type_filter == key %}selected{% endif %}>{{ value }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                            <i class="fas fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <div class="text-sm text-gray-600">
+                    <span class="font-medium">{{ total_cards }}</span> cards found
+                    {% if search_active %}
+                    <span class="ml-2 text-primary">(Filtered results)</span>
+                    {% endif %}
+                </div>
+                
+                <div class="flex space-x-3">
+                    <a href="{% url 'operations:manage_nfc_cards' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <i class="fas fa-times mr-2"></i>
+                        Clear
+                    </a>
+                    <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                        <i class="fas fa-search mr-2"></i>
+                        Search
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- NFC Cards Table -->
+<div class="bg-white rounded-2xl shadow mb-8 overflow-hidden">
+    <div class="bg-gray-50 py-4 px-6 border-b border-gray-200">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center">
+                <i class="fas fa-table text-gray-400 mr-3"></i>
+                <h3 class="text-lg font-semibold text-gray-700">NFC Cards</h3>
+            </div>
+            <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#395144] hover:bg-[#4E6C50] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#395144]" data-bs-toggle="modal" data-bs-target="#addCardModal" aria-label="Add Card">
+                <i class="fas fa-plus mr-2"></i> Add Card
+            </button>
+        </div>
+    </div>
+    <div class="p-6">
+        {% if cards %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card Number</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Used</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for card in cards %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ card.card_number }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if card.user %}
+                            <div class="flex items-center">
+                                <div class="h-8 w-8 bg-gray-100 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <span>{{ card.user.get_full_name|default:card.user.username }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400 italic">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if card.is_active %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-green-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                                Active
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <svg class="-ml-0.5 mr-1.5 h-2 w-2 text-red-400" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span class="font-semibold">TSh {{ card.balance|floatformat:2 }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if card.last_used %}
+                            <span class="inline-flex items-center">
+                                <i class="far fa-calendar-alt mr-2 text-gray-400"></i>
+                                {{ card.last_used|date:"M d, Y" }}
+                            </span>
+                            {% else %}
+                            <span class="text-gray-400 italic">Never used</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex space-x-2">
+                            
+                                {% if card.user %}
+                                <button 
+                                    class="edit-card inline-flex items-center justify-center p-2 border border-transparent rounded-full shadow-sm text-xs font-medium text-white bg-[#395144] hover:bg-[#4E6C50] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#395144]"
+                                    data-card-id="{{ card.uid }}"
+                                    data-card-db-id="{{ card.id }}"
+                                    title="Edit Card"
+                                >
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                {% endif %}
+                                <button type="button" class="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 delete-card" data-card-id="{{ card.id }}" data-card-number="{{ card.card_number }}" data-bs-toggle="modal" data-bs-target="#deleteCardModal" aria-label="Delete Card">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            {% if cards.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-6">
+                <ul class="flex justify-center">
+                {% if cards.has_previous %}
+                <li class="mx-1">
+                    <a class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" 
+                       href="?page={{ cards.previous_page_number }}
+                            {% if search_query %}&search={{ search_query }}{% endif %}
+                            {% if user_filter %}&user={{ user_filter }}{% endif %}
+                            {% if status_filter %}&status={{ status_filter }}{% endif %}
+                            {% if balance_min %}&balance_min={{ balance_min }}{% endif %}
+                            {% if balance_max %}&balance_max={{ balance_max }}{% endif %}
+                            {% if card_type_filter %}&card_type={{ card_type_filter }}{% endif %}
+                            {% if date_issued %}&date_issued={{ date_issued }}{% endif %}"
+                       aria-label="Previous">
+                        <i class="fas fa-chevron-left mr-2"></i> Previous
+                    </a>
+                </li>
+                {% else %}
+                <li class="mx-1">
+                    <span class="inline-flex items-center px-4 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed" aria-label="Previous">
+                        <i class="fas fa-chevron-left mr-2"></i> Previous
+                    </span>
+                </li>
+                {% endif %}
+                
+                {% for i in cards.paginator.page_range %}
+                    {% if cards.number == i %}
+                    <li class="mx-1">
+                        <span class="inline-flex items-center px-4 py-2 border border-primary rounded-md text-sm font-medium text-white bg-primary">
+                            {{ i }}
+                        </span>
+                    </li>
+                    {% else %}
+                        {% if i > cards.number|add:'-3' and i < cards.number|add:'3' %}
+                        <li class="mx-1">
+                            <a class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" 
+                               href="?page={{ i }}
+                                    {% if search_query %}&search={{ search_query }}{% endif %}
+                                    {% if user_filter %}&user={{ user_filter }}{% endif %}
+                                    {% if status_filter %}&status={{ status_filter }}{% endif %}
+                                    {% if balance_min %}&balance_min={{ balance_min }}{% endif %}
+                                    {% if balance_max %}&balance_max={{ balance_max }}{% endif %}
+                                    {% if card_type_filter %}&card_type={{ card_type_filter }}{% endif %}
+                                    {% if date_issued %}&date_issued={{ date_issued }}{% endif %}">
+                                {{ i }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% if cards.has_next %}
+                <li class="mx-1">
+                    <a class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" 
+                       href="?page={{ cards.next_page_number }}
+                            {% if search_query %}&search={{ search_query }}{% endif %}
+                            {% if user_filter %}&user={{ user_filter }}{% endif %}
+                            {% if status_filter %}&status={{ status_filter }}{% endif %}
+                            {% if balance_min %}&balance_min={{ balance_min }}{% endif %}
+                            {% if balance_max %}&balance_max={{ balance_max }}{% endif %}
+                            {% if card_type_filter %}&card_type={{ card_type_filter }}{% endif %}
+                            {% if date_issued %}&date_issued={{ date_issued }}{% endif %}"
+                       aria-label="Next">
+                        Next <i class="fas fa-chevron-right ml-2"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="mx-1">
+                    <span class="inline-flex items-center px-4 py-2 border border-gray-200 rounded-md text-sm font-medium text-gray-400 bg-gray-50 cursor-not-allowed" aria-label="Next">
+                        Next <i class="fas fa-chevron-right ml-2"></i>
+                    </span>
+                </li>
+                {% endif %}
+            </ul>
+            </nav>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div class="inline-block p-6 rounded-full bg-gray-100 mb-4">
+                <i class="fas fa-credit-card text-4xl text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">No NFC Cards Found</h3>
+            <p class="text-gray-500 mb-6">Start by adding a new NFC card to the system.</p>
+            <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#395144] hover:bg-[#4E6C50] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#395144]" data-bs-toggle="modal" data-bs-target="#addCardModal">
+                <i class="fas fa-plus mr-2"></i> Add Your First Card
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+
+
+<!-- Edit Card Modal - Tailwind Styled -->
+<div class="modal fade hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50" id="editCardModal" tabindex="-1" aria-labelledby="editCardModalLabel" aria-hidden="true">
+  <div class="modal-card bg-white shadow-lg rounded-xl border-l-4 border-[#395144] overflow-hidden">
+      <form method="post" action="/operations/nfc-cards/" id="editCardForm">
+        <input type="hidden" name="action" value="edit">
+        {% csrf_token %}
+        <input type="hidden" name="card_id" id="edit_card_id">
+  
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center px-4 py-3 border-b border-gray-100 bg-white">
+          <h5 class="text-sm font-medium text-gray-800 flex items-center">
+            <i class="fas fa-edit text-[#395144] mr-2"></i> Edit NFC Card
+          </h5>
+          <button type="button" class="text-gray-400 hover:text-gray-600 p-1" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+  
+        <!-- Modal Body -->
+        <div class="px-6 py-5 space-y-6">
+          <!-- Card Number -->
+          <div class="flex flex-col">
+            <label for="edit_card_number" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Card Number</label>
+            <div class="relative group">
+              <input type="text" id="edit_card_number" name="card_number" readonly
+                class="w-full pl-3 pr-12 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 focus:ring-1 focus:ring-[#395144] focus:border-[#395144]">
+              <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 group-hover:text-[#395144] transition-colors">
+                <i class="fas fa-credit-card"></i>
+              </span>
+            </div>
+          </div>
+  
+          <!-- Balance -->
+          <div class="flex flex-col">
+            <label for="edit_balance" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Balance (TSh)</label>
+            <div class="relative group">
+              <input type="number" id="edit_balance" name="new_balance" step="0.01" min="0"
+                class="w-full pl-3 pr-12 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#395144] focus:border-[#395144]">
+              <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 group-hover:text-[#395144] transition-colors">
+                <i class="fas fa-coins"></i>
+              </span>
+            </div>
+          </div>
+  
+          <div class="flex flex-col">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">User</label>
+            <div class="flex items-center mt-1 py-2 pl-3 pr-12 text-sm w-full border border-gray-300 rounded-md bg-gray-100 cursor-default">
+                <div class="h-7 w-7 bg-gray-200 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fas fa-user text-gray-500"></i>
+                </div>
+                <span id="edit_modal_user_name_display" class="truncate">{{ user.get_full_name|default:user.username }}</span>
+            </div>
+            <input type="hidden" name="user_id" id="edit_modal_user_id_hidden" value="{{ user.id }}">
+          </div>
+          <!-- Active Checkbox -->
+          <div class="flex items-center">
+            <input type="checkbox" id="edit_is_active" name="is_active" value="true"
+              class="h-5 w-5 text-[#395144] focus:ring-[#395144] border-gray-300 rounded">
+            <label for="edit_is_active" class="ml-2 text-sm font-medium text-gray-700">Active Card</label>
+          </div>
+          
+          <!-- Card Status Dropdown -->
+          <div class="flex flex-col mt-4">
+            <label for="edit_status" class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Card Status</label>
+            <div class="relative group">
+              <select id="edit_status" name="status" 
+                class="w-full pl-3 pr-12 py-2 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-[#395144] focus:border-[#395144]">
+                <option value="unassigned">Unassigned</option>
+                <option value="assigned">Assigned</option>
+                <option value="active">Active</option>
+                <option value="expired">Expired</option>
+                <option value="blocked">Blocked</option>
+                <option value="lost">Lost</option>
+                <option value="disabled">Disabled</option>
+              </select>
+              <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 group-hover:text-[#395144] transition-colors">
+                <i class="fas fa-tag"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Modal Footer -->
+        <div class="flex justify-end pt-3 mt-2 border-t border-gray-100 px-6 pb-4">
+          <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#395144] mr-3" data-bs-dismiss="modal">
+            Cancel
+          </button>
+          <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#395144] hover:bg-[#4E6C50] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#395144]">
+            <i class="fas fa-save mr-2"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+
+
+
+<!-- Delete Card Modal - Tailwind Styled -->
+<div class="modal fade hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="deleteCardModal" tabindex="-1" aria-labelledby="deleteCardModalLabel" aria-hidden="true">
+    <div class="modal-dialog relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="modal-content">
+            <div class="modal-header flex justify-between items-center pb-3 mb-3 border-b border-gray-200">
+                <h5 class="modal-title text-lg font-semibold text-gray-800" id="deleteCardModalLabel">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-2"></i> Confirm Delete
+                </h5>
+                <button type="button" class="close-modal text-gray-400 hover:text-gray-800" onclick="hideDeleteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body py-3">
+                <p class="mb-2">Are you sure you want to delete the NFC card <span id="delete_card_id_display" class="font-bold"></span>?</p>
+                <p class="text-red-600">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer flex justify-end space-x-3 pt-3 mt-3 border-t border-gray-200">
+                <button type="button" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400" onclick="hideDeleteModal()">Cancel</button>
+                <form id="deleteCardForm" method="post" action="{% url 'operations:manage_nfc_cards' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="delete_card_id" name="delete_card_id">
+                    <input type="hidden" name="action" value="delete">
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Card</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Wait for DOM to be fully loaded before attaching event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set all edit buttons to have green background
+        document.querySelectorAll('.edit-card').forEach(button => {
+            button.style.backgroundColor = '#16a34a';
+            button.style.color = 'white';
+        });
+        
+        // Toggle card status (active/inactive)
+        function toggleCardStatus(cardId) {
+            // Create a form and submit it
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "operations:manage_nfc_cards" %}';
+            
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            form.appendChild(csrfInput);
+            
+            // Add card ID
+            const cardIdInput = document.createElement('input');
+            cardIdInput.type = 'hidden';
+            cardIdInput.name = 'toggle_card_id';
+            cardIdInput.value = cardId;
+            form.appendChild(cardIdInput);
+            
+            // Add action type
+            const actionInput = document.createElement('input');
+            actionInput.type = 'hidden';
+            actionInput.name = 'action';
+            actionInput.value = 'toggle_status';
+            form.appendChild(actionInput);
+            
+            // Append to body and submit
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        // Toggle prepaid/postpaid options in add card form
+        const addCardType = document.getElementById('add_card_type');
+        if (addCardType) {
+            addCardType.addEventListener('change', function() {
+                const prepaidOptions = document.getElementById('prepaid_options');
+                const postpaidOptions = document.getElementById('postpaid_options');
+                
+                if (prepaidOptions && postpaidOptions) {
+                    if (this.value === 'PREPAID') {
+                        prepaidOptions.classList.remove('d-none');
+                        postpaidOptions.classList.add('d-none');
+                    } else if (this.value === 'POSTPAID') {
+                        prepaidOptions.classList.add('d-none');
+                        postpaidOptions.classList.remove('d-none');
+                    }
+                }
+            });
+        }
+        
+        // Setup edit button handlers
+        const editButtons = document.querySelectorAll('.edit-card');
+        if (editButtons.length > 0) {
+            editButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const cardId = this.getAttribute('data-card-id');
+                    const cardNumber = this.getAttribute('data-card-number');
+                    const cardType = this.getAttribute('data-card-type');
+                    const userId = this.getAttribute('data-card-user-id') || '';
+                    
+                    const editCardIdField = document.getElementById('edit_card_id');
+                    const editCardNumberField = document.getElementById('edit_card_number');
+                    
+                    if (editCardIdField) editCardIdField.value = cardId;
+                    if (editCardNumberField) editCardNumberField.value = cardNumber;
+                    
+                    // Set card type if the element exists
+                    const cardTypeSelect = document.getElementById('edit_card_type');
+                    if (cardTypeSelect && cardType) {
+                        const option = cardTypeSelect.querySelector(`option[value="${cardType}"]`);
+                        if (option) {
+                            option.selected = true;
+                        }
+                    }
+                    
+                    // Set the user dropdown value if a user exists
+                    const userSelect = document.getElementById('edit_user_id');
+                    if (userSelect && userId) {
+                        const option = userSelect.querySelector(`option[value="${userId}"]`);
+                        if (option) {
+                            option.selected = true;
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Functions to show and hide the delete modal
+        function showDeleteModal(cardId, cardNumber) {
+            const deleteCardIdField = document.getElementById('delete_card_id');
+            const deleteCardIdDisplay = document.getElementById('delete_card_id_display');
+            const deleteModal = document.getElementById('deleteCardModal');
+            
+            if (deleteCardIdField) deleteCardIdField.value = cardId;
+            if (deleteCardIdDisplay) deleteCardIdDisplay.textContent = cardNumber;
+            if (deleteModal) deleteModal.classList.remove('hidden');
+        }
+        
+        function hideDeleteModal() {
+            const deleteModal = document.getElementById('deleteCardModal');
+            if (deleteModal) deleteModal.classList.add('hidden');
+        }
+        
+        // Make hideDeleteModal available globally
+        window.hideDeleteModal = hideDeleteModal;
+        
+        // Add click handlers to all delete buttons
+        const deleteButtons = document.querySelectorAll('.delete-card');
+        if (deleteButtons.length > 0) {
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const cardId = this.getAttribute('data-card-id');
+                    const cardNumber = this.getAttribute('data-card-number');
+                    showDeleteModal(cardId, cardNumber);
+                });
+            });
+        }
+    });
+</script>
+
+<script>
+    // Function to hide delete modal
+    function hideDeleteModal() {
+        document.getElementById('deleteCardModal').classList.add('hidden');
+    }
+
+    // When delete button is clicked, get the card ID and set in the modal
+    document.querySelectorAll('.delete-card').forEach(button => {
+        button.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            const cardNumber = this.getAttribute('data-card-number');
+            document.getElementById('delete_card_id').value = cardId;
+            document.getElementById('delete_card_number_display').textContent = cardNumber;
+            document.getElementById('deleteCardModal').classList.remove('hidden');
+        });
+    });
+
+    // Set the style for all edit buttons
+    document.querySelectorAll('.edit-card').forEach(button => {
+        // Force green background on all edit buttons
+        button.style.backgroundColor = '#16a34a';
+        button.style.color = 'white';
+    });
+
+    // When edit button is clicked, get the card data and populate the edit modal
+    document.querySelectorAll('.edit-card').forEach(button => {
+        button.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-card-id');
+            document.getElementById('edit_card_id').value = cardId;
+            
+            // Show the modal (Tailwind style)
+            const modal = document.getElementById('editCardModal');
+            if (modal) {
+                // Show loading message
+                document.getElementById('edit_card_number').value = 'Loading...'; // It's an input field
+                document.getElementById('edit_modal_user_name_display').textContent = 'Loading...';
+                document.getElementById('edit_balance').value = '';
+                
+                // Show the modal
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.classList.add('overflow-hidden'); // Prevent scrolling
+            } else {
+                console.error('Edit modal element not found!');
+            }
+            
+            // Show loading spinner or message while fetching card data
+            document.getElementById('edit_card_number').value = 'Loading...'; // It's an input field
+            document.getElementById('edit_modal_user_name_display').textContent = 'Loading...';
+            document.getElementById('edit_balance').value = '';
+            
+            // Fetch card details from server
+            fetch(`/operations/api/cards/${cardId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("API Response:", data);
+                    
+                    // Check if data is wrapped in a success response
+                    if (data.success && data.card) {
+                        console.log("Found card data in success.card structure");
+                        data = data.card;  // Use the card property
+                    } else if (data.error) {
+                        console.error("API returned error:", data.error);
+                        alert("Error: " + data.error);
+                        return;
+                    }
+                    
+                    console.log("Processing data:", data);
+                    console.log("Card number:", data.card_number);
+                    console.log("Raw balance value:", data.balance);
+                    
+                    // Ensure balance is treated as a number
+                    let balanceValue = 0;
+                    if (data.balance !== null && data.balance !== undefined) {
+                        // Try to convert to number, handling string or Decimal object cases
+                        balanceValue = parseFloat(String(data.balance).replace(/[^0-9.-]+/g, ''));
+                    }
+                    console.log("Processed balance value:", balanceValue);
+                    
+                    // Populate form fields with card data
+                    document.getElementById('edit_card_number').value = data.card_number; // It's an input field
+                    document.getElementById('edit_balance').value = balanceValue || 0;
+                    document.getElementById('edit_is_active').checked = data.is_active;
+                    
+                    // Set the status dropdown
+                    const statusDropdown = document.getElementById('edit_status');
+                    if (statusDropdown && data.status) {
+                        // Find and select the option with matching value
+                        const option = statusDropdown.querySelector(`option[value="${data.status}"]`);
+                        if (option) {
+                            option.selected = true;
+                        }
+                    }
+                    
+                    // Add a helper note if balance is zero
+                    if (balanceValue === 0) {
+                        const balanceField = document.getElementById('edit_balance');
+                        // Remove any existing note first
+                        const existingNote = balanceField.parentNode.querySelector('.balance-note');
+                        if (existingNote) {
+                            existingNote.remove();
+                        }
+                        // Add the note
+                        const noteElement = document.createElement('div');
+                        noteElement.className = 'text-xs text-gray-500 mt-1 balance-note';
+                        noteElement.textContent = 'Current balance is zero. Enter a new amount to add credit.';
+                        balanceField.parentNode.appendChild(noteElement);
+                    }
+                    
+                    const userIdInput = document.getElementById('edit_modal_user_id_hidden');
+                    const userNameDisplay = document.getElementById('edit_modal_user_name_display');
+                    
+                    if (data.user && data.user.id) {
+                        userIdInput.value = data.user.id;
+                        userNameDisplay.textContent = data.user.name || 'N/A'; // Use name, fallback to N/A
+                    } else {
+                        userIdInput.value = '';
+                        userNameDisplay.textContent = 'Unassigned';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching card data:', error);
+                    alert('Error loading card data. Please try again.');
+                });
+        
+        // Add a close button handler for the edit modal
+        const editCloseButtons = document.querySelectorAll('#editCardModal [data-bs-dismiss="modal"]');
+        editCloseButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = document.getElementById('editCardModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            });
+        });
+        
+        // Close modal when clicking outside of it
+        document.getElementById('editCardModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                this.classList.remove('flex');
+                document.body.classList.remove('overflow-hidden');
+            }
+        });
+    });
+});
+
+
+
+<!-- Modal JS (Minimal Vanilla JS) -->
+
+  function openEditModal() {
+    const modal = document.getElementById('editCardModal');
+    modal.classList.remove('hidden', 'opacity-0');
+    modal.classList.add('flex');
+    const modalBox = modal.querySelector('form').parentElement;
+    modalBox.classList.remove('animate-slide-out');
+    modalBox.classList.add('animate-slide-in');
+  }
+
+  function closeEditModal() {
+    const modal = document.getElementById('editCardModal');
+    const modalBox = modal.querySelector('form').parentElement;
+    modalBox.classList.remove('animate-slide-in');
+    modalBox.classList.add('animate-slide-out');
+    setTimeout(() => {
+      modal.classList.add('hidden', 'opacity-0');
+      modal.classList.remove('flex');
+    }, 300);
+  }
+
+</script>
+
+{% endblock %}

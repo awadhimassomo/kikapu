@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Booking Confirmation - KIKAPU Tourism{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confirmation-icon {
+        width: 80px;
+        height: 80px;
+        @apply rounded-full bg-[#4E6C50] text-white flex items-center justify-center text-3xl mx-auto;
+    }
+    
+    .booking-info-item {
+        @apply flex justify-between py-3 border-b border-gray-100;
+    }
+    
+    .booking-info-item:last-child {
+        @apply border-b-0;
+    }
+    
+    .booking-status {
+        @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium;
+    }
+    
+    .booking-status.confirmed {
+        @apply bg-green-100 text-green-800;
+    }
+    
+    .booking-status.pending {
+        @apply bg-yellow-100 text-yellow-800;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container max-w-4xl mx-auto px-4 py-12">
+    <div class="text-center mb-10">
+        <div class="confirmation-icon mb-6">
+            <i class="fas fa-check"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-[#395144] mb-2">Booking Confirmed!</h1>
+        <p class="text-gray-600 max-w-xl mx-auto">Your booking has been successfully confirmed. We've sent the booking details to your email address.</p>
+    </div>
+    
+    <!-- Booking Information -->
+    <div class="card mb-8">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-[#395144]">Booking Information</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <div class="booking-info-item">
+                        <span class="font-medium">Booking Number</span>
+                        <span class="font-bold text-[#395144]">{{ booking.booking_number }}</span>
+                    </div>
+                    
+                    <div class="booking-info-item">
+                        <span class="font-medium">Experience</span>
+                        <span>{{ booking.experience.title }}</span>
+                    </div>
+                    
+                    <div class="booking-info-item">
+                        <span class="font-medium">Status</span>
+                        <span class="booking-status {{ booking.status|lower }}">
+                            {{ booking.status|title }}
+                        </span>
+                    </div>
+                    
+                    <div class="booking-info-item">
+                        <span class="font-medium">Payment Method</span>
+                        <span>{{ booking.payment_method }}</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="booking-info-item">
+                        <span class="font-medium">Start Date</span>
+                        <span>{{ booking.start_date }}</span>
+                    </div>
+                    
+                    {% if booking.end_date %}
+                    <div class="booking-info-item">
+                        <span class="font-medium">End Date</span>
+                        <span>{{ booking.end_date }}</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="booking-info-item">
+                        <span class="font-medium">Party Size</span>
+                        <span>{{ booking.party_size }} {{ booking.party_size|pluralize:"person,people" }}</span>
+                    </div>
+                    
+                    <div class="booking-info-item">
+                        <span class="font-medium">Total Price</span>
+                        <span class="font-bold text-[#395144]">{{ booking.total_price }} TSh</span>
+                    </div>
+                </div>
+            </div>
+            
+            {% if booking.special_requests %}
+            <div class="mt-6 pt-4 border-t border-gray-100">
+                <h3 class="font-medium mb-2">Special Requests</h3>
+                <p class="text-gray-700">{{ booking.special_requests }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Contact Information -->
+    <div class="card mb-8">
+        <div class="card-header">
+            <h2 class="text-xl font-semibold text-[#395144]">Contact Information</h2>
+        </div>
+        <div class="card-body">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="booking-info-item">
+                    <span class="font-medium">Phone Number</span>
+                    <span>{{ booking.contact_phone }}</span>
+                </div>
+                
+                <div class="booking-info-item">
+                    <span class="font-medium">Email</span>
+                    <span>{{ booking.user.email }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a href="{% url 'tourism:my_bookings' %}" class="btn btn-primary">
+            <i class="fas fa-list-ul mr-2"></i> View All My Bookings
+        </a>
+        
+        <a href="{% url 'tourism:experience_list' %}" class="btn btn-outline">
+            <i class="fas fa-arrow-left mr-2"></i> Back to Experiences
+        </a>
+    </div>
+</div>
+{% endblock %}

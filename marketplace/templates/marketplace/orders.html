@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-semibold text-primary mb-8">Your Orders</h1>
+    
+    {% if orders %}
+        <div class="bg-light rounded-lg shadow-md overflow-hidden">
+            {% for order in orders %}
+                <div class="border-b border-gray-200 {% if forloop.last %}border-b-0{% endif %}">
+                    <div class="p-4 bg-light hover:bg-opacity-80 cursor-pointer" 
+                         onclick="toggleOrderDetails('order-{{ order.id }}')">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                            <div>
+                                <p class="text-gray-500 text-sm">Order #{{ order.id }}</p>
+                                <p class="font-medium">{{ order.order_date|date:"F j, Y" }}</p>
+                            </div>
+                            <div class="mt-2 md:mt-0">
+                                <span class="px-3 py-1 rounded-full text-xs font-medium
+                                    {% if order.status == 'DELIVERED' %}
+                                        bg-green-100 text-green-800
+                                    {% elif order.status == 'CANCELLED' %}
+                                        bg-red-100 text-red-800
+                                    {% elif order.status == 'PROCESSING' %}
+                                        bg-blue-100 text-blue-800
+                                    {% elif order.status == 'SHIPPED' %}
+                                        bg-purple-100 text-purple-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-800
+                                    {% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </div>
+                            <div class="mt-2 md:mt-0">
+                                <p class="font-semibold text-primary">{{ order.total_amount }} TSh</p>
+                            </div>
+                            <div class="mt-2 md:mt-0">
+                                <button class="text-secondary hover:text-primary" title="Toggle order details" aria-label="Toggle order details">
+                                    <i class="fas fa-chevron-down toggle-icon" id="icon-order-{{ order.id }}"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden bg-gray-50 p-4" id="order-{{ order.id }}">
+                        <div class="mb-4">
+                            <h3 class="font-semibold text-gray-700 mb-2">Delivery Details</h3>
+                            <p>{{ order.delivery_address.address_line_1 }}</p>
+                            <p>{{ order.delivery_address.city }}, {{ order.delivery_address.region }}</p>
+                            <p>Phone: {{ order.phoneNumber }}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h3 class="font-semibold text-gray-700 mb-2">Order Items</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Processing</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        {% for item in order.items.all %}
+                                            <tr>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        {% if item.product.images.first %}
+                                                            <img src="{{ item.product.images.first.image.url }}" 
+                                                                alt="{{ item.product.name }}" 
+                                                                class="h-10 w-10 rounded-full object-cover mr-3">
+                                                        {% endif %}
+                                                        <div>
+                                                            <p class="font-medium text-gray-800">{{ item.product.name }}</p>
+                                                            <p class="text-xs text-gray-500">{{ item.product.unit }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    {{ item.processing_method_display }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    {{ item.price }} TSh
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    {{ item.quantity }}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap font-medium">
+                                                    {{ item.subtotal }} TSh
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-sm space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal:</span>
+                                <span>{{ order.total }} TSh</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Delivery:</span>
+                                <span>{{ order.delivery_fee }} TSh</span>
+                            </div>
+                            <div class="flex justify-between font-semibold pt-2 mt-2 border-t border-gray-200">
+                                <span class="text-gray-800">Total paid:</span>
+                                <span class="text-primary">{{ order.total_amount }} TSh</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="bg-light rounded-lg shadow-md p-8 text-center">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-shopping-bag text-6xl text-secondary mb-4"></i>
+                <h2 class="text-2xl font-semibold text-gray-700 mb-2">No Orders Yet</h2>
+                <p class="text-gray-500 mb-6">You haven't placed any orders yet.</p>
+                <a href="{% url 'marketplace:marketplace' %}" class="bg-primary hover:bg-secondary text-white font-semibold py-2 px-6 rounded-md transition-colors">
+                    Start Shopping
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleOrderDetails(orderId) {
+        const orderDetails = document.getElementById(orderId);
+        const icon = document.getElementById('icon-' + orderId);
+        
+        if (orderDetails.classList.contains('hidden')) {
+            orderDetails.classList.remove('hidden');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        } else {
+            orderDetails.classList.add('hidden');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+</script>
+{% endblock %}

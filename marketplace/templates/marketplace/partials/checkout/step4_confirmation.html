@@ -1,0 +1,421 @@
+{% load static %}
+<!-- Step 4: Confirmation - Enhanced Design -->
+
+<div class="flex flex-col md:flex-row items-start gap-6 w-full mx-auto">
+  <div class="bg-white rounded-3xl shadow-xl p-4 md:p-6 lg:p-8 flex flex-col flex-1 animate-fade-in-up">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="bg-[#F0EBCE] bg-opacity-50 p-2 rounded-full">
+          <i class="fas fa-clipboard-check text-[#395144] text-xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-[#395144]">Order Confirmation</h2>
+      </div>
+      
+      <span class="text-sm bg-[#F0EBCE] bg-opacity-50 py-1.5 px-4 rounded-full flex items-center gap-2 text-[#395144]">
+        <i class="fas fa-shield-alt text-[#AA8B56]"></i>
+        <span>Final Review</span>
+      </span>
+    </div>
+
+    <!-- Confirmation Message -->
+    <div class="flex flex-col items-center text-center mb-8 py-4">
+      <div class="w-16 h-16 bg-[#F0EBCE] rounded-full flex items-center justify-center mb-4">
+        <i class="fas fa-check text-2xl text-[#395144]"></i>
+      </div>
+      <h3 class="text-xl font-bold text-[#395144] mb-1">Ready to place your order!</h3>
+      <p class="text-[#AA8B56]">Please review your order details before confirming</p>
+    </div>
+
+    <!-- Order details -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Items Summary -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+        <div class="p-4 border-b border-gray-100">
+          <h3 class="font-semibold text-[#395144] flex items-center">
+            <i class="fas fa-shopping-basket text-[#AA8B56] mr-2"></i>
+            Items Summary
+          </h3>
+        </div>
+        
+        <div class="divide-y">
+          {% if cart_items %}
+            {% for item in cart_items %}
+            <div class="p-4 flex justify-between items-center hover:bg-[#F0EBCE] hover:bg-opacity-10 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="relative w-12 h-12 rounded-lg overflow-hidden border border-gray-200">
+                  {% if item.product.images.exists %}
+                    <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                  {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+                  {% endif %}
+                </div>
+                <div>
+                  <div class="font-medium text-gray-800">{{ item.product.name }}</div>
+                  <div class="text-sm text-gray-500 flex items-center">
+                    <span class="text-[#AA8B56]">x{{ item.quantity }}</span>
+                    {% if item.product.is_organic %}
+                      <span class="ml-2 text-xs bg-[#F0EBCE] bg-opacity-50 px-1.5 py-0.5 rounded-full text-[#395144]">Organic</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="font-medium text-[#395144]">TSh {{ item.total_price|floatformat:0 }}</div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="p-4 text-center text-gray-500">
+              No items in cart
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Delivery Information -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+        <div class="p-4 border-b border-gray-100">
+          <h3 class="font-semibold text-[#395144] flex items-center">
+            <i class="fas fa-truck text-[#AA8B56] mr-2"></i>
+            Delivery Information
+          </h3>
+        </div>
+        
+        <div class="p-4">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-clock text-[#395144] text-sm"></i>
+            </div>
+            <div>
+              <div class="font-medium text-gray-800" id="confirm-delivery-method">Standard Delivery</div>
+              <div class="text-sm text-gray-500" id="confirm-delivery-estimate">Estimated delivery: 2-3 business days</div>
+            </div>
+          </div>
+          
+          <div class="mt-4 pt-4 border-t border-gray-100">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-map-marker-alt text-[#395144] text-sm"></i>
+              </div>
+              <div>
+                <div class="font-medium text-gray-800">Delivery Address</div>
+              </div>
+            </div>
+            <div class="ml-11">
+              <div class="text-gray-700" id="confirm-address">123 Sample Street, Dar es Salaam</div>
+              <div class="text-gray-700" id="confirm-phone">+255 123 456 789</div>
+              <div class="text-sm text-gray-500 mt-1 italic" id="confirm-delivery-notes">Leave package at the door</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Payment Information -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+        <div class="p-4 border-b border-gray-100">
+          <h3 class="font-semibold text-[#395144] flex items-center">
+            <i class="fas fa-credit-card text-[#AA8B56] mr-2"></i>
+            Payment Information
+          </h3>
+        </div>
+        
+        <div class="p-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-[#395144] to-[#4E6C50] rounded-full flex items-center justify-center">
+              <i class="fas fa-credit-card text-white"></i>
+            </div>
+            <div>
+              <div class="font-medium text-gray-800" id="confirm-payment-method">Kikapu Card Payment</div>
+              <div class="text-sm text-gray-500" id="confirm-payment-instruction">
+                Your Kikapu Card will be charged upon placing the order
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Cost Summary -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+        <div class="p-4 border-b border-gray-100">
+          <h3 class="font-semibold text-[#395144] flex items-center">
+            <i class="fas fa-receipt text-[#AA8B56] mr-2"></i>
+            Cost Summary
+          </h3>
+        </div>
+        
+        <div class="p-4">
+          <div class="space-y-2">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Subtotal</span>
+              <span class="text-[#395144]">TSh <span id="confirm-subtotal">{{ cart_total|floatformat:0 }}</span></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Delivery Fee</span>
+              <span class="text-[#395144]">TSh <span id="confirm-delivery-fee">5,000</span></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">VAT (18%)</span>
+              <span class="text-[#395144]">TSh <span id="confirm-vat">{{ vat_amount|default:"0"|floatformat:0 }}</span></span>
+            </div>
+            <div class="flex justify-between font-bold text-lg pt-3 mt-1 border-t border-[#395144] border-opacity-20">
+              <span>Total</span>
+              <span class="text-[#395144]">TSh <span id="confirm-total">{{ total_with_delivery|floatformat:0 }}</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Place order section -->
+    <div class="bg-[#F0EBCE] bg-opacity-20 rounded-2xl p-5 text-center mb-6 border border-[#F0EBCE] border-opacity-30">
+      <form id="place-order-form" action="{% url 'marketplace:place_order' %}" method="post">
+        {% csrf_token %}
+        
+        <!-- Hidden fields containing necessary data -->
+        <input type="hidden" name="address_id" id="hidden-address-id" value="">
+        <input type="hidden" name="payment_method" id="hidden-payment-method" value="">
+        <input type="hidden" name="delivery_method" id="hidden-delivery-method" value="">
+        <input type="hidden" name="join_group_code" id="hidden-join-group-code" value="">
+        
+        <button type="submit" id="place-order-btn" class="bg-[#395144] hover:bg-[#4E6C50] text-white text-lg px-8 py-3 rounded-xl font-semibold transition-all shadow-md hover:shadow-lg">
+          Confirm & Place Order
+          <i class="fas fa-check ml-2"></i>
+        </button>
+      </form>
+      <div class="mt-3 text-sm text-gray-600">
+        By placing your order, you agree to our 
+        <a href="#" class="text-[#395144] hover:underline">Terms & Conditions</a>
+      </div>
+    </div>
+    
+    <!-- Navigation buttons -->
+    <div class="flex justify-start">
+      <button id="back-to-payment-btn" class="inline-flex items-center gap-2 text-[#395144] py-2 px-4 hover:bg-[#F0EBCE] hover:bg-opacity-30 rounded-lg transition-colors">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Payment</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex-shrink-0 md:w-96 lg:w-[560px] sticky top-24 h-fit max-h-screen">
+    {% include 'marketplace/partials/checkout/order_summary.html' %}
+  </div>
+</div>
+
+{# JS for Stepper Navigation & Data Population #}
+<script>
+  function populateConfirmationData() {
+    // This function should be called when step 4 becomes active
+    console.log('Populating confirmation data');
+    
+    // Get saved information from previous steps
+    const addressId = localStorage.getItem('selectedAddressId') || '';
+    const deliveryAddress = localStorage.getItem('deliveryAddress') || localStorage.getItem('kikapu-location') || 'Arusha, Tanzania';
+    const deliveryPhone = localStorage.getItem('deliveryPhone') || '+255 123 456 789';
+    const deliveryNotes = localStorage.getItem('deliveryNotes') || '';
+    
+    // Get delivery method - first try the kikapuDeliveryMethod, then fall back to deliveryMethod
+    const deliveryMethodName = localStorage.getItem('kikapuDeliveryMethod') || 'Standard Delivery';
+    let deliveryMethod = 'STANDARD';
+    
+    // Map the delivery method name to its code
+    if (deliveryMethodName.includes('Express')) {
+      deliveryMethod = 'EXPRESS';
+    } else if (deliveryMethodName.includes('Scheduled')) {
+      deliveryMethod = 'SCHEDULED';
+    } else {
+      deliveryMethod = 'STANDARD';
+    }
+    
+    // Store in localStorage for server processing
+    localStorage.setItem('deliveryMethod', deliveryMethod);
+    
+    const paymentMethod = localStorage.getItem('paymentMethod') || 'KIKAPU_CARD';
+    const paymentSubtype = localStorage.getItem('paymentSubtype') || 'prepaid';
+    const joinGroupCode = localStorage.getItem('joinGroupCode') || '';
+    
+    // Update the hidden form fields
+    document.getElementById('hidden-address-id').value = addressId;
+    document.getElementById('hidden-payment-method').value = paymentMethod;
+    document.getElementById('hidden-delivery-method').value = deliveryMethod;
+    document.getElementById('hidden-join-group-code').value = joinGroupCode;
+    
+    // Update delivery information
+    const confirmDeliveryMethod = document.getElementById('confirm-delivery-method');
+    const confirmDeliveryEstimate = document.getElementById('confirm-delivery-estimate');
+    const sidebarDeliveryMethod = document.getElementById('sidebar-delivery-method');
+    const sidebarDeliveryDetail = document.getElementById('sidebar-delivery-detail');
+    
+    if (deliveryMethod === 'EXPRESS') {
+      if (confirmDeliveryMethod) confirmDeliveryMethod.textContent = 'Express Delivery';
+      if (confirmDeliveryEstimate) confirmDeliveryEstimate.textContent = 'Estimated delivery: Same day (2-4 hours)';
+      if (sidebarDeliveryMethod) sidebarDeliveryMethod.textContent = 'Express Delivery';
+      if (sidebarDeliveryDetail) sidebarDeliveryDetail.textContent = 'Same day delivery';
+    } else {
+      if (confirmDeliveryMethod) confirmDeliveryMethod.textContent = 'Standard Delivery';
+      if (confirmDeliveryEstimate) confirmDeliveryEstimate.textContent = 'Estimated delivery: 2-3 business days';
+      if (sidebarDeliveryMethod) sidebarDeliveryMethod.textContent = 'Standard Delivery';
+      if (sidebarDeliveryDetail) sidebarDeliveryDetail.textContent = '2-3 business days';
+    }
+    
+    // Update address details
+    document.getElementById('confirm-address').textContent = deliveryAddress;
+    document.getElementById('confirm-phone').textContent = deliveryPhone;
+    document.getElementById('confirm-delivery-notes').textContent = deliveryNotes;
+    
+    // Update payment information
+    const confirmPaymentMethod = document.getElementById('confirm-payment-method');
+    const confirmPaymentInstruction = document.getElementById('confirm-payment-instruction');
+    const sidebarPaymentMethod = document.getElementById('sidebar-payment-method');
+    const sidebarPaymentDetail = document.getElementById('sidebar-payment-detail');
+    
+    if (paymentMethod === 'KIKAPU_CARD') {
+      if (confirmPaymentMethod) confirmPaymentMethod.textContent = 'Kikapu Card Payment';
+      if (confirmPaymentInstruction) confirmPaymentInstruction.textContent = 'Your Kikapu Card will be charged upon placing the order';
+      if (sidebarPaymentMethod) sidebarPaymentMethod.textContent = 'Kikapu Card Payment';
+      if (sidebarPaymentDetail) sidebarPaymentDetail.textContent = paymentSubtype === 'prepaid' ? 'Prepaid Card' : 'Postpaid Card';
+    } else if (paymentMethod === 'CASH_ON_DELIVERY') {
+      if (confirmPaymentMethod) confirmPaymentMethod.textContent = 'Payment on Delivery';
+      if (confirmPaymentInstruction) confirmPaymentInstruction.textContent = 'Pay with cash when your order arrives';
+      if (sidebarPaymentMethod) sidebarPaymentMethod.textContent = 'Payment on Delivery';
+      if (sidebarPaymentDetail) sidebarPaymentDetail.textContent = 'Pay when order arrives';
+    } else if (paymentMethod === 'MOBILE_MONEY') {
+      if (confirmPaymentMethod) confirmPaymentMethod.textContent = 'Mobile Money';
+      if (confirmPaymentInstruction) confirmPaymentInstruction.textContent = 'You will receive a payment prompt on your mobile phone';
+      if (sidebarPaymentMethod) sidebarPaymentMethod.textContent = 'Mobile Money';
+      if (sidebarPaymentDetail) sidebarPaymentDetail.textContent = 'Pay via mobile';
+    }
+    
+    // Update cost summary
+    // (In a real implementation, these would be calculated and retrieved from your cart/order system)
+    const deliveryFee = deliveryMethod === 'EXPRESS' ? 10000 : 5000;
+    document.getElementById('confirm-delivery-fee').textContent = deliveryFee.toLocaleString();
+    document.getElementById('summary-delivery-fee').textContent = deliveryFee.toLocaleString();
+    
+    // Safely parse numbers from the text content
+    function safeParseInt(element) {
+      if (!element) return 0;
+      const text = element.textContent.replace(/[^0-9]/g, '');
+      return text ? parseInt(text) : 0;
+    }
+    
+    // Recalculate total with proper number handling
+    const subtotal = safeParseInt(document.getElementById('confirm-subtotal'));
+    const vat = safeParseInt(document.getElementById('confirm-vat'));
+    const total = subtotal + deliveryFee + vat;
+    
+    // Format the numbers properly without decimal places
+    document.getElementById('confirm-total').textContent = total.toLocaleString();
+    document.getElementById('summary-total').textContent = total.toLocaleString();
+  }
+
+  // Call populate function when this step becomes active
+  // This approach observes changes to the step's class to know when it becomes active
+  const confirmationStep = document.getElementById('step-4');
+  const observer = new MutationObserver((mutationsList) => {
+    for(let mutation of mutationsList) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        if (confirmationStep.classList.contains('active') && !confirmationStep.classList.contains('hidden')) {
+          populateConfirmationData();
+        }
+      }
+    }
+  });
+  
+  if (confirmationStep) {
+    observer.observe(confirmationStep, { attributes: true });
+    // Initial population if already active on load
+    if (confirmationStep.classList.contains('active') && !confirmationStep.classList.contains('hidden')) {
+      populateConfirmationData();
+    }
+  }
+
+  // Make the sidebar order button submit the form
+  document.getElementById('sidebar-place-order-btn')?.addEventListener('click', () => {
+    document.getElementById('place-order-form').submit();
+  });
+
+  // Place Order Action
+  document.getElementById('place-order-btn')?.addEventListener('click', function(e) {
+    // Show loading state
+    const orderBtn = document.getElementById('place-order-btn');
+    const sidebarOrderBtn = document.getElementById('sidebar-place-order-btn');
+    
+    // Show loading indicators
+    orderBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+    orderBtn.disabled = true;
+    
+    if (sidebarOrderBtn) {
+      sidebarOrderBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+      sidebarOrderBtn.disabled = true;
+    }
+    
+    // Let the form submission proceed
+    // The form will POST to the place_order view
+  });
+
+  // Go back to Payment
+  document.getElementById('back-to-payment-btn')?.addEventListener('click', () => {
+    // Hide current step (Confirmation)
+    document.getElementById('step-4').classList.add('hidden');
+    document.getElementById('step-4').classList.remove('active');
+
+    // Show previous step (Payment)
+    document.getElementById('step-3').classList.remove('hidden');
+    document.getElementById('step-3').classList.add('active');
+
+    // Update Stepper UI
+    const steps = document.querySelectorAll('.step-active, .step-future, .step-completed');
+    if (steps.length >= 4) {
+      // Mark Payment as active again
+      steps[2].classList.remove('step-completed');
+      steps[2].classList.add('step-active');
+      // Update styles
+      steps[2].querySelector('.border-gray-400')?.classList.replace('border-gray-400', 'border-[#395144]');
+      steps[2].querySelector('.bg-gray-400')?.classList.replace('bg-gray-400', 'bg-[#395144]');
+      steps[2].querySelector('.text-gray-400')?.classList.replace('text-gray-400', 'text-white'); // Icon color
+      steps[2].querySelector('.text-gray-500')?.classList.replace('text-gray-500', 'text-[#395144]'); // Text color
+
+      // Mark Confirmation as future again
+      steps[3].classList.remove('step-active', 'step-completed');
+      steps[3].classList.add('step-future');
+      // Update styles
+      steps[3].querySelector('.border-[#395144]')?.classList.replace('border-[#395144]', 'border-gray-400');
+      steps[3].querySelector('.bg-[#395144]')?.classList.replace('bg-[#395144]', 'bg-white');
+      steps[3].querySelector('.text-white')?.classList.replace('text-white', 'text-gray-400'); // Icon color
+      steps[3].querySelector('.text-[#395144]')?.classList.replace('text-[#395144]', 'text-gray-500'); // Text color
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+<style>
+  /* Additional styles for the confirmation page */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+</style>

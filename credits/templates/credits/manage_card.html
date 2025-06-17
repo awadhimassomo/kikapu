@@ -1,0 +1,552 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Your Kikapu Card | Kikapu Arusha{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card-container {
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .kikapu-card {
+        position: relative;
+        height: 220px;
+        border-radius: 12px;
+        padding: 25px;
+        color: white;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        overflow: hidden;
+    }
+    
+    .prepaid-card {
+        background: linear-gradient(45deg, #395144, #4E6C50);
+    }
+    
+    .postpaid-card {
+        background: linear-gradient(45deg, #AA8B56, #957b4b);
+    }
+    
+    .card-logo {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        opacity: 0.8;
+        width: 60px;
+    }
+    
+    .kikapu-badge {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .card-number {
+        letter-spacing: 2px;
+        font-size: 18px;
+        margin-top: 50px;
+    }
+    
+    .card-type {
+        position: absolute;
+        top: 20px;
+        left: 25px;
+        text-transform: uppercase;
+        font-size: 14px;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+    
+    .card-owner {
+        position: absolute;
+        bottom: 25px;
+        left: 25px;
+        font-size: 16px;
+        letter-spacing: 1px;
+    }
+    
+    .btn-kikapu {
+        background-color: #395144;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .btn-kikapu:hover {
+        background-color: #4E6C50;
+        color: white;
+    }
+    
+    .btn-outline-kikapu {
+        border: 2px solid #395144;
+        color: #395144;
+        transition: all 0.3s;
+    }
+    
+    .btn-outline-kikapu:hover {
+        background-color: #395144;
+        color: white;
+    }
+    
+    .score-meter {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e9ecef;
+        position: relative;
+        margin: 5px 0 15px;
+        overflow: hidden;
+    }
+    
+    .score-value {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #dc3545, #ffc107, #4E6C50);
+    }
+    
+    .transaction-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .transaction-item:last-child {
+        border-bottom: none;
+    }
+    
+    .transaction-date {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .transaction-amount.positive {
+        color: #4E6C50;
+    }
+    
+    .transaction-amount.negative {
+        color: #dc3545;
+    }
+    
+    .holiday-banner {
+        background: linear-gradient(135deg, #F0EBCE, #AA8B56);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .holiday-icon {
+        font-size: 36px;
+        color: #395144;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #395144;
+    }
+    
+    .nav-pills .nav-link {
+        color: #395144;
+    }
+    
+    .location-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #212529;
+        background-color: rgba(240, 235, 206, 0.5);
+        border-radius: 50rem;
+    }
+    
+    .tanzanian-flag {
+        width: 28px;
+        height: auto;
+        margin-right: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'credits:kikapu_card_home' %}">Kikapu Card</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Manage Card</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h1 class="h3 mb-0">Manage Your Kikapu Card</h1>
+                <div class="location-badge">
+                    <img src="{% static 'images/tanzania-flag.png' %}" alt="Tanzania" class="tanzanian-flag" onerror="this.src='https://flagcdn.com/w40/tz.png'">
+                    Arusha, Tanzania
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if card.is_eligible_for_holiday_discount %}
+    <div class="row">
+        <div class="col-12">
+            <div class="holiday-banner">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <i class="fas fa-gift holiday-icon"></i>
+                    </div>
+                    <div class="col">
+                        <h5 class="mb-1">Holiday Season Discount Available!</h5>
+                        <p class="mb-0">You're eligible for a 20% discount on all purchases during our holiday campaign.</p>
+                    </div>
+                    <div class="col-auto">
+                        <a href="#" class="btn btn-sm btn-kikapu">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Main Card Info & Actions -->
+        <div class="col-md-5 mb-4">
+            <div class="card-container">
+                <div class="card-body p-4">
+                    <!-- Card Display -->
+                    <div class="kikapu-card {% if card.card_type == 'PREPAID' %}prepaid-card{% else %}postpaid-card{% endif %} mb-4">
+                        <div class="card-type">{{ card.get_card_type_display }}</div>
+                        <div class="card-number">{{ card.masked_card_number }}</div>
+                        <div class="card-owner">{{ card.user.get_full_name }}</div>
+                        <div class="kikapu-badge">{{ card.get_card_type_display|upper }}</div>
+                    </div>
+                    
+                    <!-- Card Balance/Credit Info -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if card.card_type == 'PREPAID' %}
+                            <h5 class="mb-0">Available Balance</h5>
+                            <h5 class="mb-0">TSh {{ card.current_balance|floatformat:0 }}</h5>
+                            {% else %}
+                            <h5 class="mb-0">Available Credit</h5>
+                            <h5 class="mb-0">TSh {{ card.available_credit|floatformat:0 }}</h5>
+                            {% endif %}
+                        </div>
+                        
+                        {% if card.card_type == 'POSTPAID' %}
+                        <div class="mt-2">
+                            <small class="text-muted">Credit Limit: TSh {{ card.credit_limit|floatformat:0 }}</small>
+                            <div class="score-meter">
+                                <div class="score-value" style="width: {{ card.credit_usage_percentage }}%;"></div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Card Actions -->
+                    <div class="d-grid gap-2">
+                        {% if card.card_type == 'PREPAID' %}
+                        <button type="button" class="btn btn-kikapu" data-bs-toggle="modal" data-bs-target="#topupModal">
+                            <i class="fas fa-plus-circle me-2"></i> Top Up Card
+                        </button>
+                        {% else %}
+                        <button type="button" class="btn btn-kikapu" data-bs-toggle="modal" data-bs-target="#paymentModal">
+                            <i class="fas fa-credit-card me-2"></i> Make Payment
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn btn-outline-kikapu">
+                            <i class="fas fa-cog me-2"></i> Card Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Credit Score -->
+            <div class="card-container">
+                <div class="card-header bg-white border-bottom p-3">
+                    <h5 class="mb-0">Your Credit Score</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="h3">{{ credit_score.score }}</span>
+                        <span class="badge rounded-pill 
+                            {% if credit_score.get_score_category == 'Excellent' %}bg-success
+                            {% elif credit_score.get_score_category == 'Good' %}bg-primary
+                            {% elif credit_score.get_score_category == 'Fair' %}bg-warning text-dark
+                            {% elif credit_score.get_score_category == 'Poor' %}bg-warning
+                            {% else %}bg-danger{% endif %}">
+                            {{ credit_score.get_score_category }}
+                        </span>
+                    </div>
+                    
+                    <div class="score-meter">
+                        <div class="score-value" style="width: {{ credit_score.score_percentage }}%;"></div>
+                    </div>
+                    
+                    <p class="small text-muted mb-0">Your score is updated automatically based on your payment history and card usage.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Transaction History & Analytics -->
+        <div class="col-md-7 mb-4">
+            <div class="card-container">
+                <div class="card-header bg-white border-bottom p-3">
+                    <ul class="nav nav-pills card-header-pills" id="transactionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="transactions-tab" data-bs-toggle="tab" data-bs-target="#transactions" type="button" role="tab" aria-controls="transactions" aria-selected="true">Transactions</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="analytics-tab" data-bs-toggle="tab" data-bs-target="#analytics" type="button" role="tab" aria-controls="analytics" aria-selected="false">Analytics</button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <div class="tab-content" id="transactionTabsContent">
+                        <!-- Transactions Tab -->
+                        <div class="tab-pane fade show active" id="transactions" role="tabpanel" aria-labelledby="transactions-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h6 class="mb-0">Recent Transactions</h6>
+                                <a href="#" class="text-decoration-none small">View All</a>
+                            </div>
+                            
+                            {% if transactions %}
+                                {% for transaction in transactions %}
+                                <div class="transaction-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div>{{ transaction.get_type_display }}</div>
+                                            <div class="transaction-date">{{ transaction.timestamp|date:"d M Y, h:i A" }}</div>
+                                        </div>
+                                        <div class="transaction-amount {% if transaction.type == 'TOPUP' %}positive{% else %}negative{% endif %}">
+                                            {% if transaction.type == 'TOPUP' %}+{% else %}-{% endif %}TSh {{ transaction.amount|floatformat:0 }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                                    <p>No transactions yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Analytics Tab -->
+                        <div class="tab-pane fade" id="analytics" role="tabpanel" aria-labelledby="analytics-tab">
+                            <div class="mb-4">
+                                <h6 class="mb-3">Spending by Category</h6>
+                                <canvas id="categoryChart" height="200"></canvas>
+                            </div>
+                            
+                            <div>
+                                <h6 class="mb-3">Monthly Spending</h6>
+                                <canvas id="monthlyChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if upcoming_payment %}
+            <div class="card-container">
+                <div class="card-header bg-white border-bottom p-3">
+                    <h5 class="mb-0">Upcoming Payment</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <p class="mb-0">Your next payment is due on:</p>
+                            <h6>{{ upcoming_payment.due_date|date:"d M Y" }}</h6>
+                        </div>
+                        <div class="col-auto">
+                            <h5 class="mb-0">TSh {{ upcoming_payment.amount|floatformat:0 }}</h5>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-kikapu">Pay Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Top Up Modal (for Prepaid Card) -->
+<div class="modal fade" id="topupModal" tabindex="-1" aria-labelledby="topupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="topupModalLabel">Top Up Your Prepaid Card</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="topupForm" method="post" action="{% url 'credits:top_up_card' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="topupAmount" class="form-label">Amount (TSh)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">TSh</span>
+                            <input type="number" class="form-control" id="topupAmount" name="amount" min="1000" required>
+                        </div>
+                        <div class="form-text">Minimum top-up amount: TSh 1,000</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="mpesa" value="mpesa" checked>
+                            <label class="form-check-label" for="mpesa">M-Pesa</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="tigoPesa" value="tigo">
+                            <label class="form-check-label" for="tigoPesa">Tigo Pesa</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="airtelMoney" value="airtel">
+                            <label class="form-check-label" for="airtelMoney">Airtel Money</label>
+                        </div>
+                    </div>
+                    
+                    <div id="phoneNumberField" class="mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">+255</span>
+                            <input type="text" class="form-control" id="phoneNumber" name="phone" placeholder="7XXXXXXXX" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="topupForm" class="btn btn-kikapu">Proceed to Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Make Payment Modal (for Postpaid Card) -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Make a Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm" method="post" action="{% url 'credits:make_payment' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Outstanding Balance</label>
+                        <h5>TSh {{ card.outstanding_balance|floatformat:0 }}</h5>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="paymentAmount" class="form-label">Payment Amount (TSh)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">TSh</span>
+                            <input type="number" class="form-control" id="paymentAmount" name="amount" value="{{ card.outstanding_balance|floatformat:0 }}" min="0" max="{{ card.outstanding_balance }}" required>
+                        </div>
+                        <div class="form-text">Minimum payment: TSh {{ card.minimum_payment|floatformat:0 }}</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="mpesaPayment" value="mpesa" checked>
+                            <label class="form-check-label" for="mpesaPayment">M-Pesa</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="tigoPesaPayment" value="tigo">
+                            <label class="form-check-label" for="tigoPesaPayment">Tigo Pesa</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="airtelMoneyPayment" value="airtel">
+                            <label class="form-check-label" for="airtelMoneyPayment">Airtel Money</label>
+                        </div>
+                    </div>
+                    
+                    <div id="paymentPhoneField" class="mb-3">
+                        <label for="paymentPhone" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">+255</span>
+                            <input type="text" class="form-control" id="paymentPhone" name="phone" placeholder="7XXXXXXXX" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="paymentForm" class="btn btn-kikapu">Make Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Category Chart
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Groceries', 'Produce', 'Meat & Poultry', 'Household'],
+            datasets: [{
+                data: [45, 25, 20, 10],
+                backgroundColor: ['#395144', '#4E6C50', '#AA8B56', '#F0EBCE']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Monthly Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+                label: 'Spending (TSh)',
+                data: [65000, 72000, 68000, 75000, 82000, 70000],
+                backgroundColor: '#4E6C50'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

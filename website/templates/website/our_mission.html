@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIKAPU - Our Mission</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4CAF50',
+                        secondary: '#FF9800',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .mission-card {
+            transition: all 0.4s ease;
+            overflow: hidden;
+        }
+        
+        .mission-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .mission-card:hover .card-icon {
+            transform: scale(1.1);
+        }
+        
+        .card-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .gradient-border {
+            position: relative;
+            border-radius: 0.75rem;
+            background: linear-gradient(white, white) padding-box,
+                      linear-gradient(to right, #4CAF50, #FF9800) border-box;
+            border: 3px solid transparent;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 leading-relaxed">
+    <!-- Header -->
+    <header class="bg-white shadow-md fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4">
+            <nav class="flex flex-col md:flex-row justify-between items-center py-4">
+                <div class="flex items-center text-2xl font-bold text-primary mb-4 md:mb-0">
+                    <i class="fas fa-leaf text-3xl mr-2"></i>
+                    KIKAPU
+                </div>
+                <ul class="flex flex-wrap justify-center space-x-6">
+                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Home</a></li>
+                    <li><a href="#" class="font-medium text-primary border-b-2 border-primary pb-1">Our Mission</a></li>
+                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Features</a></li>
+                    <li><a href="#" class="font-medium hover:text-primary transition-colors">Testimonials</a></li>
+                    <li><a href="#" class="bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-all transform hover:-translate-y-0.5">Download App</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 bg-gradient-to-r from-green-50 to-white relative overflow-hidden">
+        <div class="absolute -right-20 top-10 w-80 h-80 bg-yellow-100 rounded-full opacity-40 blur-3xl"></div>
+        <div class="absolute -left-20 bottom-10 w-80 h-80 bg-green-100 rounded-full opacity-40 blur-3xl"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 relative">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Purpose</div>
+                <h1 class="text-4xl md:text-5xl font-bold mb-6">Nourishing Communities, Healing the Planet</h1>
+                <p class="text-lg text-gray-600 mb-8">At KIKAPU, we're on a mission to revolutionize how we eat, shop, and connect with our food ecosystem. We believe in the power of local, sustainable food systems to transform individual health and our planet's wellbeing.</p>
+                <div class="flex justify-center gap-4">
+                    <a href="#mission-pillars" class="bg-primary text-white px-6 py-3 rounded-full font-semibold hover:bg-green-600 transition-all transform hover:-translate-y-0.5">Explore Our Mission</a>
+                    <a href="#join-movement" class="bg-white text-primary border-2 border-primary px-6 py-3 rounded-full font-semibold hover:bg-green-50 transition-all transform hover:-translate-y-0.5">Join The Movement</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Statement -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center gap-10">
+                <div class="w-full md:w-1/2">
+                    <img src="/api/placeholder/600/400" alt="Farmers Market" class="rounded-2xl shadow-xl w-full">
+                </div>
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-3xl font-bold mb-6">Our Vision for a Healthier World</h2>
+                    <p class="text-lg mb-6">KIKAPU was born from a simple truth: the way we eat directly impacts our health and the health of our planet. In many communities, access to nutritious food and nutrition knowledge is limited, while unsustainable food systems contribute to environmental degradation.</p>
+                    <p class="text-lg mb-6">We envision a world where everyone has access to fresh, locally-grown food, personalized nutrition guidance, and a deep connection to the people and processes that bring food to their tables.</p>
+                    <div class="flex items-center gap-4">
+                        <div class="text-primary">
+                            <i class="fas fa-seedling text-3xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-xl">Our Promise</h4>
+                            <p class="text-gray-600">To create technology that heals rather than harms, connects rather than isolates, and empowers communities to take control of their health and environmental impact.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Pillars -->
+    <section id="mission-pillars" class="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Our Mission Pillars</div>
+                <h2 class="text-3xl font-bold mb-6">Four Commitments Driving Our Mission</h2>
+                <p class="text-lg text-gray-600">These four pillars guide every feature we build, every partnership we form, and every community we serve.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Mission Pillar 1 -->
+                <div class="mission-card bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl">
+                    <div class="flex items-start gap-6">
+                        <div class="card-icon w-16 h-16 bg-gradient-to-r from-green-400 to-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+                            <i class="fas fa-apple-alt text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">Inspire Healthy Eating</h3>
+                            <p class="text-gray-600 mb-4">We're making nutritious food more accessible and appealing through direct connections with local vendors and personalized guidance from nutrition experts.</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Connecting consumers with fresh, local produce and healthy food options</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Providing access to certified nutritionists for personalized dietary advice</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Creating educational resources that demystify nutrition science</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mission Pillar 2 -->
+                <div class="mission-card bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl">
+                    <div class="flex items-start gap-6">
+                        <div class="card-icon w-16 h-16 bg-gradient-to-r from-pink-400 to-red-500 rounded-xl flex items-center justify-center text-white shadow-lg">
+                            <i class="fas fa-heartbeat text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">Reduce Lifestyle Diseases</h3>
+                            <p class="text-gray-600 mb-4">We're addressing the root causes of preventable health conditions through better food choices and specialized nutrition guidance.</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Offering specialized resources for managing conditions like diabetes, hypertension, and obesity</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Creating meal plans that support health and wellbeing</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Building communities of support around healthy eating habits</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mission Pillar 3 -->
+                <div class="mission-card bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl">
+                    <div class="flex items-start gap-6">
+                        <div class="card-icon w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                            <i class="fas fa-leaf text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">Combat Carbon Emissions</h3>
+                            <p class="text-gray-600 mb-4">We're reducing the environmental impact of food systems by shortening supply chains and promoting sustainable farming practices.</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Shortening food miles by connecting consumers directly with local producers</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Highlighting vendors who use sustainable, regenerative farming practices</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Optimizing delivery routes to minimize transportation emissions</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mission Pillar 4 -->
+                <div class="mission-card bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl">
+                    <div class="flex items-start gap-6">
+                        <div class="card-icon w-16 h-16 bg-gradient-to-r from-yellow-400 to-secondary rounded-xl flex items-center justify-center text-white shadow-lg">
+                            <i class="fas fa-seedling text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">Inspire Urban Farming</h3>
+                            <p class="text-gray-600 mb-4">We're promoting self-sufficiency and a closer connection to food through urban agriculture initiatives and education.</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Supporting urban farmers and gardeners by connecting them with consumers</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Providing resources on starting balcony gardens, windowsill herbs, and home farms</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fas fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>Facilitating community garden initiatives and skill-sharing networks</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Stats -->
+    <section class="py-20 bg-primary text-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold mb-4">Our Impact So Far</h2>
+                <p class="text-xl max-w-2xl mx-auto">Every vendor connection, nutritionist consultation, and delivery represents progress toward our mission.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Stat 1 -->
+                <div class="text-center p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
+                    <div class="text-4xl font-bold mb-2">5,000+</div>
+                    <div class="text-lg">Local vendors supported</div>
+                </div>
+                
+                <!-- Stat 2 -->
+                <div class="text-center p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
+                    <div class="text-4xl font-bold mb-2">42%</div>
+                    <div class="text-lg">Reduction in food miles</div>
+                </div>
+                
+                <!-- Stat 3 -->
+                <div class="text-center p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
+                    <div class="text-4xl font-bold mb-2">15,000+</div>
+                    <div class="text-lg">Nutrition consultations</div>
+                </div>
+                
+                <!-- Stat 4 -->
+                <div class="text-center p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl">
+                    <div class="text-4xl font-bold mb-2">500+</div>
+                    <div class="text-lg">Urban garden starts</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Success Stories</div>
+                <h2 class="text-3xl font-bold mb-4">Transformations Through Better Food Systems</h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">Real stories from our community members whose lives have been transformed through their engagement with KIKAPU.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 - Health Transformation -->
+                <div class="gradient-border p-6">
+                    <div class="text-primary text-4xl mb-4">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-6">After being diagnosed with pre-diabetes, I was overwhelmed with all the conflicting nutrition advice. Through KIKAPU, I connected with a nutritionist who specialized in diabetes management and local vendors who supplied fresh, low-glycemic foods. Within 6 months, my blood sugar levels returned to normal range.</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full mr-4"></div>
+                        <div>
+                            <h4 class="font-bold">David Kimani</h4>
+                            <p class="text-gray-500 text-sm">Health Transformation Story</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 - Vendor Story -->
+                <div class="gradient-border p-6">
+                    <div class="text-primary text-4xl mb-4">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-6">As a small urban farmer, I struggled to connect with customers who valued my chemical-free growing methods. Since joining KIKAPU, I've tripled my customer base and can now farm full-time. The direct connection with nutritionists has also helped me grow varieties that specifically support my customers' health needs.</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full mr-4"></div>
+                        <div>
+                            <h4 class="font-bold">Grace Muthoni</h4>
+                            <p class="text-gray-500 text-sm">Urban Farmer</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 - Environmental Impact -->
+                <div class="gradient-border p-6">
+                    <div class="text-primary text-4xl mb-4">
+                        <i class="fas fa-quote-left"></i>
+                    </div>
+                    <p class="text-gray-600 italic mb-6">Our community garden initiative was struggling to find participants and resources. KIKAPU connected us with experienced urban farmers, nutritionists who offered workshops, and community members eager to learn. We now have 3 thriving community gardens producing food for over 200 families.</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-300 rounded-full mr-4"></div>
+                        <div>
+                            <h4 class="font-bold">James Omondi</h4>
+                            <p class="text-gray-500 text-sm">Community Garden Coordinator</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Join The Movement -->
+    <section id="join-movement" class="py-20 bg-gray-50 relative overflow-hidden">
+        <div class="absolute -right-40 top-0 w-96 h-96 bg-green-100 rounded-full opacity-50 blur-3xl animate-float"></div>
+        <div class="absolute -left-20 bottom-0 w-80 h-80 bg-yellow-100 rounded-full opacity-50 blur-3xl animate-float" style="animation-delay: 2s"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 relative">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block px-4 py-1 bg-green-100 text-primary rounded-full text-sm font-semibold mb-4">Get Involved</div>
+                <h2 class="text-3xl font-bold mb-4">Join Our Movement For Food Revolution</h2>
+                <p class="text-lg text-gray-600">Be part of the solution by joining our growing community of health-conscious consumers, local vendors, nutrition experts, and environmental advocates.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Join as Consumer -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Join as a Consumer</h3>
+                    <p class="text-gray-600 mb-6">Download the app to access fresh local food, nutrition guidance, and a community of like-minded individuals.</p>
+                    <a href="#" class="inline-block bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-green-600 transition-all">Download KIKAPU</a>
+                </div>
+                
+                <!-- Join as Vendor -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 text-center">
+                    <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-store text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Join as a Vendor</h3>
+                    <p class="text-gray-600 mb-6">Register your farm or food business to connect directly with conscious consumers looking for quality products.</p>
+                    <a href="#" class="inline-block bg-secondary text-white px-6 py-2 rounded-full font-semibold hover:bg-orange-600 transition-all">Become a Vendor</a>
+                </div>
+                
+                <!-- Join as Nutritionist -->
+                <div class="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-2 text-center">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user-md text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Join as a Nutritionist</h3>
+                    <p class="text-gray-600 mb-6">Offer your expertise to help community members improve their health through better food choices and nutrition.</p>
+                    <a href="#" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition-all">Apply Now</a>
+                </div>
+            </div>
+            
+            <div class="mt-16 text-center">
+                <p class="text-gray-600 mb-6">Have questions about our mission or how you can get involved?</p>
+                <a href="#" class="inline-block border-2 border-primary text-primary px-8 py-3 rounded-full font-semibold hover:bg-green-50 transition-all">Contact Our Team</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-10">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center text-2xl font-bold mb-4">
+                        <i class="fas fa-leaf text-3xl mr-2"></i>
+                        KIKAPU
+                    </div>
+                    <p class="text-gray-400 mb-6">Connecting local vendors, nutritionists, and consumers for a healthier community and planet.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Features Links -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Features</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Local Marketplace</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Health Specialist Booking</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Delivery Options</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Health Resources</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Company Links -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-white font-semibold hover:text-white transition-colors">Our Mission</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Press</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support Links -->
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Support</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">FAQs</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gray-700 text-center text-gray-400">
+                <p>&copy; 2025 KIKAPU. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

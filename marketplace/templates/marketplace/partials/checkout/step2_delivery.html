@@ -1,0 +1,2124 @@
+{% load static %}
+<!-- Step 2: Delivery - Enhanced Design with Kikapu Branding -->
+
+<!-- Updated layout to match Step 1 with flex instead of grid for consistent side-by-side layout -->
+<div class="flex flex-col md:flex-row items-start gap-6 w-full mx-auto" id="step-2">
+  <!-- Hidden refresh trigger to ensure the summary is updated when step 2 is shown -->
+  <input type="hidden" id="refresh-cart-trigger" value="{{ request.session.cart_timestamp|default:0 }}">
+  <!-- Delivery Information - Takes full width on xs screens, main content on md screens -->
+  <div class="bg-white rounded-3xl shadow-xl p-4 md:p-6 lg:p-8 flex-1 animate-fade-in-up">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="bg-[#F0EBCE] bg-opacity-50 p-2 rounded-full">
+          <i class="fas fa-truck text-[#395144] text-xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-[#395144]">Delivery Information</h2>
+      </div>
+      
+      <span class="text-sm bg-[#F0EBCE] bg-opacity-50 py-1.5 px-4 rounded-full flex items-center gap-2 text-[#395144]">
+        <i class="fas fa-map-marker-alt text-[#AA8B56]"></i>
+        <span>Choose Delivery</span>
+      </span>
+    </div>
+
+    <!-- Delivery Method Card -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-6">
+      <div class="p-5 border-b border-gray-100">
+        <h3 class="font-semibold text-lg text-[#395144]">Delivery Method</h3>
+      </div>
+      
+      <div class="p-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <script>
+          // Consolidated method to update both the delivery fee display and order summary
+          function updateDeliveryOption(fee, methodName) {
+            console.log(`Updating delivery fee to TSh ${fee} for ${methodName}`);
+            
+            // Update local fee display
+            const feeDisplay = document.getElementById('cart-delivery-fee');
+            if (feeDisplay) {
+              feeDisplay.textContent = `TSh ${fee.toLocaleString()}`;
+              console.log('Updated fee display');
+            }
+            
+            // Update delivery method display
+            const methodDisplay = document.getElementById('delivery-method-display');
+            if (methodDisplay) {
+              methodDisplay.textContent = methodName;
+              console.log('Updated method display');
+            }
+            
+            // Get subtotal
+            const subtotalDisplay = document.getElementById('cart-subtotal');
+            let subtotal = 0;
+            if (subtotalDisplay) {
+              subtotal = parseInt(subtotalDisplay.textContent.replace('TSh ', '').replace(/,/g, '')) || 0;
+              console.log(`Current subtotal: TSh ${subtotal}`);
+            }
+            
+            // Calculate VAT and update all instances
+            const vatAmount = Math.round((subtotal + fee) * 0.18);
+            console.log(`Calculating VAT: (${subtotal} + ${fee}) * 0.18 = ${vatAmount}`);
+            
+            // Update all VAT displays
+            document.querySelectorAll('#cart-vat').forEach(el => {
+              el.textContent = `TSh ${vatAmount.toLocaleString()}`;
+              console.log(`Updated VAT display: ${el.textContent}`);
+            });
+            
+            // Calculate total and update all instances
+            const totalAmount = subtotal + fee + vatAmount;
+            document.querySelectorAll('#cart-final-total').forEach(el => {
+              el.textContent = `TSh ${totalAmount.toLocaleString()}`;
+              console.log(`Updated total display: ${el.textContent}`);
+            });
+            
+            // Select the corresponding radio button
+            const radio = document.querySelector(`input[value="${methodName.split(' ')[0].toUpperCase()}"]`);
+            if (radio) {
+              radio.checked = true;
+            }
+            
+            // Debug: Print cart items from HTML before updating order summary
+            console.log('====== CART DEBUG: DELIVERY OPTION SELECTED ======');
+            console.log('Delivery option selected:', { fee, methodName });
+            
+            const cartItemsHtml = document.querySelectorAll('[id^="summary-qty-"]');
+            console.log('Cart items in HTML before update:', Array.from(cartItemsHtml).map(el => {
+              const itemId = el.id.replace('summary-qty-', '');
+              const qty = el.textContent;
+              const unitPrice = document.getElementById(`summary-unit-price-${itemId}`)?.dataset?.price || 'not found';
+              const subtotal = document.getElementById(`summary-item-total-${itemId}`)?.textContent || 'not found';
+              return { itemId, qty, unitPrice, subtotal };
+            }));
+            
+            // Debug: Print cart totals from HTML
+            const subtotalBefore = document.getElementById('cart-subtotal')?.textContent || 'not found';
+            const deliveryFeeBefore = document.getElementById('cart-delivery-fee')?.textContent || 'not found';
+            const vatBefore = document.getElementById('cart-vat')?.textContent || 'not found';
+            const totalBefore = document.getElementById('cart-final-total')?.textContent || 'not found';
+            console.log('Cart totals before update:', { subtotal: subtotalBefore, deliveryFee: deliveryFeeBefore, vat: vatBefore, total: totalBefore });
+            
+            // Update the order summary - first directly update the DOM elements
+            // This ensures the update happens regardless of other functions
+            
+            // Direct method to update ALL instances of elements (more reliable)
+            // Force update the delivery fee display
+            const allDeliveryFeeDisplays = document.querySelectorAll('#cart-delivery-fee');
+            allDeliveryFeeDisplays.forEach(el => {
+              el.textContent = `TSh ${fee.toLocaleString()}`;
+              console.log(`Directly updated delivery fee to ${el.textContent}`);
+            });
+            
+            // Also update any delivery method displays
+            const allMethodDisplays = document.querySelectorAll('#delivery-method-display');
+            allMethodDisplays.forEach(el => {
+              el.textContent = methodName;
+              console.log(`Directly updated delivery method to ${methodName}`);
+            });
+            
+            // Also try the global update function as a fallback
+            if (window.updateKikapuOrderSummary) {
+              window.updateKikapuOrderSummary(fee, methodName);
+              console.log('Called updateKikapuOrderSummary function');
+            } else {
+              console.error('Order summary update function not found');
+            }
+            
+            // Store in localStorage
+            localStorage.setItem('kikapuDeliveryFee', fee);
+            localStorage.setItem('kikapuDeliveryMethod', methodName);
+            localStorage.setItem('kikapuVatAmount', vatAmount);
+            localStorage.setItem('kikapuOrderTotal', totalAmount);
+            console.log('Saved to localStorage:', { fee, methodName, vat: vatAmount, total: totalAmount });
+            
+            // Debug: Print cart totals after update
+            setTimeout(() => {
+              const subtotalAfter = document.getElementById('cart-subtotal')?.textContent || 'not found';
+              const deliveryFeeAfter = document.getElementById('cart-delivery-fee')?.textContent || 'not found';
+              const vatAfter = document.getElementById('cart-vat')?.textContent || 'not found';
+              const totalAfter = document.getElementById('cart-final-total')?.textContent || 'not found';
+              console.log('Cart totals AFTER update:', { subtotal: subtotalAfter, deliveryFee: deliveryFeeAfter, vat: vatAfter, total: totalAfter });
+            }, 100);
+          }
+          </script>
+          <!-- Standard Delivery Option -->
+          <label for="delivery-standard" class="flex items-center p-4 cursor-pointer hover:bg-[#F0EBCE] hover:bg-opacity-20 rounded-lg transition-colors" onclick="updateDeliveryOption(2000, 'Standard Delivery'); reloadOrderSummary();">
+            <div class="p-4 border border-gray-200 rounded-xl cursor-pointer group-hover:bg-[#F0EBCE] group-hover:bg-opacity-10 transition-colors">
+              <div class="flex items-start">
+                <div class="delivery-radio-container mt-1">
+                  <input type="radio" name="delivery_method" id="delivery-standard" value="STANDARD" class="sr-only delivery-method-radio" checked required>
+                  <div class="delivery-radio-dot"></div>
+                </div>
+                <div class="ml-3">
+                  <div class="flex items-center">
+                    <span class="font-medium text-base text-[#395144]">Standard Delivery</span>
+                    <span class="ml-2 px-2 py-1 bg-[#F0EBCE] bg-opacity-60 text-[#395144] text-xs font-medium rounded-full">2-3 days</span>
+                  </div>
+                  <p class="text-sm text-gray-500 my-1">Delivery within 1 hour</p>
+                  <div class="font-medium text-[#AA8B56]">TSh 2,000</div>
+                </div>
+              </div>
+            </div>
+          </label>
+          
+          <!-- Express Delivery Option -->
+          <label class="delivery-option group" for="delivery-express" onclick="updateDeliveryOption(10000, 'Express Delivery'); reloadOrderSummary();">
+            <div class="p-4 border border-gray-200 rounded-xl cursor-pointer group-hover:bg-[#F0EBCE] group-hover:bg-opacity-10 transition-colors">
+              <div class="flex items-start">
+                <div class="delivery-radio-container mt-1">
+                  <input type="radio" name="delivery_method" id="delivery-express" value="EXPRESS" class="sr-only delivery-method-radio" required>
+                  <div class="delivery-radio-dot"></div>
+                </div>
+                <div class="ml-3">
+                  <div class="flex items-center">
+                    <span class="font-medium text-base text-[#395144]">Express Delivery</span>
+                    <span class="ml-2 px-2 py-1 bg-[#F0EBCE] bg-opacity-60 text-[#395144] text-xs font-medium rounded-full">Same day</span>
+                  </div>
+                  <p class="text-sm text-gray-500 my-1">Delivery within 2-4 hours</p>
+                  <div class="font-medium text-[#AA8B56]">TSh 10,000</div>
+                </div>
+              </div>
+            </div>
+          </label>
+          
+          <!-- Scheduled Delivery Option -->
+          <label class="delivery-option group col-span-1 md:col-span-2" for="delivery-scheduled" onclick="updateDeliveryOption(2000, 'Scheduled Delivery'); reloadOrderSummary();">
+            <div class="p-4 border border-gray-200 rounded-xl cursor-pointer group-hover:bg-[#F0EBCE] group-hover:bg-opacity-10 transition-colors">
+              <div class="flex items-start">
+                <div class="delivery-radio-container mt-1">
+                  <input type="radio" name="delivery_method" id="delivery-scheduled" value="SCHEDULED" class="sr-only delivery-method-radio" required>
+                  <div class="delivery-radio-dot"></div>
+                </div>
+                <div class="ml-3 w-full">
+                  <div class="flex items-center">
+                    <span class="font-medium text-base text-[#395144]">Scheduled Delivery</span>
+                    <span class="ml-2 px-2 py-1 bg-[#F0EBCE] bg-opacity-60 text-[#395144] text-xs font-medium rounded-full">Pick a date</span>
+                  </div>
+                  <p class="text-sm text-gray-500 my-1">Choose your preferred delivery date and time</p>
+                  <div class="font-medium text-[#AA8B56] mb-3">TSh 2,000</div>
+                </div>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scheduled Delivery Options (Hidden by default) -->
+    <div id="scheduled-delivery-options" class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-6 hidden">
+      <div class="p-5 border-b border-gray-100">
+        <h3 class="font-semibold text-lg text-[#395144]">Scheduled Delivery Options</h3>
+      </div>
+      <div class="p-5">
+        <!-- Schedule Type Selection -->
+        <div class="mb-6">
+          <h4 class="text-sm font-medium text-[#395144] mb-3">Select Delivery Type</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- One-time Delivery -->
+            <label class="schedule-option" for="schedule-onetime">
+              <div class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/10 transition-colors">
+                <div class="flex items-center">
+                  <div class="schedule-radio-container mr-2">
+                    <input type="radio" name="schedule_type" id="schedule-onetime" value="ONETIME" class="sr-only schedule-type-radio" checked>
+                    <div class="schedule-radio-dot"></div>
+                  </div>
+                  <div>
+                    <span class="font-medium text-[#395144]">One-time Delivery</span>
+                    <p class="text-xs text-gray-500 mt-1">Deliver on a specific date</p>
+                  </div>
+                </div>
+              </div>
+            </label>
+            
+            <!-- Weekly Scheduled Delivery -->
+            <label class="schedule-option" for="schedule-weekly">
+              <div class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/10 transition-colors">
+                <div class="flex items-center">
+                  <div class="schedule-radio-container mr-2">
+                    <input type="radio" name="schedule_type" id="schedule-weekly" value="SCHEDULED" class="sr-only schedule-type-radio">
+                    <div class="schedule-radio-dot"></div>
+                  </div>
+                  <div>
+                    <span class="font-medium text-[#395144]">Weekly Schedule</span>
+                    <p class="text-xs text-gray-500 mt-1">Repeat weekly on set days</p>
+                  </div>
+                </div>
+              </div>
+            </label>
+            
+            <!-- Subscription -->
+            <label class="schedule-option" for="schedule-subscription">
+              <div class="p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/10 transition-colors">
+                <div class="flex items-center">
+                  <div class="schedule-radio-container mr-2">
+                    <input type="radio" name="schedule_type" id="schedule-subscription" value="SUBSCRIPTION" class="sr-only schedule-type-radio">
+                    <div class="schedule-radio-dot"></div>
+                  </div>
+                  <div>
+                    <span class="font-medium text-[#395144]">Subscription</span>
+                    <p class="text-xs text-gray-500 mt-1">Set up a recurring delivery</p>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <!-- ONETIME Options -->
+        <div id="onetime-options" class="pt-4 border-t border-gray-100">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="delivery-date">Select Delivery Date</label>
+              <input type="date" id="delivery-date" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" 
+                     min="{{ tomorrow_date|date:'Y-m-d' }}" required>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="delivery-time-slot">Select Delivery Time</label>
+              <select id="delivery-time-slot" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors appearance-none" required>
+                <option value="" disabled selected>Choose a delivery time</option>
+                <option value="MORNING">Morning (8AM - 11AM)</option>
+                <option value="AFTERNOON">Afternoon (12PM - 3PM)</option>
+                <option value="EVENING">Evening (4PM - 7PM)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- SCHEDULED Options -->
+        <div id="scheduled-options" class="pt-4 border-t border-gray-100 hidden">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="scheduled-date">Start Date</label>
+              <input type="date" id="scheduled-date" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" 
+                     min="{{ tomorrow_date|date:'Y-m-d' }}">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="scheduled-time-slot">Delivery Time</label>
+              <select id="scheduled-time-slot" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors appearance-none">
+                <option value="" disabled selected>Choose a delivery time</option>
+                <option value="MORNING">Morning (8AM - 11AM)</option>
+                <option value="AFTERNOON">Afternoon (12PM - 3PM)</option>
+                <option value="EVENING">Evening (4PM - 7PM)</option>
+              </select>
+            </div>
+            
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-[#395144] mb-2">Delivery Days</label>
+              <div class="grid grid-cols-7 gap-2">
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="mon" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Mon</span>
+                  </div>
+                </label>
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="tue" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Tue</span>
+                  </div>
+                </label>
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="wed" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Wed</span>
+                  </div>
+                </label>
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="thu" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Thu</span>
+                  </div>
+                </label>
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="fri" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Fri</span>
+                  </div>
+                </label>
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="sat" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Sat</span>
+                  </div>
+                </label>
+                <label class="day-checkbox-label">
+                  <input type="checkbox" name="delivery_days" value="sun" class="hidden">
+                  <div class="text-center py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/20 transition-colors">
+                    <span class="block text-xs uppercase text-gray-500">Sun</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="recurrence-type">How Long</label>
+              <select id="recurrence-type" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors appearance-none">
+                <option value="WEEKLY">Weekly (Repeats each week)</option>
+                <option value="MONTHLY">Monthly (Repeats each month)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <!-- SUBSCRIPTION Options -->
+        <div id="subscription-options" class="pt-4 border-t border-gray-100 hidden">
+          <div class="bg-[#F0EBCE]/20 p-4 rounded-lg mb-4">
+            <div class="flex items-start gap-3">
+              <i class="fas fa-info-circle text-[#AA8B56] mt-1"></i>
+              <div>
+                <h4 class="font-medium text-[#395144] mb-1">Subscription Benefits</h4>
+                <p class="text-sm text-gray-600" id="subscription-info-text">Subscribe to get fresh deliveries regularly and save on fees. Choose your preferred duration below.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="subscription-start-date">Start Date</label>
+              <input type="date" id="subscription-start-date" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" 
+                     min="{{ tomorrow_date|date:'Y-m-d' }}">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-[#395144] mb-2" for="subscription-time-slot">Daily Delivery Time</label>
+              <select id="subscription-time-slot" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors appearance-none">
+                <option value="" disabled selected>Choose a delivery time</option>
+                <option value="MORNING">Morning (8AM - 11AM)</option>
+                <option value="AFTERNOON">Afternoon (12PM - 3PM)</option>
+                <option value="EVENING">Evening (4PM - 7PM)</option>
+              </select>
+            </div>
+          </div>
+          
+          <h4 class="text-sm font-medium text-[#395144] mb-3">Subscription Duration</h4>
+          <div class="grid grid-cols-1 gap-4">
+            <!-- Two Weeks -->
+            <label class="subscription-option" for="subscription-two-weeks">
+              <div class="p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/10 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="subscription-radio-container mr-3">
+                      <input type="radio" name="subscription_period" id="subscription-two-weeks" value="TWO_WEEKS" class="sr-only subscription-type-radio" checked>
+                      <div class="subscription-radio-dot"></div>
+                    </div>
+                    <div>
+                      <span class="font-medium text-[#395144]">Two Week Subscription</span>
+                      <p class="text-xs text-gray-500 mt-1">Daily delivery for two weeks</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-medium text-[#AA8B56]">TSh 12,000</span>
+                    <p class="text-xs text-green-600 mt-1">Save TSh 16,000</p>
+                  </div>
+                </div>
+              </div>
+            </label>
+            
+            <!-- One Month -->
+            <label class="subscription-option" for="subscription-one-month">
+              <div class="p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE]/10 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="subscription-radio-container mr-3">
+                      <input type="radio" name="subscription_period" id="subscription-one-month" value="ONE_MONTH" class="sr-only subscription-type-radio">
+                      <div class="subscription-radio-dot"></div>
+                    </div>
+                    <div>
+                      <span class="font-medium text-[#395144]">One Month Subscription</span>
+                      <p class="text-xs text-gray-500 mt-1">Daily delivery for one month</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-medium text-[#AA8B56]">TSh 20,000</span>
+                    <p class="text-xs text-green-600 mt-1">Save TSh 40,000</p>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+        
+        <div class="mt-6 pt-4 border-t border-gray-100" id="scheduled-delivery-info">
+          <div class="flex items-center justify-between text-sm mb-1 text-gray-600">
+            <span>Delivery Type:</span>
+            <span id="schedule-type-display">One-time Delivery</span>
+          </div>
+          <div class="flex items-center justify-between text-sm mb-1 text-gray-600">
+            <span>Delivery Schedule:</span>
+            <span id="schedule-date-display">Select date and time</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery Address Section - Now a button to trigger modal -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-6 delivery-address-section">
+      <div class="p-5 border-b border-gray-100 flex justify-between items-center">
+        <h3 class="font-semibold text-lg text-[#395144]">Delivery Address</h3>
+        <button type="button" id="change-address-btn" class="text-sm bg-[#F0EBCE] text-[#395144] py-2 px-4 rounded-lg hover:bg-[#F0EBCE] hover:bg-opacity-80 transition-colors flex items-center gap-2">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>Change Address</span>
+        </button>
+      </div>
+      
+      <div class="p-5">
+        <!-- Display selected address summary -->
+        <div id="selected-address-display" class="flex items-start gap-3">
+          <div class="w-10 h-10 bg-[#F0EBCE] bg-opacity-50 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-home text-[#395144]"></i>
+          </div>
+          <div>
+            <p class="font-medium text-[#395144]" id="selected-address-line">Select an address</p>
+            <p class="text-sm text-gray-500" id="selected-address-phone"></p>
+            <p class="text-xs text-gray-400 mt-1" id="selected-address-notes"></p>
+          </div>
+        </div>
+        
+        <!-- Hidden input to store the selected address ID -->
+        <input type="hidden" id="selected-address-id" name="address_id" value="">
+      </div>
+    </div>
+    
+    <!-- Delivery info -->
+    <div class="bg-[#F0EBCE] bg-opacity-30 rounded-2xl border border-[#F0EBCE] border-opacity-30 shadow-sm p-4 flex items-start gap-4 mb-6">
+      <div class="w-10 h-10 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-info text-[#AA8B56]"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold text-[#395144] mb-1">Delivery Information</h3>
+        <div class="text-sm text-gray-600">
+          Our delivery partners will contact you before delivery. Please ensure someone is available to receive the order at the delivery address you provide.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navigation buttons -->
+    <div class="flex justify-between items-center mt-4">
+      <button id="back-to-cart-btn" class="inline-flex items-center gap-2 text-[#395144] py-2 px-4 hover:bg-[#F0EBCE] hover:bg-opacity-30 rounded-lg transition-colors">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Cart</span>
+      </button>
+      <button id="continue-to-payment-btn" class="inline-flex items-center gap-2 bg-[#395144] hover:bg-[#4E6C50] text-white font-medium py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all group">
+        <span>Continue to Payment</span>
+        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Order Summary - Same width as in Step 1 -->
+  <div class="flex-shrink-0 md:w-96 lg:w-[560px] sticky top-24 h-fit max-h-screen" id="order-summary-container">
+    {% include 'marketplace/partials/checkout/order_summary.html' %}
+  </div>
+  
+  <script>
+  // Function to reload the order summary via AJAX
+  function reloadOrderSummary() {
+    console.log('Reloading order summary via AJAX');
+    
+    fetch('/marketplace/refresh-order-summary/', {
+      method: 'GET',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.html) {
+        // Replace the order summary container with fresh HTML
+        document.getElementById('order-summary-container').innerHTML = data.html;
+        console.log('Order summary updated successfully via AJAX');
+      } else {
+        console.error('Error refreshing order summary:', data.error || 'Unknown error');
+      }
+    })
+    .catch(error => {
+      console.error('Failed to refresh order summary:', error);
+    });
+  }
+  
+  // Force-reload order summary when this delivery step is shown
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DELIVERY STEP: Forcing order summary refresh');
+    
+    // First load latest order summary via AJAX
+    reloadOrderSummary();
+    
+    // As fallback, also try to load from localStorage if available
+    if (typeof loadSavedCartData === 'function') {
+      console.log('DELIVERY STEP: Calling loadSavedCartData as fallback');
+      loadSavedCartData();
+    } else {
+      console.log('DELIVERY STEP: loadSavedCartData function not available directly');
+    }
+    
+    // Second attempt: Try to find the function in window scope
+    setTimeout(function() {
+      const savedCartData = localStorage.getItem('kikapu-cart-data');
+      if (savedCartData) {
+        console.log('DELIVERY STEP: Found saved cart data in localStorage, refreshing display');
+        
+        try {
+          const cartData = JSON.parse(savedCartData);
+          
+          // DEBUG: Output cart data to the page for comparison
+          let debugOutput = document.getElementById('delivery-debug-output');
+          if (!debugOutput) {
+            debugOutput = document.createElement('div');
+            debugOutput.id = 'delivery-debug-output';
+            debugOutput.style.cssText = 'position: fixed; bottom: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: yellow; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 50vw; max-height: 30vh; overflow: auto;';
+            document.body.appendChild(debugOutput);
+          }
+          
+          debugOutput.innerHTML = '<strong>DELIVERY STEP DEBUG DATA:</strong><br>' + 
+            'Timestamp: ' + new Date().toISOString() + '<br>' +
+            'Data Last Updated: ' + new Date(cartData.updatedAt).toISOString() + '<br>' +
+            'Subtotal from localStorage: TSh ' + Math.round(cartData.subtotal).toLocaleString() + '<br>' +
+            'Items in localStorage: ' + cartData.items.length + '<br><br>';
+          
+          // Show all items from localStorage
+          debugOutput.innerHTML += '<strong>Items from localStorage:</strong><br>';
+          cartData.items.forEach(item => {
+            debugOutput.innerHTML += 
+              'Item ID: ' + item.id + '<br>' +
+              'Quantity: ' + item.quantity + '<br>' +
+              'Price: TSh ' + Math.round(item.price).toLocaleString() + '<br>' +
+              'Subtotal: TSh ' + Math.round(item.subtotal).toLocaleString() + '<br><br>';
+          });
+          
+          // Compare with what's actually in the HTML
+          debugOutput.innerHTML += '<strong>Currently Displayed in Order Summary:</strong><br>';
+          const cartItemsHtml = document.querySelectorAll('[id^="summary-qty-"]');
+          if (cartItemsHtml.length > 0) {
+            Array.from(cartItemsHtml).forEach(el => {
+              const itemId = el.id.replace('summary-qty-', '');
+              const qty = el.textContent;
+              const unitPrice = document.getElementById(`summary-unit-price-${itemId}`)?.dataset?.price || 'not found';
+              const subtotal = document.getElementById(`summary-item-total-${itemId}`)?.textContent || 'not found';
+              
+              debugOutput.innerHTML += 
+                'Item ID: ' + itemId + '<br>' +
+                'Displayed Quantity: ' + qty + '<br>' +
+                'Displayed Unit Price: ' + unitPrice + '<br>' +
+                'Displayed Subtotal: ' + subtotal + '<br><br>';
+            });
+          } else {
+            debugOutput.innerHTML += 'No items found in HTML<br><br>';
+          }
+          
+          // Now update the display with localStorage data
+          if (cartData.items && cartData.items.length > 0) {
+            cartData.items.forEach(item => {
+              const qtyEl = document.getElementById(`summary-qty-${item.id}`);
+              const totalEl = document.getElementById(`summary-item-total-${item.id}`);
+              
+              if (qtyEl) {
+                qtyEl.innerText = item.quantity;
+                debugOutput.innerHTML += `Updated qty-${item.id} to ${item.quantity}<br>`;
+              } else {
+                debugOutput.innerHTML += `Element summary-qty-${item.id} not found<br>`;
+              }
+              
+              if (totalEl) {
+                totalEl.innerText = Math.round(item.subtotal).toLocaleString();
+                debugOutput.innerHTML += `Updated total-${item.id} to ${Math.round(item.subtotal).toLocaleString()}<br>`;
+              } else {
+                debugOutput.innerHTML += `Element summary-item-total-${item.id} not found<br>`;
+              }
+            });
+          }
+          
+          // Update totals
+          const subtotalEl = document.getElementById('cart-subtotal');
+          if (subtotalEl) {
+            subtotalEl.innerText = 'TSh ' + Math.round(cartData.subtotal).toLocaleString();
+            debugOutput.innerHTML += `Updated subtotal to ${subtotalEl.innerText}<br>`;
+          }
+          
+          const vatEl = document.getElementById('cart-vat');
+          if (vatEl) {
+            vatEl.innerText = 'TSh ' + Math.round(cartData.vat).toLocaleString();
+            debugOutput.innerHTML += `Updated VAT to ${vatEl.innerText}<br>`;
+          }
+          
+          const totalEl = document.getElementById('cart-final-total');
+          if (totalEl) {
+            totalEl.innerText = 'TSh ' + Math.round(cartData.total).toLocaleString();
+            debugOutput.innerHTML += `Updated total to ${totalEl.innerText}<br>`;
+          }
+          
+          console.log('DELIVERY STEP: Successfully updated all summary elements');
+        } catch (error) {
+          console.error('DELIVERY STEP: Error parsing cart data:', error);
+          
+          // Display the error
+          let debugOutput = document.getElementById('delivery-debug-output');
+          if (!debugOutput) {
+            debugOutput = document.createElement('div');
+            debugOutput.id = 'delivery-debug-output';
+            debugOutput.style.cssText = 'position: fixed; bottom: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: red; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 50vw; max-height: 30vh; overflow: auto;';
+            document.body.appendChild(debugOutput);
+          }
+          
+          debugOutput.innerHTML = '<strong>ERROR PARSING CART DATA:</strong><br>' + error.toString() + '<br><br>Raw data:<br>' + savedCartData;
+        }
+      } else {
+        console.log('DELIVERY STEP: No saved cart data found in localStorage');
+        
+        // Display the error
+        let debugOutput = document.getElementById('delivery-debug-output');
+        if (!debugOutput) {
+          debugOutput = document.createElement('div');
+          debugOutput.id = 'delivery-debug-output';
+          debugOutput.style.cssText = 'position: fixed; bottom: 10px; left: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: red; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 50vw; max-height: 30vh; overflow: auto;';
+          document.body.appendChild(debugOutput);
+        }
+        
+        debugOutput.innerHTML = '<strong>NO CART DATA FOUND IN LOCALSTORAGE</strong><br>Check browser console for more details.';
+      }
+    }, 100);
+    });
+
+    // Function to initialize cart data from current order summary if localStorage is empty
+    function initializeCartDataFromSummary() {
+      console.log('Checking if we need to initialize localStorage cart data');
+      
+      try {
+        // Try to get existing cart data
+        const existingData = localStorage.getItem('kikapu-cart-data');
+        
+        if (!existingData || existingData === '{}') {
+          console.log('No cart data found in localStorage, initializing from visible order summary');
+          
+          // Get items from the order summary that's already being displayed
+          const items = [];
+          const orderSummaryItems = document.querySelectorAll('[id^="summary-qty-"]');
+          
+          if (orderSummaryItems.length > 0) {
+            orderSummaryItems.forEach(el => {
+              const itemId = el.id.replace('summary-qty-', '');
+              const qty = parseInt(el.innerText) || 0;
+              const priceEl = document.getElementById(`summary-unit-price-${itemId}`);
+              const subtotalEl = document.getElementById(`summary-item-total-${itemId}`);
+              
+              if (priceEl && qty > 0) {
+                const price = parseFloat(priceEl.getAttribute('data-price')) || 0;
+                const subtotal = subtotalEl ? 
+                  (parseFloat(subtotalEl.innerText.replace(/,/g, '')) || price * qty) : 
+                  price * qty;
+                
+                items.push({
+                  id: itemId,
+                  quantity: qty,
+                  price: price,
+                  subtotal: subtotal
+                });
+                
+                console.log(`Extracted item ${itemId} from summary: qty=${qty}, price=${price}`);
+              }
+            });
+            
+            // Calculate totals from visible elements
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const totalEl = document.getElementById('cart-final-total');
+            
+            const subtotal = subtotalEl ? 
+              parseFloat(subtotalEl.innerText.replace('TSh ', '').replace(/,/g, '')) || 0 : 0;
+            const total = totalEl ? 
+              parseFloat(totalEl.innerText.replace('TSh ', '').replace(/,/g, '')) || 0 : 0;
+            
+            // Create cart data structure
+            const cartData = {
+              timestamp: new Date().toISOString(),
+              subtotal: subtotal,
+              total: total,
+              items: items
+            };
+            
+            // Save to localStorage
+            localStorage.setItem('kikapu-cart-data', JSON.stringify(cartData));
+            console.log('Successfully initialized localStorage with data from order summary:', cartData);
+            
+            // Update debug output
+            updateDeliveryDebugOutput();
+            
+            return true;
+          } else {
+            console.log('No items found in order summary to initialize localStorage');
+          }
+        } else {
+          console.log('Cart data already exists in localStorage');
+        }
+      } catch (e) {
+        console.error('Error initializing cart data from summary:', e);
+      }
+      
+      return false;
+    }
+    
+    // Function to update the debug output in delivery step
+    function updateDeliveryDebugOutput() {
+      try {
+        let debugOutput = document.getElementById('delivery-debug-output');
+        if (!debugOutput) {
+          debugOutput = document.createElement('div');
+          debugOutput.id = 'delivery-debug-output';
+          debugOutput.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: lime; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 50vw; max-height: 30vh; overflow: auto;';
+          document.body.appendChild(debugOutput);
+        }
+        
+        const cartData = JSON.parse(localStorage.getItem('kikapu-cart-data') || '{}');
+        const currentTime = new Date().toISOString();
+        const dataTimestamp = cartData.timestamp || 'unknown';
+        
+        debugOutput.innerHTML = '<strong>DELIVERY STEP DEBUG DATA:</strong><br>' + 
+          'Timestamp: ' + currentTime + '<br>' + 
+          'Data Last Updated: ' + dataTimestamp + '<br>' + 
+          'Subtotal from localStorage: TSh ' + Math.round(cartData.subtotal || 0).toLocaleString() + '<br>' + 
+          'Items in localStorage: ' + (cartData.items?.length || 0) + '<br><br>';
+        
+        if (cartData.items && cartData.items.length > 0) {
+          debugOutput.innerHTML += '<strong>Items from localStorage:</strong><br>';
+          cartData.items.forEach(item => {
+            debugOutput.innerHTML += 
+              'Item ID: ' + item.id + '<br>' + 
+              'Quantity: ' + item.quantity + '<br>' + 
+              'Price: TSh ' + Math.round(item.price || 0).toLocaleString() + '<br>' + 
+              'Subtotal: TSh ' + Math.round(item.subtotal || 0).toLocaleString() + '<br><br>';
+          });
+        }
+        
+        // Also show what's currently displayed in the summary
+        debugOutput.innerHTML += '<strong>Currently Displayed in Order Summary:</strong><br>';
+        document.querySelectorAll('[id^="summary-qty-"]').forEach(el => {
+          const itemId = el.id.replace('summary-qty-', '');
+          const qty = el.innerText;
+          const priceEl = document.getElementById(`summary-unit-price-${itemId}`);
+          const price = priceEl ? priceEl.getAttribute('data-price') : 'unknown';
+          const subtotalEl = document.getElementById(`summary-item-total-${itemId}`);
+          const subtotal = subtotalEl ? subtotalEl.innerText : 'unknown';
+          
+          debugOutput.innerHTML += 
+            'Item ID: ' + itemId + '<br>' + 
+            'Displayed Quantity: ' + qty + '<br>' + 
+            'Displayed Unit Price: ' + price + '<br>' + 
+            'Displayed Subtotal: ' + subtotal + '<br><br>';
+        });
+      } catch (e) {
+        console.error('Error updating delivery debug output:', e);
+      }
+    }
+    
+    // Function to refresh the cart summary with fresh data from the server
+    function refreshCartSummary() {
+      console.log('Refreshing cart summary with latest data from session');
+      
+      // Use fetch to get updated cart data
+      fetch('/marketplace/api/refresh-cart-summary/', {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          console.log('Received fresh cart data:', data);
+          
+          // Update cart items in summary
+          if (data.cart_items && data.cart_items.length > 0) {
+            const summaryContainer = document.querySelector('.summary-content .space-y-3.mb-4');
+            if (summaryContainer) {
+              // Clear existing items
+              summaryContainer.innerHTML = '';
+              
+              // Add new items
+              data.cart_items.forEach(item => {
+                const itemHtml = `
+                  <div class="flex items-center justify-between text-xs sm:text-sm border-b border-[#395144] border-opacity-10 pb-2">
+                    <div class="flex items-center gap-2">
+                      <div class="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
+                        <img src="${item.image_url || '{% static "images/placeholder.png" %}'}" alt="${item.name}" class="w-full h-full object-cover">
+                      </div>
+                      <div>
+                        <span class="text-[#395144] font-medium truncate block" style="max-width: 140px;">${item.name}</span>
+                        <span class="text-gray-600 text-xs"><span id="summary-qty-${item.id}">${item.quantity}</span> x TSh <span id="summary-unit-price-${item.id}" data-price="${item.price}">${parseInt(item.price).toLocaleString()}</span></span>
+                      </div>
+                    </div>
+                    <span class="font-medium text-[#395144]">TSh <span id="summary-item-total-${item.id}">${parseInt(item.subtotal).toLocaleString()}</span></span>
+                  </div>
+                `;
+                summaryContainer.innerHTML += itemHtml;
+              });
+            }
+          }
+          
+          // Update totals
+          document.querySelectorAll('#cart-subtotal').forEach(el => {
+            el.textContent = `TSh ${parseInt(data.subtotal).toLocaleString()}`;
+          });
+          
+          // Only update delivery fee if it's not already been set by user selection
+          const deliveryMethod = document.querySelector('input[name="delivery_method"]:checked');
+          if (!deliveryMethod) {
+            document.querySelectorAll('#cart-delivery-fee').forEach(el => {
+              el.textContent = `TSh ${parseInt(data.delivery_fee).toLocaleString()}`;
+            });
+          }
+          
+          // Update VAT
+          const vatAmount = Math.round(parseFloat(data.subtotal) * 0.18);
+          document.querySelectorAll('#cart-vat').forEach(el => {
+            el.textContent = `TSh ${vatAmount.toLocaleString()}`;
+          });
+          
+          // Update total
+          const deliveryFee = parseInt(document.getElementById('cart-delivery-fee').textContent.replace('TSh ', '').replace(/,/g, '')) || 0;
+          const totalAmount = parseInt(data.subtotal) + deliveryFee + vatAmount;
+          document.querySelectorAll('#cart-final-total').forEach(el => {
+            el.textContent = `TSh ${totalAmount.toLocaleString()}`;
+          });
+          
+          console.log('Cart summary refreshed successfully');
+        } else {
+          console.error('Failed to refresh cart summary:', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error refreshing cart summary:', error);
+      });
+    }
+
+    // When step 2 becomes visible, refresh the cart summary
+    document.addEventListener('DOMContentLoaded', function() {
+      // Update our custom debug display
+      updateDeliveryDebugOutput();
+      
+      // Initialize localStorage from visible summary if needed
+      initializeCartDataFromSummary();
+      
+      // Initial refresh if we're starting on step 2
+      if (window.location.hash === '#step-2' || 
+          document.querySelector('.step-content.active')?.id === 'step-2') {
+        refreshCartSummary();
+      }
+      
+      // Listen for step navigation
+      document.addEventListener('stepChanged', function(e) {
+        if (e.detail.step === 2) {
+          // First try to initialize from visible data if needed
+          if (!initializeCartDataFromSummary()) {
+            // If no initialization was needed, refresh from server
+            refreshCartSummary();
+          }
+          // Always update the debug output
+          updateDeliveryDebugOutput();
+        }
+      });
+    });
+  </script>
+</div>
+
+<!-- No Address Modal with Location Detection -->
+<div id="no-address-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+  <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 transform transition-transform animate-pop-in shadow-2xl border-2 border-[#AA8B56]">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold text-[#395144]">Delivery Address Needed</h3>
+      <button type="button" id="close-no-address-modal" class="text-gray-400 hover:text-[#395144] transition-colors" aria-label="Close modal" title="Close">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    
+    <div class="text-center mb-5">
+      <div class="w-20 h-20 rounded-full bg-[#F0EBCE] mx-auto flex items-center justify-center mb-4">
+        <i class="fas fa-map-marker-alt text-[#395144] text-3xl"></i>
+      </div>
+      <p class="text-gray-600 text-sm mb-6">You need to select a delivery address before proceeding to payment.</p>
+      
+      <!-- Location Options -->
+      <div class="space-y-4">
+        <!-- Use Current Location Option -->
+        <button type="button" id="use-current-location-btn" class="w-full flex items-center justify-center gap-3 py-3 px-4 bg-[#F0EBCE] text-[#395144] rounded-lg font-medium hover:bg-opacity-80 transition-colors shadow-sm group">
+          <i class="fas fa-crosshairs text-[#AA8B56] group-hover:animate-pulse"></i>
+          <span>Use My Current Location</span>
+        </button>
+        
+        <!-- Or divider -->
+        <div class="flex items-center justify-center gap-3 my-3">
+          <div class="h-px bg-gray-300 flex-grow"></div>
+          <span class="text-xs text-gray-500">OR SELECT CITY</span>
+          <div class="h-px bg-gray-300 flex-grow"></div>
+        </div>
+        
+        <!-- Location Selector Dropdown -->
+        <div class="location-selector-container relative">
+          <select id="location-selector" class="w-full p-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors appearance-none" aria-label="Select your city" title="City selection">
+            <option value="" disabled selected>Select your location</option>
+            <option value="Arusha, Tanzania">Arusha</option>
+            <option value="Dar es Salaam, Tanzania">Dar es Salaam</option>
+            <option value="Dodoma, Tanzania">Dodoma</option>
+            <option value="Mwanza, Tanzania">Mwanza</option>
+            <option value="Zanzibar, Tanzania">Zanzibar</option>
+            <option value="Mbeya, Tanzania">Mbeya</option>
+            <option value="Tanga, Tanzania">Tanga</option>
+            <option value="Morogoro, Tanzania">Morogoro</option>
+            <option value="Kilimanjaro, Tanzania">Kilimanjaro</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+            <i class="fas fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+        
+        <!-- Loading indicator (hidden initially) -->
+        <div id="location-loading" class="hidden">
+          <div class="flex items-center justify-center gap-2 text-[#395144] py-2">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <span>Detecting your location...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="flex justify-center gap-4 mt-4">
+      <button type="button" id="add-address-now-btn" class="px-8 py-3 bg-[#395144] text-white rounded-lg font-medium hover:bg-[#4E6C50] transition-colors shadow-md">
+        Continue with Manual Entry
+      </button>
+    </div>
+    
+    <div class="text-center mt-4 text-xs text-gray-500">
+      <p>Your delivery address helps us arrange delivery to the correct location.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Address Modal -->
+<div id="address-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+  <div class="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4">
+    <div class="p-5 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+      <h3 class="font-semibold text-lg text-[#395144]">Select Delivery Address</h3>
+      <button type="button" id="close-address-modal" class="text-gray-500 hover:text-[#395144]" title="Close address selection">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <div class="p-5">
+      <!-- Address Selection -->
+      <div id="address-selection" class="mb-6">
+        <div class="space-y-4">
+          {% if addresses %}
+            {% for address in addresses %}
+              <label class="address-option group" for="address-{{ address.id }}">
+                <div class="p-4 border border-gray-200 rounded-xl cursor-pointer group-hover:bg-[#F0EBCE] group-hover:bg-opacity-10 transition-colors">
+                  <div class="flex items-start">
+                    <div class="address-radio-container mt-1">
+                      <input type="radio" name="modal_address_id" id="address-{{ address.id }}" 
+                            value="{{ address.id }}" class="sr-only address-radio"
+                            {% if address.is_default %}checked{% endif %} required
+                            data-address="{{ address.address_line_1 }}, {{ address.city }}, {{ address.region }}"
+                            data-phone="{{ address.phoneNumber }}"
+                            data-notes="{{ address.delivery_notes }}">
+                      <div class="address-radio-dot"></div>
+                    </div>
+                    <div class="ml-3">
+                      <div class="flex items-center">
+                        <span class="font-medium text-base text-[#395144]">
+                          {{ address.address_line_1 }}
+                          {% if address.is_default %}
+                            <span class="ml-2 text-xs bg-[#F0EBCE] text-[#395144] px-2 py-0.5 rounded-full">Default</span>
+                          {% endif %}
+                        </span>
+                      </div>
+                      <p class="text-sm text-gray-500 my-1">{{ address.city }}, {{ address.region }}</p>
+                      <div class="text-sm text-gray-600">{{ address.phoneNumber }}</div>
+                      {% if address.delivery_notes %}
+                        <div class="mt-1 text-xs text-gray-500 italic">Note: {{ address.delivery_notes }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </label>
+            {% endfor %}
+          {% else %}
+            <div class="bg-gray-100 rounded-xl p-4 text-center">
+              <p class="text-gray-500">You don't have any saved addresses.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Add New Address Form -->
+      <div id="new-address-form" class="{% if addresses %}mt-6 pt-6 border-t border-gray-200{% endif %}">
+        <h4 class="text-sm font-medium text-[#395144] mb-3">Or add a new address:</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-[#395144] mb-2" for="address">Address</label>
+            <input type="text" id="address-input" name="address" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" placeholder="Enter your delivery address">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-[#395144] mb-2" for="phone">Phone Number</label>
+            <input type="tel" id="phone-input" name="phone" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" placeholder="Enter your phone number">
+          </div>
+        </div>
+        
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-[#395144] mb-2" for="landmark">Landmark (Optional)</label>
+          <input type="text" id="landmark-input" name="landmark" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" placeholder="E.g., Near Posta, opposite Azam building">
+        </div>
+        
+        <div class="mt-6">
+          <label class="block text-sm font-medium text-[#395144] mb-2" for="delivery-notes">Delivery Notes (Optional)</label>
+          <textarea id="delivery-notes-input" name="delivery_notes" rows="3" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-[#395144] focus:border-[#395144] transition-colors" placeholder="Special instructions for delivery, e.g., Leave at the gate"></textarea>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="mt-6 flex justify-end border-t border-gray-200 pt-6">
+        <button type="button" id="cancel-address-btn" class="px-4 py-2 text-gray-500 hover:text-gray-700 mr-2">
+          Cancel
+        </button>
+        <button type="button" id="save-address-btn" class="px-6 py-2 bg-[#395144] text-white rounded-lg hover:bg-[#4E6C50] transition-colors">
+          Save Address
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# JS for Stepper Navigation & Dynamic Content #}
+<script>
+  // Update delivery fee, estimated time and total based on selection
+  function updateDeliveryMethod() {
+    const selectedMethod = document.querySelector('input[name="delivery_method"]:checked');
+    const scheduledOptions = document.getElementById('scheduled-delivery-options');
+    const scheduledDeliveryInfo = document.getElementById('scheduled-delivery-info');
+    
+    // Show or hide scheduled options
+    if (selectedMethod && selectedMethod.value === 'SCHEDULED') {
+      scheduledOptions.classList.remove('hidden');
+      if (scheduledDeliveryInfo) scheduledDeliveryInfo.classList.remove('hidden');
+      // Initialize the schedule type
+      updateScheduleType();
+    } else {
+      scheduledOptions.classList.add('hidden');
+      if (scheduledDeliveryInfo) scheduledDeliveryInfo.classList.add('hidden');
+      
+      // Update fee based on selected method
+      if (selectedMethod && selectedMethod.value === 'EXPRESS') {
+        updateDeliveryFee('TSh 10,000');
+      } else {
+        updateDeliveryFee('TSh 2,000'); // Standard delivery
+      }
+    }
+    
+    // Update sidebar display with selected delivery method
+    const methodName = selectedMethod ? 
+      selectedMethod.parentElement.nextElementSibling.querySelector('.font-medium').textContent : 
+      'Standard Delivery';
+    
+    // Update the delivery method display in the order summary
+    const deliveryMethodDisplay = document.getElementById('delivery-method-display');
+    if (deliveryMethodDisplay) {
+      deliveryMethodDisplay.textContent = methodName;
+    }
+    
+    // Update the estimated delivery time based on the method
+    const etaDisplay = document.getElementById('estimated-delivery-time');
+    if (etaDisplay) {
+      if (selectedMethod && selectedMethod.value === 'EXPRESS') {
+        etaDisplay.textContent = 'Today, within 2-4 hours';
+      } else if (selectedMethod && selectedMethod.value === 'SCHEDULED') {
+        etaDisplay.textContent = 'On your selected date/time';
+      } else {
+        etaDisplay.textContent = '2-3 business days';
+      }
+    }
+  }
+
+  // Modal functionality
+  const addressModal = document.getElementById('address-modal');
+  const noAddressModal = document.getElementById('no-address-modal');
+  const changeAddressBtn = document.getElementById('change-address-btn');
+  const closeAddressModalBtn = document.getElementById('close-address-modal');
+  const cancelAddressBtn = document.getElementById('cancel-address-btn');
+  const saveAddressBtn = document.getElementById('save-address-btn');
+  const addAddressNowBtn = document.getElementById('add-address-now-btn');
+  const selectedAddressIdInput = document.getElementById('selected-address-id');
+  const selectedAddressLine = document.getElementById('selected-address-line');
+  const selectedAddressPhone = document.getElementById('selected-address-phone');
+  const selectedAddressNotes = document.getElementById('selected-address-notes');
+  
+  // Open modal
+  changeAddressBtn?.addEventListener('click', () => {
+    addressModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  });
+  
+  // Address now button opens the address modal
+  addAddressNowBtn?.addEventListener('click', () => {
+    noAddressModal.classList.add('hidden');
+    addressModal.classList.remove('hidden');
+    
+    // Highlight the address section
+    const addressSection = document.querySelector('.delivery-address-section');
+    if (addressSection) {
+      addressSection.classList.add('highlight-section');
+      setTimeout(() => {
+        addressSection.classList.remove('highlight-section');
+      }, 2000);
+    }
+  });
+  
+  // Close modal functions
+  function closeAddressModal() {
+    addressModal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+  
+  closeAddressModalBtn?.addEventListener('click', closeAddressModal);
+  cancelAddressBtn?.addEventListener('click', closeAddressModal);
+  
+  // Close modal when clicking outside
+  addressModal?.addEventListener('click', (e) => {
+    if (e.target === addressModal) {
+      closeAddressModal();
+    }
+  });
+  
+  // Handle No Address Modal interactions
+  const closeNoAddressModalBtn = document.getElementById('close-no-address-modal');
+  const useCurrentLocationBtn = document.getElementById('use-current-location-btn');
+  const locationSelector = document.getElementById('location-selector');
+  const locationLoading = document.getElementById('location-loading');
+  
+  // Close No Address Modal
+  closeNoAddressModalBtn?.addEventListener('click', () => {
+    noAddressModal.classList.add('hidden');
+  });
+  
+  // Also handle clicks outside the no-address modal
+  noAddressModal?.addEventListener('click', (e) => {
+    if (e.target === noAddressModal) {
+      noAddressModal.classList.add('hidden');
+    }
+  });
+  
+  // Location selection from dropdown
+  locationSelector?.addEventListener('change', function() {
+    const selectedLocation = this.value;
+    if (selectedLocation) {
+      console.log('Selected location:', selectedLocation);
+      
+      // Update the address display
+      selectedAddressLine.textContent = selectedLocation;
+      selectedAddressPhone.textContent = 'To be provided';
+      
+      // Store in localStorage
+      localStorage.setItem('deliveryAddress', selectedLocation);
+      localStorage.setItem('kikapu-location', selectedLocation);
+      
+      // Close the modal
+      noAddressModal.classList.add('hidden');
+      
+      // Show confirmation
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-4 right-4 bg-[#395144] text-white py-2 px-4 rounded-lg shadow-lg transform transition-all duration-500 opacity-0';
+      toast.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-check-circle"></i> <span>Location set to ${selectedLocation}</span></div>`;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-100');
+      }, 100);
+      
+      setTimeout(() => {
+        toast.classList.replace('opacity-100', 'opacity-0');
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 500);
+      }, 3000);
+    }
+  });
+  
+  // Current location detection
+  useCurrentLocationBtn?.addEventListener('click', () => {
+    // Show loading indicator
+    locationLoading.classList.remove('hidden');
+    useCurrentLocationBtn.disabled = true;
+    useCurrentLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Detecting...';
+    
+    if (navigator.geolocation) {
+      console.log('Geolocation API is available');
+      
+      const geoOptions = {
+        timeout: 10000,            // 10 second timeout
+        maximumAge: 0,             // Force fresh location
+        enableHighAccuracy: true   // Use high accuracy for better results
+      };
+      
+      navigator.geolocation.getCurrentPosition(
+        // Success callback
+        function(position) {
+          console.log('Position obtained:', position.coords.latitude, position.coords.longitude);
+          handleLocationSuccess(position);
+        },
+        // Error callback
+        function(error) {
+          console.error('Geolocation error:', error.code, error.message);
+          handleLocationError(error);
+        },
+        geoOptions
+      );
+    } else {
+      // Browser doesn't support geolocation
+      console.error('Geolocation is not supported by this browser');
+      handleLocationError({ code: 0, message: 'Browser does not support geolocation' });
+    }
+  });
+  
+  // Handle successful location detection
+  function handleLocationSuccess(position) {
+    // Reset the button
+    useCurrentLocationBtn.disabled = false;
+    useCurrentLocationBtn.innerHTML = '<i class="fas fa-crosshairs text-[#AA8B56]"></i> <span>Use My Current Location</span>';
+    locationLoading.classList.add('hidden');
+    
+    // Get coordinates
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    
+    // Using hardcoded regions to find the nearest city in Tanzania
+    const cities = [
+      { name: 'Arusha, Tanzania', lat: -3.3869, lng: 36.6830 },
+      { name: 'Dar es Salaam, Tanzania', lat: -6.7924, lng: 39.2083 },
+      { name: 'Dodoma, Tanzania', lat: -6.1630, lng: 35.7516 },
+      { name: 'Mwanza, Tanzania', lat: -2.5164, lng: 32.9175 },
+      { name: 'Zanzibar, Tanzania', lat: -6.1659, lng: 39.1888 },
+      { name: 'Mbeya, Tanzania', lat: -8.9000, lng: 33.4500 },
+      { name: 'Tanga, Tanzania', lat: -5.0667, lng: 39.1000 },
+      { name: 'Morogoro, Tanzania', lat: -6.8219, lng: 37.6614 },
+      { name: 'Kilimanjaro, Tanzania', lat: -3.0674, lng: 37.3556 }
+    ];
+    
+    // Find nearest city (simple distance calculation)
+    let nearestCity = 'Arusha, Tanzania'; // Default to Arusha as per user's preference
+    let shortestDistance = 999999;
+    
+    cities.forEach(city => {
+      const distance = Math.sqrt(
+        Math.pow(lat - city.lat, 2) + 
+        Math.pow(lng - city.lng, 2)
+      );
+      
+      if (distance < shortestDistance) {
+        shortestDistance = distance;
+        nearestCity = city.name;
+      }
+    });
+    
+    console.log('Nearest city detected:', nearestCity);
+    
+    // Update the address display
+    selectedAddressLine.textContent = nearestCity;
+    selectedAddressPhone.textContent = 'To be provided';
+    
+    // Store in localStorage
+    localStorage.setItem('deliveryAddress', nearestCity);
+    localStorage.setItem('kikapu-location', nearestCity);
+    
+    // Set the dropdown to match (if possible)
+    if (locationSelector) {
+      for (let i = 0; i < locationSelector.options.length; i++) {
+        if (locationSelector.options[i].value === nearestCity) {
+          locationSelector.selectedIndex = i;
+          break;
+        }
+      }
+    }
+    
+    // Close the modal
+    noAddressModal.classList.add('hidden');
+    
+    // Show success message
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-[#395144] text-white py-2 px-4 rounded-lg shadow-lg transform transition-all duration-500 opacity-0';
+    toast.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-map-marker-alt"></i> <span>Location detected: ${nearestCity}</span></div>`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.classList.add('opacity-100');
+    }, 100);
+    
+    setTimeout(() => {
+      toast.classList.replace('opacity-100', 'opacity-0');
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 500);
+    }, 3000);
+  }
+  
+  // Handle location detection errors
+  function handleLocationError(error) {
+    // Reset the button
+    useCurrentLocationBtn.disabled = false;
+    useCurrentLocationBtn.innerHTML = '<i class="fas fa-crosshairs text-[#AA8B56]"></i> <span>Use My Current Location</span>';
+    locationLoading.classList.add('hidden');
+    
+    let errorMessage = "";
+    
+    // Handle different error types
+    switch(error.code) {
+      case 1: // PERMISSION_DENIED
+        errorMessage = "Location permission denied. Please allow access in your browser settings.";
+        break;
+      case 2: // POSITION_UNAVAILABLE
+        errorMessage = "Location information is unavailable. Please select from the list below.";
+        break;
+      case 3: // TIMEOUT
+        errorMessage = "Location request timed out. Please try again or select from the list.";
+        break;
+      default:
+        errorMessage = "Could not detect location. Please select from the list below.";
+        break;
+    }
+    
+    // Show error message
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white py-2 px-4 rounded-lg shadow-lg transform transition-all duration-500 opacity-0';
+    toast.innerHTML = `<div class="flex items-center gap-2"><i class="fas fa-exclamation-circle"></i> <span>${errorMessage}</span></div>`;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.classList.add('opacity-100');
+    }, 100);
+    
+    setTimeout(() => {
+      toast.classList.replace('opacity-100', 'opacity-0');
+      setTimeout(() => {
+        document.body.removeChild(toast);
+      }, 500);
+    }, 5000);
+    
+    // Default to Arusha, Tanzania (per user preference)
+    selectedAddressLine.textContent = 'Arusha, Tanzania';
+    localStorage.setItem('deliveryAddress', 'Arusha, Tanzania');
+    localStorage.setItem('kikapu-location', 'Arusha, Tanzania');
+  }
+  
+  // Save selected address
+  saveAddressBtn?.addEventListener('click', () => {
+    // Get selected address from modal
+    const selectedRadio = document.querySelector('input[name="modal_address_id"]:checked');
+    
+    if (selectedRadio) {
+      // Update the hidden input with the selected address ID
+      selectedAddressIdInput.value = selectedRadio.value;
+      
+      // Update the address display
+      selectedAddressLine.textContent = selectedRadio.dataset.address;
+      selectedAddressPhone.textContent = selectedRadio.dataset.phone;
+      selectedAddressNotes.textContent = selectedRadio.dataset.notes || '';
+      
+      // Update address information in localStorage
+      updateAddressSelection();
+    } else if (validateNewAddressForm()) {
+      // Create a new address display from form
+      const address = document.getElementById('address-input').value;
+      const phone = document.getElementById('phone-input').value;
+      const notes = document.getElementById('delivery-notes-input')?.value || '';
+      
+      // Update display
+      selectedAddressLine.textContent = address;
+      selectedAddressPhone.textContent = phone;
+      selectedAddressNotes.textContent = notes;
+      
+      // Store in localStorage (will be processed by the server)
+      localStorage.setItem('deliveryAddress', address);
+      localStorage.setItem('deliveryPhone', phone);
+      localStorage.setItem('deliveryNotes', notes);
+    } else {
+      alert('Please select an existing address or complete the new address form.');
+      return;
+    }
+    
+    closeAddressModal();
+  });
+
+  // Update address information
+  function updateAddressSelection() {
+    const selectedAddress = document.querySelector('.address-radio:checked');
+    if (selectedAddress) {
+      const addressId = selectedAddress.value;
+      const addressText = selectedAddress.dataset.address || '';
+      const phoneText = selectedAddress.dataset.phone || '';
+      const notesText = selectedAddress.dataset.notes || '';
+      
+      // Update the selected address display on the main screen
+      selectedAddressIdInput.value = addressId;
+      selectedAddressLine.textContent = addressText;
+      selectedAddressPhone.textContent = phoneText;
+      selectedAddressNotes.textContent = notesText || '';
+      
+      // Store address information in localStorage
+      localStorage.setItem('selectedAddressId', addressId);
+      localStorage.setItem('deliveryAddress', addressText);
+      localStorage.setItem('deliveryPhone', phoneText);
+      localStorage.setItem('deliveryNotes', notesText);
+    }
+  }
+
+  // Add event listeners to radio buttons
+  document.querySelectorAll('.delivery-method-radio').forEach(radio => {
+    radio.addEventListener('change', updateDeliveryMethod);
+  });
+  
+  document.querySelectorAll('.address-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+      // Highlight the selected address in the modal
+      document.querySelectorAll('.address-option').forEach(option => {
+        const input = option.querySelector('input');
+        if (input && input.checked) {
+          option.querySelector('div').classList.add('border-[#395144]', 'bg-[#F0EBCE]', 'bg-opacity-20');
+        } else {
+          option.querySelector('div').classList.remove('border-[#395144]', 'bg-[#F0EBCE]', 'bg-opacity-20');
+        }
+      });
+    });
+  });
+
+  // Add event listeners to schedule type radios
+  document.querySelectorAll('.schedule-type-radio').forEach(radio => {
+    radio.addEventListener('change', updateScheduleType);
+  });
+  
+  // Add event listeners for subscription frequency options
+  document.querySelectorAll('.subscription-type-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+      // Update subscription info text
+      updateSubscriptionInfo();
+      
+      // Update delivery fee based on selected period
+      if (this.value === 'TWO_WEEKS') {
+        updateDeliveryFee('TSh 12,000');
+      } else if (this.value === 'ONE_MONTH') {
+        updateDeliveryFee('TSh 20,000');
+      }
+      
+      // Update the display
+      updateScheduleDisplay('SUBSCRIPTION');
+    });
+  });
+
+  // Initialize with default selection
+  updateDeliveryMethod();
+  updateAddressSelection();
+
+  // Go to Payment
+  document.getElementById('continue-to-payment-btn')?.addEventListener('click', (event) => {
+    // Explicitly add preventDefault() to stop default action
+    event.preventDefault();
+    
+    console.log("Continue to payment clicked - checking address...");
+    
+    // Check if an address is selected
+    const selectedAddressId = selectedAddressIdInput.value;
+    const deliveryAddress = localStorage.getItem('deliveryAddress');
+    
+    console.log("Selected address ID:", selectedAddressId);
+    console.log("Delivery address from localStorage:", deliveryAddress);
+    console.log("Address line text:", selectedAddressLine.textContent);
+    
+    // VALIDATION: Validate address before proceeding
+    if (
+      (!selectedAddressId || selectedAddressId.trim() === '') && 
+      (!deliveryAddress || deliveryAddress.trim() === '') && 
+      (!selectedAddressLine || selectedAddressLine.textContent === 'Select an address' || selectedAddressLine.textContent.trim() === '')
+    ) {
+      console.log("No address selected - showing modal");
+      
+      // Show the no address modal
+      noAddressModal.classList.remove('hidden');
+      
+      // Highlight the delivery address section
+      const addressSection = document.querySelector('.delivery-address-section');
+      if (addressSection) {
+        addressSection.classList.add('highlight-section');
+        setTimeout(() => {
+          addressSection.classList.remove('highlight-section');
+        }, 2000);
+      }
+      
+      return; // Stop execution and don't navigate
+    }
+    
+    // If we get here, address validation passed
+    console.log("Address validation passed - proceeding to payment step");
+    
+    // Get address information for display
+    const addressInfo = selectedAddressLine.textContent;
+    const phoneInfo = selectedAddressPhone.textContent;
+    const notesInfo = selectedAddressNotes.textContent;
+    
+    // Create a confirmation modal to display the validated address information
+    const addressConfirmationModal = document.createElement('div');
+    addressConfirmationModal.className = 'fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center';
+    
+    addressConfirmationModal.innerHTML = `
+      <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4 transform transition-transform animate-pop-in shadow-2xl border-2 border-[#395144]">
+        <div class="text-center mb-5">
+          <div class="w-20 h-20 rounded-full bg-[#F0EBCE] mx-auto flex items-center justify-center mb-4">
+            <i class="fas fa-map-marker-alt text-[#395144] text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-[#395144]">Confirm Delivery Details</h3>
+          
+          <div class="mt-6 text-left bg-[#F0EBCE] bg-opacity-20 p-4 rounded-lg">
+            <p class="text-[#395144] font-medium">${addressInfo}</p>
+            <p class="text-gray-600 mt-2">📱 ${phoneInfo}</p>
+            ${notesInfo ? `<p class="text-gray-500 mt-2 text-sm italic">📝 Note: ${notesInfo}</p>` : ''}
+          </div>
+          
+        </div>
+        <div class="flex justify-center gap-4">
+          <button type="button" id="edit-address-btn" class="px-6 py-3 border border-[#395144] text-[#395144] rounded-lg font-medium hover:bg-[#F0EBCE] transition-colors">
+            Edit Address
+          </button>
+          <button type="button" id="confirm-address-btn" class="px-8 py-3 bg-[#395144] text-white rounded-lg font-medium hover:bg-[#4E6C50] transition-colors shadow-md">
+            Confirm & Continue
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(addressConfirmationModal);
+    
+    // Edit address button handler
+    document.getElementById('edit-address-btn').addEventListener('click', () => {
+      // Remove the confirmation modal
+      document.body.removeChild(addressConfirmationModal);
+      
+      // Show the address modal for editing
+      addressModal.classList.remove('hidden');
+    });
+    
+    // Confirm address and continue button handler
+    document.getElementById('confirm-address-btn').addEventListener('click', () => {
+      // Remove the confirmation modal
+      document.body.removeChild(addressConfirmationModal);
+      
+      // Update the delivery method and address selections
+      updateDeliveryMethod();
+      updateAddressSelection();
+
+      // Use parent goToStep function from cart.html
+      if (typeof goToStep === 'function') {
+        goToStep(3); // Go to step 3 (Payment)
+      } else {
+        console.error("goToStep function not found. Make sure the cart.html script is loaded.");
+      }
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Go back to Cart
+  document.getElementById('back-to-cart-btn')?.addEventListener('click', () => {
+    // Use parent goToStep function from cart.html
+    if (typeof goToStep === 'function') {
+      goToStep(1); // Go back to step 1 (Cart)
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  
+  // Validate new address form
+  function validateNewAddressForm() {
+    const addressInput = document.getElementById('address-input');
+    const phoneInput = document.getElementById('phone-input');
+    
+    return addressInput.value.trim() !== '' && phoneInput.value.trim() !== '';
+  }
+
+  // Handle schedule type selection
+  function updateScheduleType() {
+    // Get the selected schedule type
+    const selectedType = document.querySelector('input[name="schedule_type"]:checked');
+    const onetimeOptions = document.getElementById('onetime-options');
+    const scheduledOptions = document.getElementById('scheduled-options');
+    const subscriptionOptions = document.getElementById('subscription-options');
+    
+    if (!selectedType) return;
+    
+    // Hide all option sections first
+    onetimeOptions.classList.add('hidden');
+    scheduledOptions.classList.add('hidden');
+    subscriptionOptions.classList.add('hidden');
+    
+    // Show the appropriate options based on selection
+    if (selectedType.value === 'ONETIME') {
+      onetimeOptions.classList.remove('hidden');
+      updateDeliveryFee('TSh 2,000'); // One-time delivery
+    } else if (selectedType.value === 'SCHEDULED') {
+      scheduledOptions.classList.remove('hidden');
+      updateDeliveryFee('TSh 2,000'); // Scheduled delivery
+    } else if (selectedType.value === 'SUBSCRIPTION') {
+      subscriptionOptions.classList.remove('hidden');
+      updateSubscriptionInfo();
+      updateDeliveryFee('TSh 0'); // Free delivery for subscription
+    }
+    
+    // Update the summary display
+    updateScheduleDisplay(selectedType.value);
+  }
+  
+  // Helper function to update delivery fee
+  function updateDeliveryFee(fee) {
+    const deliveryFeeDisplay = document.getElementById('delivery-fee-display');
+    const mainDeliveryFee = document.getElementById('delivery-fee');
+    
+    // Update both fee displays
+    if (deliveryFeeDisplay) {
+      deliveryFeeDisplay.textContent = fee;
+    }
+    
+    if (mainDeliveryFee) {
+      mainDeliveryFee.textContent = fee;
+    }
+    
+    // Extract the numeric value from the fee
+    const feeValue = parseInt(fee.replace(/[^0-9]/g, '')) || 0;
+    
+    // Update the order total
+    updateOrderTotal(feeValue);
+  }
+  
+  // Update subscription info text based on selected duration
+  function updateSubscriptionInfo() {
+    const selectedDuration = document.querySelector('input[name="subscription_period"]:checked');
+    const infoText = document.getElementById('subscription-info-text');
+    
+    if (selectedDuration && infoText) {
+      if (selectedDuration.value === 'TWO_WEEKS') {
+        infoText.innerHTML = 'Your order will be delivered <strong>every day</strong> at your selected time slot for two weeks.';
+      } else if (selectedDuration.value === 'ONE_MONTH') {
+        infoText.innerHTML = 'Your order will be delivered <strong>every day</strong> at your selected time slot for one month.';
+      }
+    }
+  }
+  
+  // Update sidebar display based on schedule type
+  function updateScheduleDisplay(scheduleType) {
+    // Get all the necessary elements
+    const scheduleDisplay = document.getElementById('schedule-type-display');
+    const dateDisplay = document.getElementById('schedule-date-display');
+    
+    if (!scheduleDisplay || !dateDisplay) return;
+    
+    // Update the display based on the schedule type
+    if (scheduleType === 'ONETIME') {
+      const dateInput = document.getElementById('delivery-date');
+      const timeSlot = document.getElementById('delivery-time-slot');
+      
+      if (dateInput && dateInput.value && timeSlot) {
+        const date = new Date(dateInput.value);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('en-US', options);
+        const timeSlotText = timeSlot.options[timeSlot.selectedIndex].text;
+        
+        scheduleDisplay.textContent = 'One-time Delivery';
+        dateDisplay.textContent = `${formattedDate}, ${timeSlotText}`;
+      } else {
+        scheduleDisplay.textContent = 'One-time Delivery';
+        dateDisplay.textContent = 'Select date and time';
+      }
+    } else if (scheduleType === 'SCHEDULED') {
+      const dateInput = document.getElementById('scheduled-date');
+      const timeSlot = document.getElementById('scheduled-time-slot');
+      
+      if (dateInput && dateInput.value && timeSlot) {
+        const date = new Date(dateInput.value);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('en-US', options);
+        const timeSlotText = timeSlot.options[timeSlot.selectedIndex].text;
+        
+        scheduleDisplay.textContent = 'Scheduled Delivery';
+        dateDisplay.textContent = `${formattedDate}, ${timeSlotText}`;
+      } else {
+        scheduleDisplay.textContent = 'Scheduled Delivery';
+        dateDisplay.textContent = 'Select date and time';
+      }
+    } else if (scheduleType === 'SUBSCRIPTION') {
+      const dateInput = document.getElementById('subscription-start-date');
+      const timeSlot = document.getElementById('subscription-time-slot');
+      const recurrenceType = document.querySelector('input[name="subscription_period"]:checked');
+      
+      if (dateInput && dateInput.value && timeSlot && recurrenceType) {
+        const date = new Date(dateInput.value);
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('en-US', options);
+        const timeSlotText = timeSlot.options[timeSlot.selectedIndex].text;
+        
+        const frequency = recurrenceType.value === 'TWO_WEEKS' ? 'Two Weeks' : 'One Month';
+        scheduleDisplay.textContent = `${frequency} Subscription`;
+        dateDisplay.textContent = `Starting ${formattedDate}, ${timeSlotText}`;
+      } else {
+        scheduleDisplay.textContent = 'Subscription';
+        dateDisplay.textContent = 'Select start date and frequency';
+      }
+    }
+    
+    // Add delivery schedule info to localStorage to persist selection
+    localStorage.setItem('scheduleType', scheduleType);
+  }
+  
+  // Function to update order total
+  function updateOrderTotal(deliveryFee) {
+    // Find the elements in the order summary
+    const deliverySubtotalElement = document.getElementById('delivery-subtotal');
+    const deliveryFeeElement = document.getElementById('delivery-fee');
+    const deliveryVatElement = document.getElementById('delivery-vat');
+    const deliveryTotalElement = document.getElementById('delivery-total');
+    const deliveryFeeDisplayElement = document.getElementById('delivery-fee-display');
+    
+    // If elements don't exist, try looking for alternatives
+    const subtotalElement = deliverySubtotalElement || document.getElementById('order-subtotal');
+    const totalElement = deliveryTotalElement || document.getElementById('order-total');
+    
+    if (!subtotalElement || !totalElement) return;
+    
+    // Get the current subtotal
+    const subtotalText = subtotalElement.textContent.replace('TSh ', '').replace(/,/g, '');
+    const subtotalValue = parseInt(subtotalText) || 0;
+    
+    // Calculate VAT (18%)
+    const vat = Math.round((subtotalValue + deliveryFee) * 0.18);
+    
+    // Calculate new total
+    const total = subtotalValue + deliveryFee + vat;
+    
+    // Update all relevant elements
+    if (deliveryFeeElement) {
+      deliveryFeeElement.textContent = `TSh ${deliveryFee.toLocaleString()}`;
+    }
+    
+    if (deliveryFeeDisplayElement) {
+      deliveryFeeDisplayElement.textContent = `TSh ${deliveryFee.toLocaleString()}`;
+    }
+    
+    if (deliveryVatElement) {
+      deliveryVatElement.textContent = `TSh ${vat.toLocaleString()}`;
+    }
+    
+    // Update the total
+    totalElement.textContent = `TSh ${total.toLocaleString()}`;
+    
+    // Store values in localStorage for persistence
+    localStorage.setItem('deliveryFee', deliveryFee);
+    localStorage.setItem('vatAmount', vat);
+    localStorage.setItem('orderTotalAmount', total);
+    
+    console.log(`Updated order summary: Subtotal: ${subtotalValue}, Delivery: ${deliveryFee}, VAT: ${vat}, Total: ${total}`);
+  }
+
+  // Add change listeners to all date/time inputs for schedule display updates
+  document.getElementById('delivery-date')?.addEventListener('change', () => updateScheduleType());
+  document.getElementById('delivery-time-slot')?.addEventListener('change', () => updateScheduleType());
+  document.getElementById('recurring-start-date')?.addEventListener('change', () => updateScheduleType());
+  document.getElementById('recurring-time-slot')?.addEventListener('change', () => updateScheduleType());
+  document.getElementById('recurrence-type')?.addEventListener('change', () => updateScheduleType());
+  document.getElementById('subscription-start-date')?.addEventListener('change', () => updateScheduleType());
+  document.getElementById('subscription-day')?.addEventListener('change', () => updateScheduleType());
+  
+  // Add event listeners to delivery method labels (more reliable than hidden inputs)
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up delivery method handlers');
+    
+    // Get all delivery option labels
+    const deliveryOptions = document.querySelectorAll('.delivery-option');
+    console.log('Found delivery options:', deliveryOptions.length);
+    
+    // Add click handlers to delivery options
+    deliveryOptions.forEach(option => {
+      option.addEventListener('click', function(e) {
+        // Find the radio input inside this label
+        const radio = this.querySelector('input[type="radio"]');
+        if (radio) {
+          const deliveryMethod = radio.value;
+          console.log('Selected delivery method:', deliveryMethod);
+          
+          let deliveryFee = 2000; // Default standard delivery fee
+          
+          // Set delivery fee based on selected method
+          if (deliveryMethod === 'EXPRESS') {
+            deliveryFee = 10000; // Express delivery fee
+          } else if (deliveryMethod === 'STANDARD') {
+            deliveryFee = 2000; // Standard delivery fee
+          } else if (deliveryMethod === 'SCHEDULED') {
+            deliveryFee = 2000; // Scheduled delivery fee (same as standard)
+          }
+          
+          // Update the order summary with the new delivery fee
+          updateOrderTotal(deliveryFee);
+          
+          console.log(`Delivery method changed to ${deliveryMethod} with fee: TSh ${deliveryFee.toLocaleString()}`);
+        }
+      });
+    });
+    
+    // Also add regular change handlers as backup
+    document.querySelectorAll('input[name="delivery_method"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        console.log('Radio change detected:', this.value);
+        
+        // Get the selected delivery method value
+        const deliveryMethod = this.value;
+        let deliveryFee = 2000; // Default standard delivery fee
+        
+        // Set delivery fee based on selected method
+        if (deliveryMethod === 'EXPRESS') {
+          deliveryFee = 10000; // Express delivery fee
+        } else if (deliveryMethod === 'STANDARD') {
+          deliveryFee = 2000; // Standard delivery fee
+        } else if (deliveryMethod === 'SCHEDULED') {
+          deliveryFee = 2000; // Scheduled delivery fee (same as standard)
+        }
+        
+        // Update the order summary with the new delivery fee
+        updateOrderTotal(deliveryFee);
+      });
+    });
+  });
+  
+  // Initialize with default schedule selection
+  updateScheduleType();
+  
+  // Initialize delivery method and order summary with default values
+  // Standard delivery is checked by default, so we'll use its fee
+  setTimeout(() => {
+    updateDeliveryFeeAndTotal(2000, 'Standard Delivery');
+    console.log('Initial delivery fee set');
+  }, 500);
+  
+  // Initialize address display from localStorage if available
+  window.addEventListener('DOMContentLoaded', () => {
+    const savedAddressId = localStorage.getItem('selectedAddressId');
+    const savedAddress = localStorage.getItem('deliveryAddress');
+    const savedPhone = localStorage.getItem('deliveryPhone');
+    const savedNotes = localStorage.getItem('deliveryNotes');
+    
+    if (savedAddressId) {
+      selectedAddressIdInput.value = savedAddressId;
+    }
+    
+    if (savedAddress) {
+      selectedAddressLine.textContent = savedAddress;
+      selectedAddressPhone.textContent = savedPhone || '';
+      selectedAddressNotes.textContent = savedNotes || '';
+    }
+  });
+</script>
+
+<style>
+  /* Additional styles for the delivery page */
+  /* Animation for page load */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+  
+  /* Delivery option styles */
+  .delivery-radio-container {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .delivery-option:has(.delivery-method-radio:checked) .delivery-radio-container {
+    border-color: #395144;
+  }
+  
+  .delivery-radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .delivery-option:has(.delivery-method-radio:checked) .delivery-radio-dot {
+    background-color: #395144;
+  }
+  
+  /* Style for highlighting selected delivery method */
+  .delivery-option:has(.delivery-method-radio:checked) > div {
+    border-color: #395144;
+    background-color: rgba(240, 235, 206, 0.2);
+  }
+  
+  /* Address option styles */
+  .address-radio-container {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .address-option:has(.address-radio:checked) .address-radio-container {
+    border-color: #395144;
+  }
+  
+  .address-radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .address-option:has(.address-radio:checked) .address-radio-dot {
+    background-color: #395144;
+  }
+  
+  /* Style for highlighting selected address */
+  .address-option:has(.address-radio:checked) > div {
+    border-color: #395144;
+    background-color: rgba(240, 235, 206, 0.2);
+  }
+  
+  /* Schedule option styles */
+  .schedule-radio-container {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .schedule-option:has(.schedule-type-radio:checked) .schedule-radio-container {
+    border-color: #395144;
+  }
+  
+  .schedule-radio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .schedule-option:has(.schedule-type-radio:checked) .schedule-radio-dot {
+    background-color: #395144;
+  }
+  
+  /* Style for highlighting selected schedule type */
+  .schedule-option:has(.schedule-type-radio:checked) > div {
+    border-color: #395144;
+    background-color: rgba(240, 235, 206, 0.2);
+  }
+
+  /* Subscription option styles */
+  .subscription-radio-container {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  
+  .subscription-option:has(.subscription-type-radio:checked) .subscription-radio-container {
+    border-color: #395144;
+  }
+  
+  .subscription-radio-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .subscription-option:has(.subscription-type-radio:checked) .subscription-radio-dot {
+    background-color: #395144;
+  }
+  
+  /* Style for highlighting selected subscription frequency */
+  .subscription-option:has(.subscription-type-radio:checked) > div {
+    border-color: #395144;
+    background-color: rgba(240, 235, 206, 0.2);
+  }
+  
+  /* Animation for pop-in modal */
+  .animate-pop-in {
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    75% {
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* Enhanced highlight effect for address section */
+  .highlight-section {
+    animation: highlightPulse 1.5s ease-in-out;
+    position: relative;
+    z-index: 10;
+    box-shadow: 0 0 0 4px rgba(170, 139, 86, 0.7);
+  }
+  
+  @keyframes highlightPulse {
+    0% { box-shadow: 0 0 0 0 rgba(170, 139, 86, 0.8); }
+    50% { box-shadow: 0 0 0 8px rgba(170, 139, 86, 0.4); }
+    100% { box-shadow: 0 0 0 0 rgba(170, 139, 86, 0); }
+  }
+</style>

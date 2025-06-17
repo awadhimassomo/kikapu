@@ -1,0 +1,524 @@
+{% load static %}
+<!-- Step 3: Payment - Enhanced Design with Kikapu Branding -->
+<link rel="stylesheet" href="{% static 'css/checkout-payment.css' %}">
+
+<div class="flex flex-col md:flex-row items-start gap-6 w-full mx-auto">
+  <div class="bg-white rounded-3xl shadow-xl p-4 md:p-6 lg:p-8 flex flex-col flex-1 animate-fade-in-up">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="bg-[#F0EBCE] bg-opacity-50 p-2 rounded-full">
+          <i class="fas fa-credit-card text-[#395144] text-xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-[#395144]">Select Payment Method</h2>
+      </div>
+      
+      <span class="text-sm bg-[#F0EBCE] bg-opacity-50 py-1.5 px-4 rounded-full flex items-center gap-2 text-[#395144]">
+        <i class="fas fa-shield-alt text-[#AA8B56]"></i>
+        <span>Secure Payment</span>
+      </span>
+    </div>
+
+    <!-- Payment options container -->
+    <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-6">
+      <!-- Mobile Money Option (Disabled/Coming Soon) -->
+      <div class="payment-option disabled-payment-option group">
+        <div class="p-5 flex items-center border-b border-gray-100 opacity-60">
+          <div class="payment-radio-container">
+            <input type="radio" name="payment_method" id="payment-mobile" value="MOBILE_MONEY" class="sr-only payment-method-radio" disabled>
+            <div class="payment-radio-dot"></div>
+          </div>
+          <div class="payment-option-content">
+            <div class="payment-option-header">
+              <div>
+                <div class="payment-option-title text-[#395144]">Mobile Money</div>
+                <p class="payment-option-description">
+                  <span class="text-[#AA8B56] font-medium">➔ Coming Soon: Pay directly via Mobile Money</span>
+                </p>
+                <div class="mt-2 flex flex-wrap gap-2">
+                  <span class="text-xs bg-[#F0EBCE] bg-opacity-30 text-[#395144] py-0.5 px-2 rounded-full inline-flex items-center gap-1">
+                    <span>📱 M-Pesa</span>
+                  </span>
+                  <span class="text-xs bg-[#F0EBCE] bg-opacity-30 text-[#395144] py-0.5 px-2 rounded-full inline-flex items-center gap-1">
+                    <span>📱 Tigo Pesa</span>
+                  </span>
+                  <span class="text-xs bg-[#F0EBCE] bg-opacity-30 text-[#395144] py-0.5 px-2 rounded-full inline-flex items-center gap-1">
+                    <span>📱 Airtel Money</span>
+                  </span>
+                  <span class="text-xs bg-[#F0EBCE] bg-opacity-30 text-[#395144] py-0.5 px-2 rounded-full inline-flex items-center gap-1">
+                    <span>📱 HaloPesa</span>
+                  </span>
+                  <span class="text-xs bg-[#F0EBCE] bg-opacity-30 text-[#395144] py-0.5 px-2 rounded-full inline-flex items-center gap-1">
+                    <span>📱 TTCL Pesa</span>
+                  </span>
+                </div>
+              </div>
+              <div class="flex space-x-3">
+                <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                  <i class="fas fa-mobile-alt text-gray-500 text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Kikapu Card Option -->
+      <label class="payment-option group" for="payment-kikapu">
+        <div class="p-5 flex items-center border-b border-gray-100 group-hover:bg-[#F0EBCE] group-hover:bg-opacity-10 transition-colors">
+          <div class="payment-radio-container">
+            <input type="radio" name="payment_method" id="payment-kikapu" value="KIKAPU_CARD" class="sr-only payment-method-radio" checked required>
+            <div class="payment-radio-dot"></div>
+          </div>
+          <div class="payment-option-content w-full">
+            <div class="payment-option-header">
+              <div>
+                <div class="payment-option-title text-[#395144]">Kikapu Card Payment</div>
+                <p class="payment-option-description">Use your loyalty points & special discounts</p>
+              </div>
+              <div>
+                <div class="w-12 h-12 bg-gradient-to-r from-[#395144] to-[#4E6C50] rounded-full shadow-md flex items-center justify-center transform group-hover:scale-105 transition-transform">
+                  <i class="fas fa-credit-card text-white text-xl"></i>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Kikapu Card Sub-options (shown when selected) -->
+            <div id="kikapu-card-options" class="mt-4 pl-7 space-y-3">
+              <label class="flex items-start gap-3 p-3 border border-[#F0EBCE] bg-[#F0EBCE] bg-opacity-20 rounded-lg cursor-pointer hover:bg-[#F0EBCE] hover:bg-opacity-30 transition-colors">
+                <div class="mt-0.5">
+                  <input type="radio" name="kikapu_card_type" value="prepaid" class="w-4 h-4 accent-[#395144]" checked>
+                </div>
+                <div>
+                  <div class="font-medium text-[#395144]">Prepaid Kikapu Card</div>
+                  <p class="text-sm text-gray-600">Pay using your existing card balance. Instant payment with no additional fees.</p>
+                </div>
+              </label>
+              
+              <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-[#F0EBCE] hover:bg-opacity-10 transition-colors">
+                <div class="mt-0.5">
+                  <input type="radio" name="kikapu_card_type" value="postpaid" class="w-4 h-4 accent-[#395144]">
+                </div>
+                <div>
+                  <div class="font-medium text-[#395144]">Postpaid Kikapu Card</div>
+                  <p class="text-sm text-gray-600">Buy now, pay later. Charge will appear on your next monthly statement.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </label>
+
+      <!-- Cash on Delivery Option -->
+      <label class="payment-option group" for="payment-cod">
+        <div class="p-5 flex items-center group-hover:bg-[#F0EBCE] group-hover:bg-opacity-10 transition-colors">
+          <div class="payment-radio-container">
+            <input type="radio" name="payment_method" id="payment-cod" value="CASH_ON_DELIVERY" class="sr-only payment-method-radio" required>
+            <div class="payment-radio-dot"></div>
+          </div>
+          <div class="payment-option-content">
+            <div class="payment-option-header">
+              <div>
+                <div class="payment-option-title text-[#395144]">Payment on Delivery</div>
+                <p class="payment-option-description">Pay with cash or card when your order arrives</p>
+              </div>
+              <div>
+                <div class="w-12 h-12 rounded-full bg-[#F0EBCE] flex items-center justify-center transform group-hover:scale-105 transition-transform">
+                  <i class="fas fa-box text-[#AA8B56] text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Payment instructions -->
+    <div class="payment-instruction-card bg-[#F0EBCE] bg-opacity-30 rounded-2xl border border-[#F0EBCE] border-opacity-30 shadow-sm p-4 flex items-start gap-4 mb-6" id="payment-instruction-container">
+      <div class="w-10 h-10 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-info text-[#AA8B56]"></i>
+      </div>
+      <div>
+        <h3 class="font-semibold text-[#395144] mb-1" id="payment-instruction-title">Kikapu Card Payment</h3>
+        <div class="text-sm text-gray-600" id="payment-instruction-text">
+          Please ensure your Kikapu Card has sufficient balance. Payment will be deducted upon order confirmation. Enjoy exclusive loyalty benefits and special discounts with your purchase.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Secure Payment Banner -->
+    <div class="flex flex-wrap justify-center gap-6 mt-6 pb-4 border-t border-gray-100 pt-5">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-lock text-[#AA8B56]"></i>
+        <span class="text-sm text-gray-600">Secure Payments</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas fa-shield-alt text-[#AA8B56]"></i>
+        <span class="text-sm text-gray-600">Data Protection</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <i class="fas fa-undo text-[#AA8B56]"></i>
+        <span class="text-sm text-gray-600">Easy Refunds</span>
+      </div>
+    </div>
+    
+    <!-- Navigation buttons -->
+    <div class="flex justify-between items-center mt-4">
+      <button id="back-to-delivery-btn" class="inline-flex items-center gap-2 text-[#395144] py-2 px-4 hover:bg-[#F0EBCE] hover:bg-opacity-30 rounded-lg transition-colors">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Delivery</span>
+      </button>
+      <button id="proceed-to-confirmation-btn" class="inline-flex items-center gap-2 bg-[#395144] hover:bg-[#4E6C50] text-white font-medium py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all group">
+        <span>Proceed to Confirmation</span>
+        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+{# JS for Stepper Navigation & Dynamic Instructions #}
+<script>
+  const paymentInstructions = {
+    'MOBILE_MONEY': {
+      title: 'Mobile Money Payment',
+      text: 'You will receive a payment prompt on your mobile phone. Please enter your PIN to complete the transaction. Your payment is secure and processed instantly.'
+    },
+    'KIKAPU_CARD': {
+      title: 'Kikapu Card Payment',
+      text: 'Please ensure your Kikapu Card has sufficient balance. Payment will be deducted upon order confirmation. Enjoy exclusive loyalty benefits and special discounts with your purchase.'
+    },
+    'CASH_ON_DELIVERY': {
+      title: 'Payment on Delivery',
+      text: 'Please have the exact amount ready to pay the delivery agent when your order arrives. Our delivery agents carry limited change. You can inspect your items before payment.'
+    }
+  };
+
+  const instructionTitleEl = document.getElementById('payment-instruction-title');
+  const instructionTextEl = document.getElementById('payment-instruction-text');
+  const kikapuCardOptions = document.getElementById('kikapu-card-options');
+  const sidebarPaymentMethod = document.getElementById('sidebar-payment-method');
+  const sidebarPaymentDetail = document.getElementById('sidebar-payment-detail');
+
+  // Hide/show Kikapu card options based on selected payment method
+  function updatePaymentOptions() {
+    const selectedMethod = document.querySelector('.payment-method-radio:checked')?.value;
+    
+    // Show/hide Kikapu card sub-options
+    if (kikapuCardOptions) {
+      if (selectedMethod === 'KIKAPU_CARD') {
+        kikapuCardOptions.classList.remove('hidden');
+      } else {
+        kikapuCardOptions.classList.add('hidden');
+      }
+    }
+    
+    // Update payment instructions
+    if (instructionTitleEl && instructionTextEl && paymentInstructions[selectedMethod]) {
+      instructionTitleEl.textContent = paymentInstructions[selectedMethod].title;
+      instructionTextEl.textContent = paymentInstructions[selectedMethod].text;
+    }
+    
+    // Set payment method and details for order summary display
+    let methodName = '';
+    let detailText = '';
+    
+    if (selectedMethod === 'KIKAPU_CARD') {
+      methodName = 'Kikapu Card Payment';
+      const cardType = document.querySelector('input[name="kikapu_card_type"]:checked')?.value;
+      detailText = cardType === 'prepaid' ? 'Prepaid Card' : 'Postpaid Card';
+      
+      // Store payment subtype in localStorage
+      localStorage.setItem('selectedPaymentSubtype', cardType || 'prepaid');
+    } else if (selectedMethod === 'CASH_ON_DELIVERY') {
+      methodName = 'Payment on Delivery';
+      detailText = 'Pay when your order arrives';
+    } else if (selectedMethod === 'MOBILE_MONEY') {
+      methodName = 'Mobile Money';
+      detailText = 'Coming soon';
+    }
+    
+    // Update sidebar payment method display (the old way, for backwards compatibility)
+    if (sidebarPaymentMethod && sidebarPaymentDetail) {
+      sidebarPaymentMethod.textContent = methodName;
+      sidebarPaymentDetail.textContent = detailText;
+    }
+    
+    // Update payment method in order summary using the global function
+    if (typeof window.updatePaymentMethodSummary === 'function') {
+      window.updatePaymentMethodSummary(methodName, detailText);
+    }
+    
+    // Store payment method in localStorage
+    localStorage.setItem('selectedPaymentMethod', selectedMethod);
+    
+    console.log("Payment method updated to:", selectedMethod, "(", detailText, ")");
+  }
+
+  // Add change event listeners to all payment method radio buttons
+  document.querySelectorAll('.payment-method-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+      console.log("Payment method changed to:", this.value);
+      updatePaymentOptions();
+    });
+  });
+
+  // Initialize instructions and options based on the initially checked radio
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if there's a saved payment method in localStorage
+    const savedPaymentMethod = localStorage.getItem('selectedPaymentMethod');
+    if (savedPaymentMethod) {
+      // Find the matching radio button and select it
+      const savedMethodRadio = document.querySelector(`input[name="payment_method"][value="${savedPaymentMethod}"]`);
+      if (savedMethodRadio && !savedMethodRadio.disabled) {
+        savedMethodRadio.checked = true;
+      }
+    }
+    
+    // Now update the UI based on the selected method (either saved or default)
+    updatePaymentOptions();
+  });
+
+  // Highlight selected Kikapu card sub-option and update sidebar
+  document.querySelectorAll('input[name="kikapu_card_type"]').forEach(radio => {
+    radio.addEventListener('change', (event) => {
+      // Remove highlights from all options
+      document.querySelectorAll('input[name="kikapu_card_type"]').forEach(r => {
+        const parent = r.closest('label');
+        if (parent) {
+          parent.classList.remove('border-[#F0EBCE]', 'bg-[#F0EBCE]', 'bg-opacity-20');
+          parent.classList.add('border-gray-200');
+        }
+      });
+      
+      // Add highlight to selected option
+      const selectedParent = event.target.closest('label');
+      if (selectedParent) {
+        selectedParent.classList.remove('border-gray-200');
+        selectedParent.classList.add('border-[#F0EBCE]', 'bg-[#F0EBCE]', 'bg-opacity-20');
+      }
+      
+      // Update sidebar and localStorage
+      const cardType = event.target.value;
+      if (sidebarPaymentDetail) {
+        sidebarPaymentDetail.textContent = cardType === 'prepaid' ? 'Prepaid Card' : 'Postpaid Card';
+      }
+      localStorage.setItem('selectedPaymentSubtype', cardType);
+    });
+  });
+
+  // Go to Confirmation
+  document.getElementById('proceed-to-confirmation-btn')?.addEventListener('click', (event) => {
+    // First, check if an address is selected
+    const selectedAddressId = document.getElementById('selected-address-id')?.value;
+    const selectedAddressLine = document.getElementById('selected-address-line')?.textContent;
+    const deliveryAddress = localStorage.getItem('deliveryAddress');
+    
+    // If no address is selected, prevent default and show address selection modal
+    if ((!selectedAddressId || selectedAddressId === '') && 
+        (!deliveryAddress || deliveryAddress === '') && 
+        (!selectedAddressLine || selectedAddressLine === 'Select an address')) {
+      
+      // Explicitly prevent the default action
+      event.preventDefault();
+      
+      // Show the "no address" modal
+      const noAddressModal = document.getElementById('no-address-modal');
+      if (noAddressModal) {
+        noAddressModal.classList.remove('hidden');
+      } else {
+        // If for some reason the modal isn't available, create a fallback alert
+        alert('Please select a delivery address before proceeding to payment.');
+        
+        // Go back to delivery step
+        if (typeof goToStep === 'function') {
+          goToStep(2); // Go back to step 2 (Delivery)
+        }
+      }
+      
+      return;
+    }
+    
+    // Update payment selections before proceeding
+    updatePaymentOptions();
+    
+    // Hide current step (Payment)
+    document.getElementById('step-3').classList.add('hidden');
+    document.getElementById('step-3').classList.remove('active');
+
+    // Show next step (Confirmation)
+    document.getElementById('step-4').classList.remove('hidden');
+    document.getElementById('step-4').classList.add('active');
+
+    // Update Stepper UI
+    const steps = document.querySelectorAll('.step-active, .step-future, .step-completed');
+    if (steps.length >= 4) {
+      // Mark Payment as completed
+      steps[2].classList.remove('step-active');
+      steps[2].classList.add('step-completed');
+      // Update styles
+      steps[2].querySelector('.border-[#395144]')?.classList.replace('border-[#395144]', 'border-gray-400');
+      steps[2].querySelector('.bg-[#395144]')?.classList.replace('bg-[#395144]', 'bg-gray-400');
+      steps[2].querySelector('.text-white')?.classList.replace('text-white', 'text-gray-400'); // Icon color
+      steps[2].querySelector('.text-[#395144]')?.classList.replace('text-[#395144]', 'text-gray-500'); // Text color
+
+      // Mark Confirmation as active
+      steps[3].classList.remove('step-future');
+      steps[3].classList.add('step-active');
+      // Update styles
+      steps[3].querySelector('.border-gray-400')?.classList.replace('border-gray-400', 'border-[#395144]');
+      steps[3].querySelector('.bg-white')?.classList.replace('bg-white', 'bg-[#395144]');
+      steps[3].querySelector('.text-gray-400')?.classList.replace('text-gray-400', 'text-white'); // Icon color
+      steps[3].querySelector('.text-gray-500')?.classList.replace('text-gray-500', 'text-[#395144]'); // Text color
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // Go back to Delivery
+  document.getElementById('back-to-delivery-btn')?.addEventListener('click', () => {
+    // Hide current step (Payment)
+    document.getElementById('step-3').classList.add('hidden');
+    document.getElementById('step-3').classList.remove('active');
+
+    // Show previous step (Delivery)
+    document.getElementById('step-2').classList.remove('hidden');
+    document.getElementById('step-2').classList.add('active');
+
+    // Update Stepper UI
+    const steps = document.querySelectorAll('.step-active, .step-future, .step-completed');
+    if (steps.length >= 3) {
+      // Mark Delivery as active again
+      steps[1].classList.remove('step-completed');
+      steps[1].classList.add('step-active');
+      // Update styles
+      steps[1].querySelector('.border-gray-400')?.classList.replace('border-gray-400', 'border-[#395144]');
+      steps[1].querySelector('.bg-gray-400')?.classList.replace('bg-gray-400', 'bg-[#395144]');
+      steps[1].querySelector('.text-gray-400')?.classList.replace('text-gray-400', 'text-white'); // Icon color
+      steps[1].querySelector('.text-gray-500')?.classList.replace('text-gray-500', 'text-[#395144]'); // Text color
+
+      // Mark Payment as future again
+      steps[2].classList.remove('step-active', 'step-completed');
+      steps[2].classList.add('step-future');
+      // Update styles
+      steps[2].querySelector('.border-[#395144]')?.classList.replace('border-[#395144]', 'border-gray-400');
+      steps[2].querySelector('.bg-[#395144]')?.classList.replace('bg-[#395144]', 'bg-white');
+      steps[2].querySelector('.text-white')?.classList.replace('text-white', 'text-gray-400'); // Icon color
+      steps[2].querySelector('.text-[#395144]')?.classList.replace('text-[#395144]', 'text-gray-500'); // Text color
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+
+<!-- No Address Modal -->
+<div id="no-address-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+  <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 transform transition-transform animate-pop-in shadow-2xl border-2 border-[#AA8B56]">
+    <div class="text-center mb-5">
+      <div class="w-20 h-20 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-4">
+        <i class="fas fa-map-marker-alt text-red-500 text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-[#395144]">Delivery Address Needed</h3>
+      <p class="text-gray-600 text-sm mt-3">You need to select a delivery address before proceeding to payment confirmation.</p>
+    </div>
+    <div class="flex justify-center gap-4">
+      <button type="button" id="add-address-now-btn" class="px-8 py-3 bg-[#395144] text-white rounded-lg font-medium hover:bg-[#4E6C50] transition-colors shadow-md">
+        Add Address Now
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Additional styles for the payment page */
+  .disabled-payment-option {
+    cursor: not-allowed;
+  }
+  
+  /* Style for highlighting selected payment method */
+  .payment-option:has(.payment-method-radio:checked) {
+    background-color: rgba(240, 235, 206, 0.2);
+    border-left: 3px solid #395144;
+  }
+  
+  /* Hide Kikapu card options by default when not selected */
+  #kikapu-card-options.hidden {
+    display: none;
+  }
+  
+  /* Animation for page load */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+  
+  /* Payment option styles */
+  .payment-radio-container {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink-0;
+    transition: all 0.2s ease;
+  }
+  
+  .payment-option:has(.payment-method-radio:checked) .payment-radio-container {
+    border-color: #395144;
+  }
+  
+  .payment-radio-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    transition: all 0.2s ease;
+  }
+  
+  .payment-option:has(.payment-method-radio:checked) .payment-radio-dot {
+    background-color: #395144;
+  }
+  
+  /* Animation for pop-in modal */
+  .animate-pop-in {
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    75% {
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>

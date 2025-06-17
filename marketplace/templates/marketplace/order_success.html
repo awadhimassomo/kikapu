@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 md:p-10 text-center">
+        
+        <div class="mb-8">
+            <i class="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+            <h1 class="text-2xl md:text-3xl font-bold text-[#395144] mb-2">Thank You For Your Order!</h1>
+            <p class="text-gray-600">Your order has been placed successfully.</p>
+        </div>
+
+        <div class="bg-[#F0EBCE] bg-opacity-30 rounded-lg p-6 mb-8 text-left">
+            <h2 class="text-xl font-semibold text-[#395144] mb-4 border-b pb-2">Order Summary</h2>
+            
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Order Number:</p>
+                <p class="font-medium text-[#395144]">{{ order.order_number }}</p>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Order Date:</p>
+                <p class="font-medium text-[#395144]">{{ order.created_at|date:"F d, Y H:i" }}</p>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Shipping Address:</p>
+                <p class="font-medium text-[#395144]">{{ order.shipping_address }}</p>
+                {% if order.delivery_address.phoneNumber %}
+                <p class="text-xs text-gray-500">Phone: {{ order.delivery_address.phoneNumber }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <p class="text-sm text-gray-600">Estimated Delivery:</p>
+                <p class="font-medium text-[#395144]">{{ order.estimated_delivery_time|date:"F d, Y" }}</p>
+            </div>
+
+            {% if in_group and order.delivery_group %}
+            <div class="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-md text-blue-800">
+                <p class="font-semibold">This order is part of a Group Delivery!</p>
+                <p class="text-sm">Group Code: <span class="font-bold">{{ order.delivery_group.code }}</span></p>
+                <p class="text-sm">Delivery Date: {{ order.delivery_group.delivery_date|date:"F d, Y" }} ({{ order.delivery_group.get_time_slot_display }})</p>
+                <a href="{% url 'marketplace:group_detail' code=order.delivery_group.code %}" class="text-blue-600 hover:underline text-sm font-medium mt-2 inline-block">View Group Details</a>
+            </div>
+            {% endif %}
+
+            <div class="mt-6 border-t pt-4">
+                <h3 class="text-lg font-semibold text-[#395144] mb-3">Items Ordered</h3>
+                <ul class="space-y-3">
+                    {% for item in order_items %}
+                    <li class="flex justify-between items-center text-sm">
+                        <div>
+                            <span class="font-medium text-[#395144]">{{ item.product.name }}</span>
+                            <span class="text-gray-500 ml-2">x {{ item.quantity }}</span>
+                            {% if item.processing_method != 'NONE' %}
+                            <span class="text-xs text-gray-500 ml-1">({{ item.get_processing_method_display }})</span>
+                            {% endif %}
+                        </div>
+                        <span class="font-medium text-[#395144]">TSh {{ item.subtotal|intcomma }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="mt-6 border-t pt-4 space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span class="font-medium text-[#395144]">TSh {{ order.subtotal|intcomma }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Delivery Fee:</span>
+                    <span class="font-medium text-[#395144]">TSh {{ order.delivery_fee|intcomma }}</span>
+                </div>
+                <div class="flex justify-between font-bold text-base mt-2">
+                    <span class="text-[#395144]">Total Amount:</span>
+                    <span class="text-[#395144]">TSh {{ order.total_amount|intcomma }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'marketplace:marketplace' %}" class="py-3 px-6 bg-[#395144] hover:bg-[#4E6C50] text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                Continue Shopping
+            </a>
+            <a href="{% url 'marketplace:order_history' %}" class="py-3 px-6 bg-gray-200 hover:bg-gray-300 text-[#395144] font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                <i class="fas fa-clipboard-list mr-2"></i>
+                View All Orders
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

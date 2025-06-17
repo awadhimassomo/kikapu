@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Join Group {{ group.code }} | Kikapu{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Join Group Delivery</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="mb-2">Group Information</h5>
+                        <p><strong>Group Code:</strong> {{ group.code }}</p>
+                        <p><strong>Leader:</strong> {{ group.leader.user.get_full_name }}</p>
+                        <p><strong>Delivery Date:</strong> {{ group.delivery_date|date:"D, M d, Y" }}</p>
+                        <p><strong>Time Slot:</strong> {{ group.get_time_slot_display }}</p>
+                        <p><strong>Current Members:</strong> {{ group.group_orders.count }}</p>
+                    </div>
+
+                    <div class="alert alert-success mb-4">
+                        <h5><i class="fas fa-info-circle"></i> Group Delivery Benefits</h5>
+                        <ul class="mb-0">
+                            <li>Split delivery fee among all group members</li>
+                            <li>All orders delivered together</li>
+                            <li>More convenient delivery coordination</li>
+                        </ul>
+                    </div>
+
+                    <form method="post" action="{% url 'marketplace:join_group' code=group.code %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-4">
+                            <label for="shipping_address" class="form-label">Delivery Address:</label>
+                            <select id="shipping_address" name="shipping_address" class="form-select" required>
+                                <option value="" selected disabled>-- Select Delivery Address --</option>
+                                {% for address in delivery_addresses %}
+                                <option value="{{ address.address_line_1 }}, {{ address.city }}, {{ address.region }}{% if address.landmark %} (Near {{ address.landmark }}){% endif %}">
+                                    {{ address.address_line_1 }}, {{ address.city }} 
+                                    {% if address.landmark %}(Near {{ address.landmark }}){% endif %}
+                                    {% if address.is_default %} [Default]{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Choose a delivery address for your order</small>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <strong>Note:</strong> By joining this group, your current cart items will be converted to an order and added to this group. Please ensure your cart contains all the items you'd like to order.
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-check"></i> Join Group with My Cart
+                            </button>
+                            <a href="{% url 'marketplace:view_cart' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-shopping-cart"></i> View My Cart
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

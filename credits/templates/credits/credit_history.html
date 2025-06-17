@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Credit Transaction History{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <a href="{% url 'credits:dashboard' %}" class="text-gray-600 hover:text-primary mb-2 block">
+                    ← Back to Dashboard
+                </a>
+                <h1 class="text-3xl font-bold">Credit Transaction History</h1>
+            </div>
+
+            {% if card %}
+            <div class="text-right">
+                <p class="text-sm text-gray-600 mb-1">Current Balance</p>
+                <p class="font-semibold text-lg text-primary">{{ card.balance }} TSh</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if transactions %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Type</th>
+                                <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3 px-4">{{ transaction.timestamp|date:"M d, Y - H:i" }}</td>
+                                    <td class="py-3 px-4">{{ transaction.get_type_display }}</td>
+                                    <td class="py-3 px-4 {% if transaction.amount < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                                        {% if transaction.amount < 0 %}-{% endif %}{{ transaction.amount|abs }} TSh
+                                    </td>
+                                    <td class="py-3 px-4">{{ transaction.description }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <p class="text-gray-500">No transactions found in your history.</p>
+                
+                {% if not card %}
+                    <p class="mt-4 text-sm text-gray-400">
+                        You don't have an NFC card assigned to your account.
+                        Please contact an administrator to get a card.
+                    </p>
+                {% endif %}
+                
+                <div class="mt-6">
+                    <a href="{% url 'credits:dashboard' %}" class="text-primary hover:underline">
+                        Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

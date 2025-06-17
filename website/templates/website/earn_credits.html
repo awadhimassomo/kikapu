@@ -1,0 +1,205 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}Earn Kikapu Credits - Kikapu Arusha{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-12 md:py-20 bg-gradient-to-b from-[#F0EBCE] to-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h1 class="text-3xl md:text-5xl font-bold mb-6 text-[#395144]">Earn Kikapu Credits</h1>
+                <p class="text-lg text-gray-700 mb-8">Turn your everyday activities into valuable credits! Earn while you shop and help the environment by recycling waste.</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="#earn-shopping" class="px-6 py-3 bg-[#395144] text-white font-semibold rounded-lg hover:bg-[#4E6C50] transition duration-300 text-center">
+                        Earn While Shopping
+                    </a>
+                    <a href="#earn-recycling" class="px-6 py-3 bg-[#AA8B56] text-white font-semibold rounded-lg hover:bg-[#8A7249] transition duration-300 text-center">
+                        Earn Through Recycling
+                    </a>
+                </div>
+            </div>
+            <div class="hidden md:block">
+                <img src="https://via.placeholder.com/600x400?text=Kikapu+Credits" alt="Kikapu Credits" class="w-full h-auto rounded-xl shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Credits Diagram Section -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center text-[#395144]">How to Earn Kikapu Credits</h2>
+        
+        <!-- SVG Diagram -->
+        <div class="w-full max-w-4xl mx-auto mb-16">
+            <svg viewBox="0 0 900 500" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                <!-- Center Circle -->
+                <circle cx="450" cy="250" r="100" fill="#F0EBCE" stroke="#395144" stroke-width="3"/>
+                <text x="450" y="240" text-anchor="middle" font-size="24" font-weight="bold" fill="#395144">Kikapu</text>
+                <text x="450" y="270" text-anchor="middle" font-size="24" font-weight="bold" fill="#395144">Credits</text>
+                
+                <!-- Shopping Path -->
+                <path d="M250,250 C300,180 400,150 450,170" stroke="#4E6C50" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+                <circle cx="150" cy="250" r="80" fill="#4E6C50" fill-opacity="0.1" stroke="#4E6C50" stroke-width="3"/>
+                <text x="150" y="240" text-anchor="middle" font-size="20" font-weight="bold" fill="#4E6C50">Shop on</text>
+                <text x="150" y="270" text-anchor="middle" font-size="20" font-weight="bold" fill="#4E6C50">Kikapu</text>
+                <text x="300" y="180" text-anchor="middle" font-size="18" fill="#4E6C50">Earn 5% back</text>
+                
+                <!-- Recycling Path -->
+                <path d="M650,250 C600,180 500,150 450,170" stroke="#AA8B56" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+                <circle cx="750" cy="250" r="80" fill="#AA8B56" fill-opacity="0.1" stroke="#AA8B56" stroke-width="3"/>
+                <text x="750" y="240" text-anchor="middle" font-size="20" font-weight="bold" fill="#AA8B56">Recycle</text>
+                <text x="750" y="270" text-anchor="middle" font-size="20" font-weight="bold" fill="#AA8B56">Waste</text>
+                <text x="600" y="180" text-anchor="middle" font-size="18" fill="#AA8B56">TSh 200 per kg</text>
+                
+                <!-- Legend -->
+                <rect x="350" y="400" width="20" height="20" fill="#4E6C50" fill-opacity="0.1" stroke="#4E6C50" stroke-width="2"/>
+                <text x="380" y="415" font-size="16" fill="#333">Shopping Credits</text>
+                
+                <rect x="500" y="400" width="20" height="20" fill="#AA8B56" fill-opacity="0.1" stroke="#AA8B56" stroke-width="2"/>
+                <text x="530" y="415" font-size="16" fill="#333">Recycling Credits</text>
+            </svg>
+        </div>
+        
+        <!-- Detailed Sections -->
+        <div class="grid md:grid-cols-2 gap-16">
+            <!-- Shopping Credits Section -->
+            <div id="earn-shopping" class="bg-[#F0EBCE] bg-opacity-30 p-8 rounded-2xl">
+                <div class="h-16 w-16 bg-[#4E6C50] rounded-full flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-[#395144]">Earn While Shopping</h3>
+                <p class="mb-4 text-gray-700">Every time you shop on the Kikapu platform, you'll earn credits worth 5% of your purchase value.</p>
+                
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="bg-[#4E6C50] rounded-full p-1 mr-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-700">Purchase from local vendors and earn credits automatically</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-[#4E6C50] rounded-full p-1 mr-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-700">Buy fresh produce and earn while supporting local farmers</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-[#4E6C50] rounded-full p-1 mr-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-700">Use these credits for future purchases or other benefits</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-4 bg-white rounded-lg">
+                    <h4 class="font-bold text-[#395144] mb-2">Example:</h4>
+                    <p class="text-gray-700">If you spend TSh 20,000 on groceries, you'll earn TSh 1,000 in Kikapu Credits!</p>
+                </div>
+            </div>
+            
+            <!-- Recycling Credits Section -->
+            <div id="earn-recycling" class="bg-[#F0EBCE] bg-opacity-30 p-8 rounded-2xl">
+                <div class="h-16 w-16 bg-[#AA8B56] rounded-full flex items-center justify-center mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold mb-4 text-[#395144]">Earn Through Recycling</h3>
+                <p class="mb-4 text-gray-700">Help the environment and earn credits by collecting and sorting recyclable waste. Earn <strong>TSh 200 per kilogram</strong> of sorted trash!</p>
+                
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="bg-[#AA8B56] rounded-full p-1 mr-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-700">Collect recyclable materials like plastic, paper, and metals</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-[#AA8B56] rounded-full p-1 mr-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-700">Sort the trash by material type for maximum credit value</p>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-[#AA8B56] rounded-full p-1 mr-3 mt-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-700">Bring your collected waste to our designated recycling points</p>
+                    </div>
+                </div>
+                
+                <div class="mt-8 p-4 bg-white rounded-lg">
+                    <h4 class="font-bold text-[#395144] mb-2">Example:</h4>
+                    <p class="text-gray-700">If you collect and sort 5kg of recyclable waste, you'll earn TSh 1,000 in Kikapu Credits!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How to Redeem Section -->
+<section class="py-16 bg-[#F0EBCE] bg-opacity-30">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-3xl font-bold mb-12 text-center text-[#395144]">How to Redeem Your Credits</h2>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="h-14 w-14 bg-[#395144] rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-white text-2xl font-bold">1</span>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-3 text-[#395144]">Accumulate Credits</h3>
+                <p class="text-center text-gray-700">Earn credits by shopping on our platform and recycling waste with us</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="h-14 w-14 bg-[#395144] rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-white text-2xl font-bold">2</span>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-3 text-[#395144]">Check Your Balance</h3>
+                <p class="text-center text-gray-700">View your credit balance in your account dashboard</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-md">
+                <div class="h-14 w-14 bg-[#395144] rounded-full flex items-center justify-center mb-4 mx-auto">
+                    <span class="text-white text-2xl font-bold">3</span>
+                </div>
+                <h3 class="text-xl font-bold text-center mb-3 text-[#395144]">Use at Checkout</h3>
+                <p class="text-center text-gray-700">Apply your credits to future purchases for discounts</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-16 bg-white">
+    <div class="max-w-3xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold mb-6 text-[#395144]">Start Earning Today!</h2>
+        <p class="text-lg text-gray-700 mb-8">Join Kikapu and begin earning credits while supporting local businesses and helping the environment.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'registration:customer_register' %}" class="px-8 py-3 bg-[#395144] text-white font-semibold rounded-lg hover:bg-[#4E6C50] transition duration-300">
+                Create Account
+            </a>
+            <a href="{% url 'website:about' %}" class="px-8 py-3 border border-[#395144] text-[#395144] font-semibold rounded-lg hover:bg-[#F0EBCE] transition duration-300">
+                Learn More
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

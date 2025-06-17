@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Kikapu Credits Dashboard{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <h1 class="text-3xl font-bold text-center mb-8">Kikapu Credits Dashboard</h1>
+        
+        <!-- NFC Card Info -->
+        <div class="bg-white rounded-lg shadow-md mb-8 p-6">
+            <h2 class="text-xl font-semibold mb-4">Your Card</h2>
+            
+            {% if card %}
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <p class="text-gray-600">Card Number: <span class="font-semibold">{{ card.card_number }}</span></p>
+                        <p class="text-gray-600">Type: <span class="font-semibold">{{ card.get_card_type_display }}</span></p>
+                        <p class="text-gray-600">Status: 
+                            {% if card.is_active %}
+                                <span class="text-green-600 font-semibold">Active</span>
+                            {% else %}
+                                <span class="text-red-600 font-semibold">Inactive</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-gray-600">Current Balance</p>
+                        <p class="text-3xl font-bold text-primary">{{ card.balance }} TSh</p>
+                        <a href="{% url 'credits:topup' %}" class="mt-2 inline-block px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90">Top Up</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <p class="text-gray-500 mb-4">You don't have an NFC card assigned to your account.</p>
+                    <p class="text-sm text-gray-400">Please contact an administrator to get a card.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <a href="{% url 'credits:recycle_submit' %}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold mb-2">Submit Recyclables</h3>
+                <p class="text-gray-600">Submit plastic, paper or metal to earn credits.</p>
+            </a>
+            <a href="{% url 'credits:vendors' %}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold mb-2">Buy Products</h3>
+                <p class="text-gray-600">Use your credits to purchase products.</p>
+            </a>
+            <a href="{% url 'credits:credit_history' %}" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-lg font-semibold mb-2">Transaction History</h3>
+                <p class="text-gray-600">View your complete transaction history.</p>
+            </a>
+        </div>
+        
+        <!-- Recent Transactions -->
+        <div class="bg-white rounded-lg shadow-md mb-8 p-6">
+            <h2 class="text-xl font-semibold mb-4">Recent Transactions</h2>
+            
+            {% if recent_transactions %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Type</th>
+                                <th class="py-3 px-4">Amount</th>
+                                <th class="py-3 px-4">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3 px-4">{{ transaction.timestamp|date:"M d, Y" }}</td>
+                                    <td class="py-3 px-4">{{ transaction.get_type_display }}</td>
+                                    <td class="py-3 px-4 {% if transaction.amount < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                                        {% if transaction.amount < 0 %}-{% endif %}{{ transaction.amount|abs }} TSh
+                                    </td>
+                                    <td class="py-3 px-4">{{ transaction.description|truncatechars:40 }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-right">
+                    <a href="{% url 'credits:credit_history' %}" class="text-primary hover:underline">View all transactions</a>
+                </div>
+            {% else %}
+                <p class="text-center text-gray-500 py-4">No transactions yet</p>
+            {% endif %}
+        </div>
+        
+        <!-- Recent Recycling -->
+        <div class="bg-white rounded-lg shadow-md mb-8 p-6">
+            <h2 class="text-xl font-semibold mb-4">Recent Recycling</h2>
+            
+            {% if recent_recycling %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Material</th>
+                                <th class="py-3 px-4">Weight</th>
+                                <th class="py-3 px-4">Credits Earned</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for deposit in recent_recycling %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3 px-4">{{ deposit.created_at|date:"M d, Y" }}</td>
+                                    <td class="py-3 px-4">{{ deposit.get_material_type_display }}</td>
+                                    <td class="py-3 px-4">{{ deposit.weight_grams }} g</td>
+                                    <td class="py-3 px-4 text-green-600">{{ deposit.credits_earned }} TSh</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-right">
+                    <a href="{% url 'credits:recycling_history' %}" class="text-primary hover:underline">View all recycling</a>
+                </div>
+            {% else %}
+                <p class="text-center text-gray-500 py-4">No recycling submissions yet</p>
+            {% endif %}
+        </div>
+        
+        <!-- Recent Orders -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Recent Orders</h2>
+            
+            {% if recent_orders %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Product</th>
+                                <th class="py-3 px-4">Quantity</th>
+                                <th class="py-3 px-4">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3 px-4">{{ order.created_at|date:"M d, Y" }}</td>
+                                    <td class="py-3 px-4">{{ order.product.name }}</td>
+                                    <td class="py-3 px-4">{{ order.quantity }}</td>
+                                    <td class="py-3 px-4">{{ order.total_price }} TSh</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-right">
+                    <a href="{% url 'credits:order_history' %}" class="text-primary hover:underline">View all orders</a>
+                </div>
+            {% else %}
+                <p class="text-center text-gray-500 py-4">No orders yet</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

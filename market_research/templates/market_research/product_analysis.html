@@ -1,0 +1,75 @@
+<!-- Product Analysis Section -->
+<div id="product-analysis-section" class="dashboard-section mb-6">
+  <div class="section-header flex justify-between items-center">
+    <h2 id="product-analysis-header" class="text-lg font-semibold text-primary">Product Analysis</h2>
+    <div class="flex space-x-2">
+      <button onclick="document.getElementById('product-analysis-section').classList.toggle('hidden')" class="p-1 rounded hover:bg-light" title="Toggle Section">
+        <svg class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="section-body p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Price Statistics -->
+      <div>
+        <h3 class="text-lg font-semibold text-primary mb-4">Price Statistics</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Average Price</h4>
+            <p id="avg-price" class="text-2xl font-bold text-primary">TSh 0</p>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Price Range</h4>
+            <p id="price-range" class="text-2xl font-bold text-primary">TSh 0</p>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-gray-500">Min: <span id="min-price">TSh 0</span></span>
+              <span class="text-gray-500">Max: <span id="max-price">TSh 0</span></span>
+            </div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Price Volatility</h4>
+            <p id="price-volatility" class="text-2xl font-bold text-primary">0%</p>
+            <p class="text-xs text-gray-500 mt-1">Standard deviation as % of mean</p>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Price Trend</h4>
+            <p id="price-trend" class="text-2xl font-bold">Unknown</p>
+          </div>
+        </div>
+        <div class="mt-4 p-4 bg-light rounded-lg">
+          <div class="flex items-center">
+            <svg class="h-6 w-6 text-accent mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm">Data based on <span id="sample-count" class="font-medium">0</span> price samples</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Regional Analysis -->
+      <div>
+        <h3 class="text-lg font-semibold text-primary mb-4">Regional Price Comparison</h3>
+        <div class="overflow-x-auto">
+          <table id="regional-analysis-table" class="min-w-full bg-white rounded-lg overflow-hidden">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Region</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Average Price</th>
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sample Count</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filled dynamically by JavaScript -->
+              <tr>
+                <td colspan="3" class="px-4 py-2 text-center text-gray-500">No data available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-gray-500 mt-2">* Showing top 5 regions by price</p>
+      </div>
+    </div>
+  </div>
+</div>

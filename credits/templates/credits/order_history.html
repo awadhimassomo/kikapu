@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Order History{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="mb-8">
+            <a href="{% url 'credits:dashboard' %}" class="text-gray-600 hover:text-primary mb-2 block">
+                ← Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold">Order History</h1>
+        </div>
+        
+        {% if orders %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="py-3 px-4">Order Date</th>
+                                <th class="py-3 px-4">Product</th>
+                                <th class="py-3 px-4">Vendor</th>
+                                <th class="py-3 px-4">Quantity</th>
+                                <th class="py-3 px-4">Total Price</th>
+                                <th class="py-3 px-4">Payment Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3 px-4">{{ order.created_at|date:"M d, Y - H:i" }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if order.product %}
+                                            {{ order.product.name }}
+                                        {% else %}
+                                            <span class="text-gray-400">Product no longer available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if order.product.vendor %}
+                                            {{ order.product.vendor.business_name }}
+                                        {% else %}
+                                            <span class="text-gray-400">Vendor not available</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">{{ order.quantity }}</td>
+                                    <td class="py-3 px-4">{{ order.total_price }} TSh</td>
+                                    <td class="py-3 px-4">
+                                        {% if order.paid_with_credits %}
+                                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                                Kikapu Credits
+                                            </span>
+                                        {% else %}
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                                Other Payment
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <p class="text-gray-500">You haven't made any purchases yet.</p>
+                <div class="mt-6">
+                    <a href="{% url 'credits:vendors' %}" class="text-primary hover:underline">
+                        Browse Products
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+/* Cart Icon Unified Styling */
+
+/* Cart badge base styling */
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: var(--accent-color, #F86F03);
+  color: white;
+  border: 2px solid white;
+  font-weight: bold;
+  font-size: 0.75rem;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Animation for cart updates */
+@keyframes cartBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.cart-animation {
+  animation: cartBounce 0.5s ease-in-out;
+}
+
+/* Better contrast on light backgrounds */
+.navbar-light .cart-badge {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Cart icon wrapper */
+.cart-icon-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* High contrast badge for checkout flows */
+.checkout-cart-badge {
+  background-color: var(--primary-color, #395144);
+  border-color: white;
+}
+
+/* Enhanced clear cart button styling */
+#clear-cart-btn {
+  transition: all 0.3s ease;
+}
+
+#clear-cart-btn:hover {
+  background-color: rgba(233, 69, 96, 0.1);
+  color: #e94560;
+}
+
+#clear-cart-btn:active {
+  transform: scale(0.98);
+}
+
+/* Clear cart spinner animation */
+@keyframes spinAround {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+
+.clear-cart-spinner {
+  animation: spinAround 0.7s infinite linear;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 640px) {
+  .cart-badge {
+    font-size: 0.7rem;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .cart-badge {
+    border-color: var(--dark-bg, #222);
+  }
+}

@@ -1,0 +1,251 @@
+{% load static %}
+<!-- Step 4: Order Complete -->
+
+<div class="flex flex-col md:flex-row items-start gap-6 w-full mx-auto" id="step-4">
+  <!-- Order Complete Information -->
+  <div class="bg-white rounded-3xl shadow-xl p-4 md:p-6 lg:p-8 flex-1 animate-fade-in-up">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <div class="bg-[#F0EBCE] bg-opacity-50 p-2 rounded-full">
+          <i class="fas fa-check-circle text-[#395144] text-xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-[#395144]">Order Complete</h2>
+      </div>
+      
+      <span class="text-sm bg-[#F0EBCE] bg-opacity-50 py-1.5 px-4 rounded-full flex items-center gap-2 text-[#395144]">
+        <i class="fas fa-check text-[#AA8B56]"></i>
+        <span>Success</span>
+      </span>
+    </div>
+    
+    <!-- Success Message -->
+    <div class="bg-green-50 border border-green-200 rounded-2xl p-6 mb-8 flex flex-col items-center">
+      <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+        <i class="fas fa-check text-green-600 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-green-800 mb-2">Thank You for Your Order!</h3>
+      <p class="text-green-700 text-center mb-4">Your order has been placed successfully and is now being processed.</p>
+      <p class="text-green-600 bg-green-100 px-4 py-2 rounded-xl">Order #<span id="order-id-display">{{ order_id }}</span></p>
+    </div>
+    
+    <!-- Order Details -->
+    <div class="mb-8">
+      <h3 class="font-semibold text-lg text-[#395144] mb-4">Order Details</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Shipping Information -->
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <h4 class="font-medium text-[#395144] mb-2 flex items-center gap-2">
+            <i class="fas fa-map-marker-alt text-[#AA8B56]"></i>
+            <span>Delivery Address</span>
+          </h4>
+          <div id="shipping-address-display" class="text-gray-700">
+            <p id="order-address-display">Address information will be shown here</p>
+            <p id="order-phone-display" class="text-sm text-gray-500 mt-1">Phone information will be shown here</p>
+          </div>
+        </div>
+        
+        <!-- Payment Information -->
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+          <h4 class="font-medium text-[#395144] mb-2 flex items-center gap-2">
+            <i class="fas fa-credit-card text-[#AA8B56]"></i>
+            <span>Payment Method</span>
+          </h4>
+          <div id="payment-method-summary" class="text-gray-700">
+            <p id="order-payment-display">Payment method will be shown here</p>
+            <p class="text-sm text-gray-500 mt-1">Status: <span class="text-green-600 font-medium">Confirmed</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Order Timeline -->
+    <div class="mb-8">
+      <h3 class="font-semibold text-lg text-[#395144] mb-4">Order Timeline</h3>
+      <div class="relative">
+        <!-- Timeline Line -->
+        <div class="absolute top-0 bottom-0 left-5 w-0.5 bg-gray-200"></div>
+        
+        <!-- Timeline Items -->
+        <div class="space-y-6">
+          <!-- Order Placed -->
+          <div class="flex items-start">
+            <div class="relative flex-shrink-0 w-10 h-10 rounded-full bg-[#395144] flex items-center justify-center mr-4">
+              <i class="fas fa-check text-white"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-[#395144]">Order Placed</h4>
+              <p class="text-sm text-gray-500">Your order has been received</p>
+              <p class="text-xs text-gray-400 mt-1" id="order-date-display">Date information will be shown here</p>
+            </div>
+          </div>
+          
+          <!-- Processing -->
+          <div class="flex items-start">
+            <div class="relative flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+              <i class="fas fa-box text-gray-500"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-500">Processing</h4>
+              <p class="text-sm text-gray-500">Your order is being prepared</p>
+              <p class="text-xs text-gray-400 mt-1">Estimated: Within 24 hours</p>
+            </div>
+          </div>
+          
+          <!-- Out for Delivery -->
+          <div class="flex items-start">
+            <div class="relative flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+              <i class="fas fa-truck text-gray-500"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-500">Out for Delivery</h4>
+              <p class="text-sm text-gray-500">Your order is on its way</p>
+              <p class="text-xs text-gray-400 mt-1" id="delivery-date-display">Delivery information will be shown here</p>
+            </div>
+          </div>
+          
+          <!-- Delivered -->
+          <div class="flex items-start">
+            <div class="relative flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+              <i class="fas fa-home text-gray-500"></i>
+            </div>
+            <div>
+              <h4 class="font-medium text-gray-500">Delivered</h4>
+              <p class="text-sm text-gray-500">Order completed</p>
+              <p class="text-xs text-gray-400 mt-1">Coming soon!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Navigation buttons -->
+    <div class="flex justify-center items-center mt-8">
+      <a href="{% url 'marketplace:marketplace' %}" class="inline-flex items-center gap-2 bg-[#395144] hover:bg-[#4E6C50] text-white font-medium py-3 px-8 rounded-xl shadow-md hover:shadow-lg transition-all">
+        <i class="fas fa-shopping-basket"></i>
+        <span>Continue Shopping</span>
+      </a>
+    </div>
+  </div>
+  
+  <div class="flex-shrink-0 md:w-96 lg:w-[560px] sticky top-24 h-fit max-h-screen">
+    {% include 'marketplace/partials/checkout/order_summary.html' %}
+  </div>
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // This script would normally populate order details from the order object
+    // For now, we'll use placeholder data
+    
+    // Check if we need to emulate data for preview purposes
+    if (typeof window.orderData === 'undefined') {
+      // This is placeholder data - in production, this would come from the server
+      window.orderData = {
+        id: "ORD12345678",
+        address: "123 Main Street, Dar es Salaam",
+        phone: "+255 123 456 789",
+        paymentMethod: "Cash on Delivery",
+        orderDate: new Date().toLocaleString(),
+        deliveryDate: new Date(Date.now() + 86400000).toLocaleString(), // Tomorrow
+        subtotal: "45,000",
+        deliveryFee: "5,000",
+        vat: "9,000",
+        total: "59,000"
+      };
+    }
+    
+    // Populate order details
+    document.getElementById('order-id-display').textContent = window.orderData.id || "ORD12345678";
+    document.getElementById('order-address-display').textContent = window.orderData.address || "No address provided";
+    document.getElementById('order-phone-display').textContent = window.orderData.phone || "No phone provided";
+    document.getElementById('order-payment-display').textContent = window.orderData.paymentMethod || "Cash on Delivery";
+    document.getElementById('order-date-display').textContent = window.orderData.orderDate || new Date().toLocaleString();
+    document.getElementById('delivery-date-display').textContent = window.orderData.deliveryDate || "Estimated delivery time will be shown here";
+    
+    // Populate order totals
+    document.getElementById('order-subtotal').textContent = "TSh " + (window.orderData.subtotal || "0");
+    document.getElementById('order-delivery-fee').textContent = "TSh " + (window.orderData.deliveryFee || "0");
+    document.getElementById('order-vat').textContent = "TSh " + (window.orderData.vat || "0");
+    document.getElementById('order-total').textContent = "TSh " + (window.orderData.total || "0");
+    
+    // If orderItems exist, populate them
+    if (window.orderData.items && window.orderData.items.length > 0) {
+      const itemsContainer = document.getElementById('order-items-container');
+      itemsContainer.innerHTML = ''; // Clear placeholder
+      
+      window.orderData.items.forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'flex items-center justify-between text-xs sm:text-sm border-b border-[#395144] border-opacity-10 pb-2';
+        
+        itemElement.innerHTML = `
+          <div class="flex items-center gap-2">
+            <div class="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
+              <img src="${item.image || '/static/images/placeholder.png'}" alt="${item.name}" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <span class="text-[#395144] font-medium truncate block">${item.name}</span>
+              <span class="text-gray-600 text-xs">${item.quantity} x TSh ${item.price}</span>
+            </div>
+          </div>
+          <span class="font-medium text-[#395144]">TSh ${item.subtotal}</span>
+        `;
+        
+        itemsContainer.appendChild(itemElement);
+      });
+    }
+  });
+</script>
+
+<style>
+  /* Animation for page load */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+  
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #AA8B56 rgba(57, 81, 68, 0.1);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(57, 81, 68, 0.1);
+    border-radius: 10px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #AA8B56;
+    border-radius: 10px;
+  }
+</style>

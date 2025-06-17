@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout - Kikapu{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Simplified stepper styling with precise center line alignment */
+  .stepper-container {
+    position: relative;
+    padding: 2rem 0;
+    margin-bottom: 1.5rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stepper-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    width: 80%;
+    margin: 0 auto;
+  }
+  
+  /* Base line - placed precisely to pass through the center of the icons */
+
+  .stepper-line {
+  position: absolute;
+  left: 0;
+  top: calc(0% + 1.5rem); /* Adjust based on your .step-icon height */
+  transform: translateY(-50%);
+  width: 100%;
+  height: 4px;
+  background-color: #f0f0f0;
+}
+
+  
+  /* Active progress line */
+  .stepper-progress {
+    position: absolute;
+    left: 0;
+    top: calc(0% + 1.5rem); ;
+    transform: translateY(-0%);
+    height: 4px;
+    background: linear-gradient(90deg, #395144 0%, #4E6C50 100%);
+    width: 0;
+    transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 0 8px rgba(57, 81, 68, 0.4);
+    border-radius: 4px;
+  }
+  
+  /* Each step item */
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    width: 3rem;  /* Match the width of the icon */
+  }
+  
+  /* The circle icons */
+  .step-icon {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #395144;
+    color: white;
+    border: 2px solid #395144;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 5;  /* Ensure icons are above the line */
+  }
+  
+  /* Styling for completed steps */
+  .step-completed .step-icon {
+    background-color: #395144;
+    border-color: #395144;
+  }
+  
+  /* Styling for the current step */
+  .step-active .step-icon {
+    animation: pulse 2s infinite;
+    background-color: #395144;
+    border-color: #395144;
+  }
+  
+  /* Styling for future/inactive steps */
+  .step-inactive .step-icon {
+    background-color: white;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+  }
+  
+  /* Labels under each step */
+  .step-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #395144;
+    text-align: center;
+    min-width: 75px; /* Ensure labels don't shift layout */
+    margin-top: 0.5rem;
+  }
+  
+  .step-inactive .step-label {
+    color: #6b7280;
+  }
+  
+  /* Pulse animation for active step */
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(57, 81, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(57, 81, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(57, 81, 68, 0); }
+  }
+  
+  /* Mobile responsive adjustments */
+  @media (max-width: 640px) {
+    .stepper-steps {
+      width: 90%;
+    }
+    
+    .step-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      font-size: 0.75rem;
+    }
+    
+    .step-label {
+      font-size: 0.7rem;
+      min-width: 60px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stepper with simplified structure to ensure line passes through centers -->
+<div class="stepper-container">
+  <div class="stepper-steps">
+    <!-- Base line that runs through all steps -->
+    <div class="stepper-line"></div>
+    
+    <!-- Active progress line -->
+    <div class="stepper-progress" id="stepper-progress"></div>
+    
+    <!-- Steps -->
+    {% for step in "1234" %}
+    <div id="step-btn-{{ step }}" class="step-item {% if forloop.counter == 1 %}step-active{% elif forloop.counter > 1 %}step-inactive{% endif %}" data-step="{{ step }}">
+      <div class="step-icon">
+        {% if step == "1" %}
+          <i class="fas fa-shopping-cart"></i>
+        {% elif step == "2" %}
+          <i class="fas fa-truck"></i>
+        {% elif step == "3" %}
+          <i class="fas fa-credit-card"></i>
+        {% else %}
+          <i class="fas fa-check"></i>
+        {% endif %}
+      </div>
+      <div class="step-label">
+        {% if step == "1" %}Cart{% elif step == "2" %}Delivery{% elif step == "3" %}Payment{% else %}Confirmation{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Step Contents -->
+<div id="step-contents">
+  <div id="step-1" class="step-content active">
+    {% include 'marketplace/partials/checkout/step1_cart.html' %}
+  </div>
+  <div id="step-2" class="step-content hidden">
+    {% include 'marketplace/partials/checkout/step2_delivery.html' %}
+  </div>
+  <div id="step-3" class="step-content hidden">
+    {% include 'marketplace/partials/checkout/step3_payment.html' %}
+  </div>
+  <div id="step-4" class="step-content hidden">
+    {% include 'marketplace/partials/checkout/step4_confirmation.html' %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    initStepper();
+
+    document.querySelectorAll('.checkout-btn, .checkout-bottom-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        goToStep(2);
+      });
+    });
+
+    setupStepNavigationButtons();
+    setupPlaceOrderFunctionality();
+    
+    // Initial setup of is_confirmation_step
+    updateConfirmationStepStatus(1);
+  });
+
+  function initStepper() {
+    document.querySelectorAll('.step-item').forEach(item => {
+      item.addEventListener('click', function () {
+        goToStep(this.dataset.step);
+      });
+    });
+    updateStepperState(1);
+  }
+
+  function goToStep(stepNumber) {
+    // Require all cart items before proceeding to delivery or payment
+    if (stepNumber > 1) {
+      const cartItems = document.querySelectorAll('.cart-item');
+      if (cartItems.length === 0) {
+        alert('Your cart is empty. Please add items before proceeding.');
+        return false;
+      }
+    }
+    
+    // Validate delivery address when trying to proceed to payment
+    if (stepNumber === 3) { // Going from step 2 (Delivery) to step 3 (Payment)
+      console.log('Validating delivery address before proceeding to payment...');
+      
+      // Multiple ways to check for address selection - for reliability
+      const hasAddressFromRadio = document.querySelector('input[name="address_id"]:checked') || 
+                                 document.querySelector('input[name="modal_address_id"]:checked');
+      const hasAddressFromHidden = document.getElementById('selected-address-id')?.value;
+      const hasAddressFromStorage = localStorage.getItem('deliveryAddress');
+      const hasAddressFromDisplay = document.getElementById('selected-address-line')?.textContent;
+      
+      const hasAddress = (hasAddressFromRadio && hasAddressFromRadio.value) || 
+                        (hasAddressFromHidden && hasAddressFromHidden !== '') ||
+                        (hasAddressFromStorage) ||
+                        (hasAddressFromDisplay && hasAddressFromDisplay !== 'Select an address');
+      
+      if (!hasAddress) {
+        console.log('No delivery address selected - showing modal');
+        // Show the No Address Modal
+        const noAddressModal = document.getElementById('no-address-modal');
+        if (noAddressModal) {
+          noAddressModal.classList.remove('hidden');
+          return false; // Prevent navigation
+        } else {
+          alert('Please select a delivery address before proceeding to payment.');
+          return false;
+        }
+      } else {
+        console.log('Address validated successfully:', hasAddressFromStorage || hasAddressFromDisplay);
+      }
+    }
+    
+    // Get current active step
+    const currentStep = parseInt(document.querySelector('.step-item.step-active').dataset.step);
+    const targetStep = parseInt(stepNumber);
+    
+    // If moving to delivery step (step 2), prepare to refresh order summary
+    if (targetStep === 2) {
+      console.log('Moving to delivery step - preparing for order summary refresh');
+      window.needsOrderSummaryRefresh = true;
+    }
+    
+    // Validate specific step transitions
+    if (currentStep === 2 && targetStep === 3) {
+      // Validate delivery address before proceeding to payment
+      const selectedAddressIdInput = document.getElementById('selected-address-id');
+      const selectedAddressLine = document.getElementById('selected-address-line');
+      
+      // Get stored address info
+      const selectedAddressId = selectedAddressIdInput?.value;
+      const deliveryAddress = localStorage.getItem('deliveryAddress');
+      
+      // Check if an address is selected
+      if (
+        (!selectedAddressId || selectedAddressId.trim() === '') && 
+        (!deliveryAddress || deliveryAddress.trim() === '') && 
+        (!selectedAddressLine || selectedAddressLine.textContent === 'Select an address' || selectedAddressLine.textContent.trim() === '')
+      ) {
+        console.log('Address validation failed - showing no address modal');
+        
+        // Show the no address modal
+        const noAddressModal = document.getElementById('no-address-modal');
+        if (noAddressModal) {
+          noAddressModal.classList.remove('hidden');
+          
+          // Highlight the delivery address section
+          const addressSection = document.querySelector('.delivery-address-section');
+          if (addressSection) {
+            addressSection.classList.add('highlight-section');
+            setTimeout(() => {
+              addressSection.classList.remove('highlight-section');
+            }, 2000);
+          }
+        }
+        
+        return false; // Stop execution and don't navigate
+      }
+    }
+    
+    // If validation passes or is not needed, proceed with navigation
+    document.querySelectorAll('.step-content').forEach(el => {
+      el.classList.add('hidden');
+      el.classList.remove('active');
+    });
+
+    const step = document.getElementById('step-' + stepNumber);
+    if (step) {
+      step.classList.remove('hidden');
+      step.classList.add('active');
+    }
+
+    updateStepperState(stepNumber);
+    
+    // Trigger a custom event for step change that our delivery step can listen for
+    document.dispatchEvent(new CustomEvent('stepChanged', { detail: { step: targetStep } }));
+    
+    updateConfirmationStepStatus(stepNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return true;
+  }
+  
+  // New function to manage is_confirmation_step variable
+  function updateConfirmationStepStatus(currentStep) {
+    // Set the confirmation step status for the "Place Order" button visibility
+    const isConfirmationStep = currentStep == 4;
+    const sidebarPlaceOrderBtn = document.getElementById('sidebar-place-order-btn');
+    const sidebarNotConfirmationMsg = document.querySelector('.text-center.text-sm.text-gray-600.py-2');
+    
+    // If elements exist in the DOM, update their visibility
+    if (sidebarPlaceOrderBtn) {
+      if (isConfirmationStep) {
+        sidebarPlaceOrderBtn.style.display = 'flex';
+        if (sidebarNotConfirmationMsg) {
+          sidebarNotConfirmationMsg.style.display = 'none';
+        }
+      } else {
+        sidebarPlaceOrderBtn.style.display = 'none';
+        if (sidebarNotConfirmationMsg) {
+          sidebarNotConfirmationMsg.style.display = 'block';
+        }
+      }
+    }
+  }
+
+  function updateStepperState(currentStep) {
+    const steps = document.querySelectorAll('.step-item');
+    const connector = document.getElementById('stepper-progress');
+    const stepNum = parseInt(currentStep);
+
+    if (connector) {
+      const percent = (stepNum - 1) * (100 / (steps.length - 1));
+      connector.style.width = percent + '%';
+    }
+
+    steps.forEach((step, idx) => {
+      const num = idx + 1;
+      
+      // Reset all step states
+      step.classList.remove('step-active', 'step-completed', 'step-inactive');
+      
+      if (num < stepNum) {
+        // Completed step
+        step.classList.add('step-completed');
+      } else if (num == stepNum) {
+        // Current active step
+        step.classList.add('step-active');
+      } else {
+        // Future step
+        step.classList.add('step-inactive');
+      }
+    });
+  }
+
+  function setupStepNavigationButtons() {
+    const map = {
+      'continue-to-delivery-btn': 2,
+      'continue-to-payment-btn': 3,
+      'continue-to-confirmation-btn': 4,
+      'back-to-cart-btn': 1,
+      'back-to-delivery-btn': 2,
+      'back-to-payment-btn': 3,
+    };
+
+    for (const [id, step] of Object.entries(map)) {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', () => goToStep(step));
+      }
+    }
+  }
+
+  function setupPlaceOrderFunctionality() {
+    const mainBtn = document.getElementById('place-order-btn');
+    const sidebarBtn = document.getElementById('sidebar-place-order-btn');
+
+    if (sidebarBtn && mainBtn) {
+      sidebarBtn.addEventListener('click', () => mainBtn.click());
+    }
+
+    if (mainBtn) {
+      mainBtn.addEventListener('click', () => {
+        mainBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+        mainBtn.disabled = true;
+        if (sidebarBtn) {
+          sidebarBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...';
+          sidebarBtn.disabled = true;
+        }
+
+        // This client-side redirect is incorrect here.
+        // The actual redirect happens server-side after the order is placed.
+        // setTimeout(() => {
+        //   window.location.href = "/marketplace/order-success/ORDER_ID/"; // Fixed: removed template tag
+        // }, 2000);
+
+        // Instead, the button click should likely trigger the form submission 
+        // that goes to the place_order view, which then redirects.
+        // You might need to adjust your form handling logic if this button
+        // isn't already submitting the necessary data.
+      });
+    }
+  }
+</script>
+{% endblock %}

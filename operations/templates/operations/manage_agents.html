@@ -1,0 +1,446 @@
+{% extends 'operations/base.html' %}
+{% load static %}
+
+{% block title %}Manage Agents - KIKAPU Operations{% endblock %}
+{% block page_title %}Manage Delivery Agents{% endblock %}
+
+{% block extra_css %}
+<style>
+  .agent-card {
+    transition: all 0.2s ease;
+  }
+  .agent-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  .status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  .status-active {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: rgb(16, 185, 129);
+  }
+  .status-inactive {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: rgb(239, 68, 68);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header with Add Agent button -->
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Delivery Agents</h1>
+  <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium" 
+          onclick="openAddAgentModal()">
+    <i class="fas fa-plus mr-2"></i> Add New Agent
+  </button>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="bg-white rounded-xl shadow mb-8 p-6">
+  <form method="GET" action="{% url 'operations:manage_agents' %}">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+      <div class="md:col-span-9">
+        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Search Agents</label>
+        <div class="relative rounded-md shadow-sm">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+          <input type="text" 
+                 id="search" 
+                 name="search" 
+                 value="{{ search_query }}" 
+                 placeholder="Search by name, ID, phone, or area..." 
+                 class="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+        </div>
+      </div>
+      <div class="md:col-span-3 flex space-x-2">
+        <button type="submit" class="flex-1 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium flex items-center justify-center">
+          <i class="fas fa-filter mr-2"></i> Apply Filter
+        </button>
+        {% if search_query %}
+        <a href="{% url 'operations:manage_agents' %}" class="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium flex items-center justify-center">
+          <i class="fas fa-times mr-2"></i> Clear
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Agents List -->
+<div class="bg-white rounded-xl shadow mb-8 overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Agent
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Contact
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Assigned Area
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Status
+          </th>
+          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Join Date
+          </th>
+          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        {% for agent in agents %}
+        <tr class="agent-card hover:bg-gray-50">
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <span class="text-purple-600 font-semibold">{{ agent.user.firstName|slice:":1" }}{{ agent.user.lastName|slice:":1" }}</span>
+              </div>
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">{{ agent.user.firstName }} {{ agent.user.lastName }}</div>
+                <div class="text-xs text-gray-500">ID: {{ agent.agent_id }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">{{ agent.phoneNumber }}</div>
+            <div class="text-xs text-gray-500">{{ agent.user.email|default:"No email" }}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">{{ agent.assigned_area|default:"Not assigned" }}</div>
+          </td>          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex flex-col gap-1">
+              <span class="status-badge {% if agent.is_active %}status-active{% else %}status-inactive{% endif %}">
+                {% if agent.is_active %}Active{% else %}Inactive{% endif %}
+              </span>
+              <span class="status-badge {% if agent.is_verified %}status-active{% else %}status-inactive{% endif %}">
+                {% if agent.is_verified %}Verified{% else %}Unverified{% endif %}
+              </span>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            {{ agent.join_date|date:"M d, Y" }}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <div class="flex items-center justify-end space-x-2">
+              <a href="{% url 'operations:agent_details' agent.id %}" class="text-indigo-600 hover:text-indigo-900" title="View Details">
+                <i class="fas fa-eye"></i>
+              </a>
+              <button onclick="openEditAgentModal({{ agent.id }}, '{{ agent.user.firstName }}', '{{ agent.user.lastName }}', '{{ agent.phoneNumber }}', '{{ agent.user.email|default:'' }}', '{{ agent.assigned_area|default:'' }}', '{{ agent.notes|default:''|escapejs }}')" 
+                      class="text-blue-600 hover:text-blue-900" title="Edit Agent">
+                <i class="fas fa-edit"></i>
+              </button>              <form method="POST" action="{% url 'operations:toggle_agent_status' agent.id %}" class="inline" onsubmit="return confirm('Are you sure you want to {% if agent.is_verified %}un-verify{% else %}verify{% endif %} this agent?');">
+                {% csrf_token %}
+                <button type="submit" class="{% if agent.is_verified %}text-red-600 hover:text-red-900{% else %}text-green-600 hover:text-green-900{% endif %}" 
+                        title="{% if agent.is_verified %}Mark as Unverified{% else %}Mark as Verified{% endif %}">
+                  <i class="fas {% if agent.is_verified %}fa-user-shield{% else %}fa-user-check{% endif %}"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+            <div class="flex flex-col items-center">
+              <i class="fas fa-user-slash text-4xl mb-4 text-gray-300"></i>
+              <p class="text-lg font-medium">No agents found</p>
+              <p class="text-sm mt-1">Add your first agent to get started</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Agent Modal -->
+<div id="addAgentModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+  <div class="absolute inset-0 bg-black opacity-50" onclick="closeAddAgentModal()"></div>
+  <div class="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 z-10">
+    <div class="bg-primary text-white py-4 px-6 rounded-t-xl flex justify-between items-center">
+      <h3 class="text-lg font-bold">Add New Delivery Agent</h3>
+      <button onclick="closeAddAgentModal()" class="text-white hover:text-gray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form method="POST" action="{% url 'operations:add_agent' %}" class="p-6">
+      {% csrf_token %}
+      
+      <!-- Tab Navigation -->
+      <div class="mb-6 border-b border-gray-200">
+        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+          <li class="mr-2">
+            <a href="#" id="newUserTab" class="inline-block p-4 border-b-2 border-primary text-primary active" 
+               onclick="switchTab('newUser'); return false;">Create New User</a>
+          </li>
+          <li class="mr-2">
+            <a href="#" id="existingUserTab" class="inline-block p-4 border-b-2 border-transparent hover:border-gray-300 text-gray-500 hover:text-gray-600" 
+               onclick="switchTab('existingUser'); return false;">Use Existing User</a>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- New User Fields -->
+      <div id="newUserFields">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+            <input type="text" id="firstName" name="firstName" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+          </div>
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+            <input type="text" id="lastName" name="lastName" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+          </div>
+          <div>
+            <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="+255...">
+          </div>
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
+            <input type="email" id="email" name="email"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+          </div>
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+            <input type="password" id="password" name="password" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+          </div>
+        </div>
+      </div>
+      
+      <!-- Existing User Fields -->
+      <div id="existingUserFields" class="hidden mb-6">
+        <div>
+          <label for="existing_user_id" class="block text-sm font-medium text-gray-700 mb-1">Select Existing User *</label>
+          <select id="existing_user_id" name="existing_user_id" 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+            <option value="">-- Select User --</option>
+            {% for business in business_owners %}
+            <option value="{{ business.user.id }}">{{ business.user.get_full_name }} ({{ business.user.phoneNumber }}) - {{ business.business_name }}</option>
+            {% endfor %}
+            <!-- Add more user types as needed -->
+          </select>
+          <input type="checkbox" id="use_existing_user" name="use_existing_user" class="hidden" checked>
+          <p class="mt-2 text-sm text-gray-500">This allows business owners and other existing users to also act as delivery agents.</p>
+        </div>
+      </div>
+      
+      <!-- Common Fields -->
+      <div class="mb-6">
+        <div>
+          <label for="assigned_area" class="block text-sm font-medium text-gray-700 mb-1">Assigned Area</label>
+          <input type="text" id="assigned_area" name="assigned_area"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                placeholder="e.g. Kariakoo, Mbezi Beach">
+        </div>
+      </div>
+      
+      <div class="mb-6">
+        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+        <textarea id="notes" name="notes" rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                placeholder="Any additional information about this agent..."></textarea>
+      </div>
+      
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeAddAgentModal()" 
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark">
+          Add Agent
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Agent Modal -->
+<div id="editAgentModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+  <div class="absolute inset-0 bg-black opacity-50" onclick="closeEditAgentModal()"></div>
+  <div class="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 z-10">
+    <div class="bg-blue-600 text-white py-4 px-6 rounded-t-xl flex justify-between items-center">
+      <h3 class="text-lg font-bold">Edit Delivery Agent</h3>
+      <button onclick="closeEditAgentModal()" class="text-white hover:text-gray-200">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form method="POST" action="" id="editAgentForm" class="p-6">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label for="edit_firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+          <input type="text" id="edit_firstName" name="firstName" required 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+        </div>
+        <div>
+          <label for="edit_lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+          <input type="text" id="edit_lastName" name="lastName" required 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+        </div>
+        <div>
+          <label for="edit_phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+          <input type="tel" id="edit_phoneNumber" name="phoneNumber" required 
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                 placeholder="+255...">
+        </div>
+        <div>
+          <label for="edit_email" class="block text-sm font-medium text-gray-700 mb-1">Email (Optional)</label>
+          <input type="email" id="edit_email" name="email"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+        </div>
+        <div>
+          <label for="edit_new_password" class="block text-sm font-medium text-gray-700 mb-1">New Password (Optional)</label>
+          <input type="password" id="edit_new_password" name="new_password"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                 placeholder="Leave blank to keep current password">
+        </div>
+        <div>
+          <label for="edit_assigned_area" class="block text-sm font-medium text-gray-700 mb-1">Assigned Area</label>
+          <input type="text" id="edit_assigned_area" name="assigned_area"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                 placeholder="e.g. Kariakoo, Mbezi Beach">
+        </div>
+      </div>
+      <div class="mb-6">
+        <label for="edit_notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+        <textarea id="edit_notes" name="notes" rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  placeholder="Any additional information about this agent..."></textarea>
+      </div>      <div class="mb-6">
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <i class="fas fa-info-circle text-blue-400"></i>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-blue-700">
+                <strong>Note about agent status:</strong> Agents become active automatically when they verify their phone number. To mark an agent as trusted for making credit recommendations, use the "Verify" button instead of this form.
+              </p>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" id="edit_is_active" name="is_active" value="true">
+      </div>
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeEditAgentModal()" 
+                class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">
+          Cancel
+        </button>
+        <button type="submit" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          Update Agent
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Agent Guide Card -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-8">
+  <div class="flex items-start">
+    <div class="flex-shrink-0 bg-purple-100 rounded-full p-3">
+      <i class="fas fa-info-circle text-purple-600"></i>
+    </div>
+    <div class="ml-4">
+      <h3 class="text-lg font-semibold text-gray-800">About Delivery Agents</h3>
+      <div class="mt-2 text-sm text-gray-600 space-y-2">
+        <p>Delivery agents are representatives who can recommend customers for postpaid accounts. They play a crucial role in expanding our customer base and verifying customer identities.</p>
+        <p>Key responsibilities:</p>
+        <ul class="list-disc ml-5 space-y-1">
+          <li>Recommend customers for postpaid accounts</li>
+          <li>Verify customer identities in person</li>
+          <li>Help customers complete account applications</li>
+          <li>Deliver purchased products in their assigned areas</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Add Agent Modal
+  function openAddAgentModal() {
+    document.getElementById('addAgentModal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  }
+  
+  function closeAddAgentModal() {
+    document.getElementById('addAgentModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+    // Edit Agent Modal
+  function openEditAgentModal(agentId, firstName, lastName, phoneNumber, email, assignedArea, notes) {
+    const form = document.getElementById('editAgentForm');
+    form.action = `/operations/agents/edit/${agentId}/`;
+    
+    document.getElementById('edit_firstName').value = firstName;
+    document.getElementById('edit_lastName').value = lastName;
+    document.getElementById('edit_phoneNumber').value = phoneNumber;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_assigned_area').value = assignedArea;
+    document.getElementById('edit_notes').value = notes;
+    document.getElementById('edit_new_password').value = '';
+    
+    document.getElementById('editAgentModal').classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  }
+  
+  function closeEditAgentModal() {
+    document.getElementById('editAgentModal').classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  }
+  
+  // Close modals when clicking outside
+  window.addEventListener('click', function(event) {
+    if (event.target === document.getElementById('addAgentModal')) {
+      closeAddAgentModal();
+    }
+    if (event.target === document.getElementById('editAgentModal')) {
+      closeEditAgentModal();
+    }
+  });
+  
+  // Close modals on escape key
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+      closeAddAgentModal();
+      closeEditAgentModal();
+    }
+  });
+  
+  // Tab switching for Add Agent Modal
+  function switchTab(tab) {
+    if (tab === 'newUser') {
+      document.getElementById('newUserFields').classList.remove('hidden');
+      document.getElementById('existingUserFields').classList.add('hidden');
+      document.getElementById('newUserTab').classList.add('border-primary', 'text-primary', 'active');
+      document.getElementById('existingUserTab').classList.remove('border-primary', 'text-primary', 'active');
+    } else {
+      document.getElementById('newUserFields').classList.add('hidden');
+      document.getElementById('existingUserFields').classList.remove('hidden');
+      document.getElementById('existingUserTab').classList.add('border-primary', 'text-primary', 'active');
+      document.getElementById('newUserTab').classList.remove('border-primary', 'text-primary', 'active');
+    }
+  }
+</script>
+{% endblock %}

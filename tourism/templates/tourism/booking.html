@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Book {{ experience.title }} - KIKAPU Tourism{% endblock %}
+
+{% block extra_css %}
+<style>
+    .step {
+        @apply flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 font-semibold;
+    }
+    
+    .step.active {
+        @apply bg-[#395144] text-white;
+    }
+    
+    .step.complete {
+        @apply bg-[#4E6C50] text-white;
+    }
+    
+    .step-connector {
+        @apply flex-grow h-0.5 bg-gray-200;
+    }
+    
+    .step-connector.active {
+        @apply bg-[#4E6C50];
+    }
+    
+    .form-group {
+        @apply mb-6;
+    }
+    
+    .form-label {
+        @apply block text-sm font-medium text-gray-700 mb-1;
+    }
+    
+    .form-control {
+        @apply block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-[#395144] focus:border-[#395144];
+    }
+    
+    .form-control.error {
+        @apply border-red-500;
+    }
+    
+    .payment-method {
+        @apply border border-gray-200 rounded-lg p-4 cursor-pointer transition-all duration-200;
+    }
+    
+    .payment-method.selected {
+        @apply border-[#395144] bg-[#F0EBCE] bg-opacity-30;
+    }
+    
+    .summary-item {
+        @apply flex justify-between py-3 border-b border-gray-100;
+    }
+    
+    .summary-item:last-child {
+        @apply border-b-0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container max-w-5xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-[#395144] mb-2">Book {{ experience.title }}</h1>
+        <p class="text-gray-600">{{ experience.description|truncatewords:30 }}</p>
+    </div>
+    
+    <!-- Booking Progress Steps -->
+    <div class="mb-10">
+        <div class="flex items-center justify-between">
+            <div class="flex flex-col items-center">
+                <div class="step active">1</div>
+                <span class="text-xs mt-2 font-medium text-[#395144]">Booking Details</span>
+            </div>
+            
+            <div class="step-connector"></div>
+            
+            <div class="flex flex-col items-center">
+                <div class="step">2</div>
+                <span class="text-xs mt-2 font-medium text-gray-500">Payment</span>
+            </div>
+            
+            <div class="step-connector"></div>
+            
+            <div class="flex flex-col items-center">
+                <div class="step">3</div>
+                <span class="text-xs mt-2 font-medium text-gray-500">Confirmation</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Booking Form -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-semibold text-[#395144]">Booking Details</h2>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="bg-red-50 text-red-800 p-4 rounded-lg mb-6">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="POST" id="booking-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label class="form-label">Contact Phone Number<span class="text-red-500">*</span></label>
+                            <input type="tel" name="contact_phone" class="form-control" required placeholder="e.g. +255 123 456 789" value="{{ user.phoneNumber }}">
+                            <div class="text-xs text-gray-500 mt-1">We'll use this to contact you about your booking</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group">
+                                <label class="form-label">Start Date<span class="text-red-500">*</span></label>
+                                <input type="date" name="start_date" class="form-control" required min="{{ today }}">
+                            </div>
+                            
+                            {% if experience.experience_type == 'FARMHOUSE' %}
+                            <div class="form-group">
+                                <label class="form-label">End Date<span class="text-red-500">*</span></label>
+                                <input type="date" name="end_date" class="form-control" required min="{{ today }}">
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Number of People<span class="text-red-500">*</span></label>
+                            <select name="party_size" class="form-control" required>
+                                {% for i in "12345678910"|make_list %}
+                                <option value="{{ forloop.counter }}">{{ forloop.counter }} {% if forloop.counter == 1 %}person{% else %}people{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Special Requests</label>
+                            <textarea name="special_requests" class="form-control" rows="4" placeholder="Let us know if you have any special requirements or requests"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Payment Method<span class="text-red-500">*</span></label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="payment-method selected" data-method="MOBILE_MONEY">
+                                    <div class="flex items-center">
+                                        <input type="radio" name="payment_method" value="MOBILE_MONEY" checked class="hidden" id="payment-mobile">
+                                        <label for="payment-mobile" class="flex-grow cursor-pointer">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 flex items-center justify-center bg-[#F0EBCE] rounded-full mr-3">
+                                                    <i class="fas fa-mobile-alt text-[#395144]"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium">Mobile Money</div>
+                                                    <div class="text-xs text-gray-500">M-Pesa, Tigo Pesa, Airtel Money</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="payment-method" data-method="BANK_TRANSFER">
+                                    <div class="flex items-center">
+                                        <input type="radio" name="payment_method" value="BANK_TRANSFER" class="hidden" id="payment-bank">
+                                        <label for="payment-bank" class="flex-grow cursor-pointer">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 flex items-center justify-center bg-[#F0EBCE] rounded-full mr-3">
+                                                    <i class="fas fa-university text-[#395144]"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="font-medium">Bank Transfer</div>
+                                                    <div class="text-xs text-gray-500">Pay via bank transfer</div>
+                                                </div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8">
+                            <button type="submit" class="btn btn-primary w-full">Proceed to Payment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="text-xl font-semibold text-[#395144]">Booking Summary</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-6">
+                        <img src="{{ experience.image.url }}" alt="{{ experience.title }}" class="rounded-lg w-full h-40 object-cover">
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="font-medium">Experience</span>
+                        <span>{{ experience.title }}</span>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="font-medium">Location</span>
+                        <span>{{ experience.location }}</span>
+                    </div>
+                    
+                    <div class="summary-item">
+                        <span class="font-medium">Type</span>
+                        <span>{{ experience.get_experience_type_display }}</span>
+                    </div>
+                    
+                    {% if experience.price_per_day %}
+                    <div class="summary-item">
+                        <span class="font-medium">Price Per Day</span>
+                        <span>{{ experience.price_per_day }} TSh</span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <div class="text-center text-xs text-gray-500 mb-4">
+                            <i class="fas fa-lock mr-1"></i> Your booking is secure and encrypted
+                        </div>
+                        
+                        <a href="{{ request.META.HTTP_REFERER|default:'javascript:history.back()' }}" class="block text-center text-[#395144] hover:text-[#4E6C50]">
+                            <i class="fas fa-arrow-left mr-1"></i> Return to experiences
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Payment method selection
+        const paymentMethods = document.querySelectorAll('.payment-method');
+        const paymentInputs = document.querySelectorAll('input[name="payment_method"]');
+        
+        paymentMethods.forEach(method => {
+            method.addEventListener('click', function() {
+                // Remove selected class from all methods
+                paymentMethods.forEach(m => m.classList.remove('selected'));
+                
+                // Add selected class to clicked method
+                this.classList.add('selected');
+                
+                // Check the corresponding radio button
+                const methodValue = this.dataset.method;
+                const input = document.querySelector(`input[value="${methodValue}"]`);
+                if (input) input.checked = true;
+            });
+        });
+        
+        // Date validation for start and end date
+        const startDateInput = document.querySelector('input[name="start_date"]');
+        const endDateInput = document.querySelector('input[name="end_date"]');
+        
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = this.value;
+                
+                // If end date is before start date, reset it
+                if (endDateInput.value && endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,200 @@
+/* Cart Mobile Styles */
+
+/* Custom media queries for more granular control */
+@media (max-width: 640px) {
+  /* Mobile cart layout */
+  .custom-cart-container {
+    width: 100%;
+    padding: 1rem !important;
+  }
+  
+  .custom-order-summary {
+    width: 100%;
+    min-width: 100% !important;
+    position: static !important;
+  }
+  
+  /* Product item adjustments */
+  .cart-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 1rem 0;
+  }
+  
+  /* Adjust table for mobile viewing */
+  .cart-item td {
+    display: block;
+    width: 100% !important;
+    text-align: left;
+    padding: 0.5rem 0;
+  }
+  
+  /* Hide table headers on mobile */
+  .cart-table thead {
+    display: none;
+  }
+  
+  /* Make product info more compact */
+  .cart-item .flex {
+    flex-direction: row;
+  }
+  
+  /* Center quantity controls */
+  .cart-item td:nth-child(2) {
+    text-align: center;
+    padding: 1rem 0;
+  }
+  
+  /* Make price and action buttons align properly */
+  .cart-item td:nth-child(3),
+  .cart-item td:nth-child(4) {
+    text-align: right;
+  }
+  
+  /* Quick add-to-cart buttons */
+  .add-to-cart-fab {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+  }
+  
+  /* Pull-to-refresh animation */
+  .pull-to-refresh-indicator {
+    height: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-color);
+    font-size: 0.875rem;
+  }
+  
+  /* Bottom sheet for mobile order actions */
+  .mobile-order-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 1rem;
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.1);
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  /* Offline shopping indicator */
+  .offline-indicator {
+    background-color: #FEF3C7;
+    color: #92400E;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    display: none;
+  }
+  
+  /* Install app prompt */
+  .install-app-prompt {
+    display: none;
+    background-color: var(--light-color);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Gestures for cart items */
+  .cart-item {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .swipe-to-delete {
+    position: absolute;
+    top: 0;
+    right: -5rem;
+    bottom: 0;
+    width: 5rem;
+    background-color: #EF4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Animation for "add to cart" */
+  @keyframes addToCartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  
+  .add-to-cart-animation {
+    animation: addToCartPulse 0.5s ease-out;
+  }
+
+  /* Touch-friendly buttons */
+  button, 
+  .increase-quantity, 
+  .decrease-quantity,
+  .checkout-btn {
+    min-height: 44px; /* Recommended minimum touch target size */
+  }
+}
+
+/* Medium screens (tablets) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .custom-cart-container {
+    width: 70%;
+  }
+  
+  .custom-order-summary {
+    width: 30%;
+    min-width: 250px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1025px) {
+  .custom-cart-container {
+    width: 75%;
+  }
+  
+  .custom-order-summary {
+    width: 25%;
+    min-width: 300px;
+  }
+}
+
+/* PWA specific styles for all screen sizes */
+@media (display-mode: standalone) {
+  header {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  footer {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .add-to-cart-fab {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+  
+  .mobile-order-actions {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}

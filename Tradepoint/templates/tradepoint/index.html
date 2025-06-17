@@ -1,0 +1,187 @@
+{% extends 'tradepoint/base.html' %}
+{% load static %}
+
+{% block tradepoint_content %}
+<div class="bg-gray-50 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Agricultural Marketplace</h2>
+            <p class="text-gray-600">Connect with farmers, co-ops, and agribusinesses across Tanzania</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Filters Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="filter-section">
+                    <h3 class="filter-title">Search & Filters</h3>
+                    <form method="get" action="{% url 'tradepoint:index' %}">
+                        <div class="form-group">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" id="search" name="search" class="form-control" placeholder="Search products..." value="{{ request.GET.search }}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="type" class="form-label">Listing Type</label>
+                            <select id="type" name="type" class="form-control">
+                                <option value="">All Types</option>
+                                <option value="sell" {% if request.GET.type == 'sell' %}selected{% endif %}>For Sale</option>
+                                <option value="buy" {% if request.GET.type == 'buy' %}selected{% endif %}>Looking to Buy</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category" class="form-label">Category</label>
+                            <select id="category" name="category" class="form-control">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="region" class="form-label">Region</label>
+                            <select id="region" name="region" class="form-control">
+                                <option value="">All Regions</option>
+                                {% for region in regions %}
+                                <option value="{{ region.id }}" {% if request.GET.region == region.id|stringformat:"i" %}selected{% endif %}>{{ region.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Price Range</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ request.GET.min_price }}">
+                                <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ request.GET.max_price }}">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full btn-primary">
+                            <i class="fas fa-filter mr-2"></i>Apply Filters
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Need Help?</h3>
+                    <p class="text-gray-600 mb-4">Want to post your own listing or have questions about TradePoint?</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'tradepoint:create_listing' %}" class="btn-secondary w-full block text-center">
+                        <i class="fas fa-plus-circle mr-2"></i>Post New Listing
+                    </a>
+                    {% else %}
+                    <a href="{% url 'registration:login' %}?next=/tradepoint/create/" class="btn-secondary w-full block text-center">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Login to Post
+                    </a>
+                    {% endif %}
+                    <div class="mt-4">
+                        <a href="{% url 'website:contact' %}" class="text-[#395144] hover:text-[#4E6C50] transition-colors inline-flex items-center font-medium">
+                            <i class="fas fa-question-circle mr-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Listings Grid -->
+            <div class="lg:col-span-3">
+                <!-- Sorting Options -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 bg-white p-4 rounded-lg shadow">
+                    <div class="text-gray-600 mb-4 sm:mb-0">
+                        <span>{{ listings|length }} results</span>
+                        {% if request.GET.search or request.GET.type or request.GET.category or request.GET.region or request.GET.min_price or request.GET.max_price %}
+                        <a href="{% url 'tradepoint:index' %}" class="ml-2 text-sm text-red-600 hover:text-red-800">
+                            <i class="fas fa-times-circle"></i> Clear filters
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center">
+                        <label for="sort" class="text-gray-600 mr-2">Sort by:</label>
+                        <select id="sort" name="sort" class="form-control w-auto" onchange="this.form.submit()">
+                            <option value="date_desc" {% if request.GET.sort == 'date_desc' %}selected{% endif %}>Newest First</option>
+                            <option value="date_asc" {% if request.GET.sort == 'date_asc' %}selected{% endif %}>Oldest First</option>
+                            <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                    </div>
+                </div>
+                
+                {% if listings %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for listing in listings %}
+                    <div class="listing-card">
+                        <div class="listing-image-container">
+                            {% if listing.get_first_image %}
+                            <img src="{{ listing.get_first_image.image.url }}" alt="{{ listing.title }}" class="listing-image">
+                            {% else %}
+                            <img src="{% static 'tradepoint/images/placeholder.jpg' %}" alt="{{ listing.title }}" class="listing-image">
+                            {% endif %}
+                            <div class="listing-type-badge {% if listing.listing_type == 'sell' %}listing-type-sell{% else %}listing-type-buy{% endif %}">
+                                {% if listing.listing_type == 'sell' %}For Sale{% else %}Wanted{% endif %}
+                            </div>
+                        </div>
+                        <div class="listing-details">
+                            <h3 class="listing-title truncate">{{ listing.title }}</h3>
+                            <div class="listing-price">
+                                {% if listing.price %}
+                                TSh {{ listing.price|floatformat:0 }}
+                                {% if listing.unit %}
+                                <span class="text-gray-600 text-sm">per {{ listing.unit.name }}</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-gray-600">Price Negotiable</span>
+                                {% endif %}
+                            </div>
+                            <div class="listing-location">
+                                <i class="fas fa-map-marker-alt mr-1 text-gray-400"></i>
+                                {{ listing.region.name }}
+                            </div>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ listing.description|truncatechars:100 }}</p>
+                            <div class="listing-meta">
+                                <span>{{ listing.category.name }}</span>
+                                <span>{{ listing.created_at|date:"M d, Y" }}</span>
+                            </div>
+                            <a href="{% url 'tradepoint:listing_detail' listing.id %}" class="mt-4 btn-primary w-full block text-center">View Details</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="current">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="bg-white rounded-lg shadow p-8 text-center">
+                    <div class="text-[#395144] mb-4">
+                        <i class="fas fa-search fa-3x"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No listings found</h3>
+                    <p class="text-gray-600 mb-6">We couldn't find any listings matching your criteria. Try adjusting your filters or search term.</p>
+                    <a href="{% url 'tradepoint:index' %}" class="btn-outline">View All Listings</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

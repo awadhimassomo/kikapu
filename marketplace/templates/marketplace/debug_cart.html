@@ -1,0 +1,112 @@
+{% extends 'marketplace/base.html' %}
+{% load static %}
+
+{% block title %}Cart Diagnostics{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-lg rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold text-[#395144]">Cart Diagnostics</h1>
+            <div class="flex space-x-4">
+                <a href="{% url 'marketplace:deep_clean_cart' %}" class="bg-red-700 text-white px-6 py-3 rounded-lg hover:bg-red-800 transition-colors shadow-md flex items-center font-bold border-2 border-red-800">
+                    <i class="fas fa-radiation mr-2"></i> Deep Clean Cart
+                </a>
+                <a href="{% url 'marketplace:debug_cart' %}?reset=1" class="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors shadow-md flex items-center font-bold border-2 border-red-700">
+                    <i class="fas fa-trash-alt mr-2"></i> Reset Cart
+                </a>
+            </div>
+        </div>
+        
+        {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+            <div class="p-4 mb-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %} rounded">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h2 class="text-lg font-semibold mb-2">Cart Count Summary</h2>
+            <p>Active carts found: <strong>{{ active_cart_count }}</strong></p>
+            
+            {% if active_cart_count > 1 %}
+            <div class="mt-3 p-3 bg-red-100 text-red-700 rounded">
+                <strong>ISSUE DETECTED:</strong> Multiple active carts found for your account. This can cause unexpected behavior.
+                Click "Reset Cart" above to fix this issue.
+            </div>
+            {% endif %}
+        </div>
+        
+        {% for cart_data in carts_data %}
+        <div class="mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-[#395144]">Cart #{{ forloop.counter }} (ID: {{ cart_data.id }})</h2>
+                <div class="text-gray-600">
+                    <p>Created: {{ cart_data.created_at|date:"M d, Y H:i" }}</p>
+                    <p>Updated: {{ cart_data.updated_at|date:"M d, Y H:i" }}</p>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-white rounded-lg shadow mb-4">
+                <h3 class="text-lg font-semibold mb-3">Cart Stats</h3>
+                <p>Total Items: <strong>{{ cart_data.item_count }}</strong></p>
+            </div>
+            
+            {% if cart_data.items %}
+            <h3 class="text-lg font-semibold mt-6 mb-3">Cart Contents</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="py-3 px-4 text-left">Item ID</th>
+                            <th class="py-3 px-4 text-left">Product</th>
+                            <th class="py-3 px-4 text-left">Quantity</th>
+                            <th class="py-3 px-4 text-left">Processing Method</th>
+                            <th class="py-3 px-4 text-left">Added At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_data.items %}
+                        <tr class="border-t">
+                            <td class="py-3 px-4">{{ item.id }}</td>
+                            <td class="py-3 px-4">{{ item.product }}</td>
+                            <td class="py-3 px-4">{{ item.quantity }}</td>
+                            <td class="py-3 px-4">{{ item.processing_method }}</td>
+                            <td class="py-3 px-4">{{ item.created_at|date:"M d, Y H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 mt-4 bg-gray-100 text-gray-600 rounded-lg">
+                <p>This cart is empty.</p>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="p-8 bg-gray-50 rounded-lg text-center">
+            <p class="text-lg text-gray-600">No carts found for your account.</p>
+            <a href="{% url 'marketplace:marketplace' %}" class="mt-4 inline-block bg-[#395144] text-white px-6 py-2 rounded-lg hover:bg-[#2E3F37] transition">
+                Browse Products
+            </a>
+        </div>
+        {% endfor %}
+        
+        <div class="mt-8 p-6 bg-gray-100 rounded-lg">
+            <h2 class="text-lg font-semibold mb-3">What this page shows</h2>
+            <ul class="list-disc ml-6 space-y-2">
+                <li>All active carts associated with your account (should normally be just one)</li>
+                <li>Cart statistics and the items in each cart</li>
+                <li>Creation timestamps to help identify potential issues</li>
+            </ul>
+            <div class="mt-4 p-4 bg-blue-50 text-blue-700 rounded">
+                <p><strong>Note:</strong> If you see multiple carts or unexpected items, click the "Reset Cart" button to fix your cart state.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,588 @@
+{% load static %}
+
+<div class="bg-[#F0EBCE] bg-opacity-30 rounded-3xl shadow-xl p-4 sm:p-5 flex flex-col animate-fade-in" id="order-summary">
+  <div class="flex justify-between items-center md:block mb-3 md:mb-0">
+    <h3 class="text-base sm:text-lg md:text-xl font-bold text-[#395144] mb-0 md:mb-4 flex items-center">
+      <i class="fas fa-receipt text-[#AA8B56] mr-3 text-base"></i>
+      <span>Order Summary</span>
+    </h3>
+    
+    <!-- Toggle button for mobile only -->
+    <button type="button" id="toggle-summary-sidebar" class="md:hidden flex items-center justify-center w-8 h-8 rounded-full bg-[#F0EBCE] text-[#395144]">
+      <i id="summary-sidebar-icon" class="fas fa-chevron-up transition-transform"></i>
+    </button>
+  </div>
+  
+  <div id="summary-sidebar-content" class="summary-content">
+    <!-- Order Items Summary -->
+    {% if cart_items %}
+    <div class="space-y-3 mb-4 max-h-[250px] overflow-y-auto pr-1 scrollbar-thin">
+      {% for item in cart_items %}
+        <div class="flex items-center justify-between text-xs sm:text-sm border-b border-[#395144] border-opacity-10 pb-2">
+          <div class="flex items-center gap-2">
+            <div class="relative w-8 h-8 rounded overflow-hidden flex-shrink-0">
+              {% if item.product.images.exists %}
+                <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+              {% else %}
+                <img src="{% static 'images/placeholder.png' %}" alt="{{ item.product.name }}" class="w-full h-full object-cover">
+              {% endif %}
+            </div>
+            <div>
+              <span class="text-[#395144] font-medium truncate block" style="max-width: 140px;">{{ item.product.name }}</span>
+              <span class="text-gray-600 text-xs"><span id="summary-qty-{{ item.id }}">{{ item.quantity }}</span> x TSh <span id="summary-unit-price-{{ item.id }}" data-price="{{ item.product.price }}">{{ item.product.price|floatformat:0 }}</span></span>
+            </div>
+          </div>
+          <span class="font-medium text-[#395144]">TSh <span id="summary-item-total-{{ item.id }}">{{ item.subtotal|floatformat:0 }}</span></span>
+        </div>
+      {% endfor %}
+    </div>
+    
+    <!-- Price Breakdown -->
+    <div class="space-y-3 mb-6 px-1">
+      <div class="flex justify-between text-gray-600 text-xs sm:text-sm">
+        <span>Subtotal</span>
+        <span class="font-medium text-[#395144]" id="cart-subtotal" class="cart-price-element">TSh {{ cart_total|floatformat:0 }}</span>
+      </div>
+      <div class="flex justify-between text-gray-600 text-xs sm:text-sm">
+        <span>Delivery fee</span>
+        <span class="font-medium text-[#395144]" id="cart-delivery-fee" class="cart-price-element">TSh 2,000</span>
+      </div>
+      <div class="flex justify-between text-gray-600 text-xs sm:text-sm">
+        <span>VAT (18%)</span>
+        <span class="font-medium text-[#395144]" id="cart-vat" class="cart-price-element">TSh {{ vat_amount|default:"0"|floatformat:0 }}</span>
+      </div>
+    </div>
+    
+    <!-- Total -->
+    <div class="flex justify-between font-bold text-xs sm:text-sm mb-3 pt-3 pb-2 border-t border-[#395144] border-opacity-20 px-1">
+      <span>Total</span>
+      <span class="text-[#395144]" id="cart-final-total" class="cart-price-element">TSh {{ final_total|floatformat:0 }}</span>
+    </div>
+  
+    <!-- Estimated Delivery Time -->
+    <div class="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow-sm">
+      <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-clock text-[#AA8B56]"></i>
+      </div>
+      <div class="flex-grow">
+        <div class="text-xs text-gray-500">Estimated delivery time</div>
+        <div class="font-medium text-sm text-[#395144]" id="estimated-delivery-time">2-3 business days</div>
+      </div>
+    </div>
+
+    <!-- Delivery Method -->
+    <div class="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow-sm">
+      <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-truck text-[#AA8B56]"></i>
+      </div>
+      <div class="flex-grow">
+        <div class="text-xs text-gray-500">Delivery method</div>
+        <div class="font-medium text-sm text-[#395144]">
+          <span id="delivery-method-display">Standard Delivery</span>
+          <div class="text-xs text-gray-500" id="delivery-fee-display">TSh 5,000</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Payment Method (New Section) -->
+    <div class="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow-sm">
+      <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-credit-card text-[#AA8B56]"></i>
+      </div>
+      <div class="flex-grow">
+        <div class="text-xs text-gray-500">Payment method</div>
+        <div class="font-medium text-sm text-[#395144]">
+          <span id="sidebar-payment-method">Kikapu Card Payment</span>
+          <div class="text-xs text-gray-500" id="sidebar-payment-detail">Prepaid Card</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scheduled Delivery Info (hidden by default) -->
+    <div id="scheduled-delivery-info" class="bg-white rounded-xl p-3 mb-4 flex items-center gap-3 shadow-sm hidden">
+      <div class="w-8 h-8 bg-[#F0EBCE] rounded-full flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-calendar-alt text-[#AA8B56]"></i>
+      </div>
+      <div class="flex-grow">
+        <div class="text-xs text-gray-500">Schedule type</div>
+        <div class="font-medium text-sm text-[#395144]" id="schedule-type-display">One-time Delivery</div>
+        <div class="text-xs text-gray-500" id="schedule-date-display">Select date and time</div>
+      </div>
+    </div>
+    
+    <div class="mt-auto">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-full h-px bg-[#F0EBCE]"></div>
+        <span class="text-[10px] sm:text-xs text-[#AA8B56] whitespace-nowrap font-medium">Secure Checkout</span>
+        <div class="w-full h-px bg-[#F0EBCE]"></div>
+      </div>
+      
+      <!-- Only show Place Order button on the final step -->
+      {% if is_confirmation_step %}
+      <button type="button" id="sidebar-place-order-btn" class="w-full py-4 px-12 bg-[#395144] hover:bg-[#4E6C50] text-white text-sm md:text-base font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 group">
+        <span>Place Order</span>
+        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+      </button>
+      {% else %}
+      <div class="text-center text-sm text-gray-600 py-2">
+        Complete all steps to place your order
+      </div>
+      {% endif %}
+      
+      <div class="flex justify-center mt-5 mb-2">
+        <div class="flex items-center gap-2 text-[10px] sm:text-xs text-gray-500">
+          <i class="fas fa-lock text-[#AA8B56]"></i>
+          <span>Secure transaction</span>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="text-center py-6">
+      <div class="text-sm text-gray-500">Your cart is empty</div>
+      <a href="{% url 'marketplace:marketplace' %}" class="block w-full text-center text-[#395144] hover:text-[#AA8B56] py-2 transition-colors font-medium mt-2">
+        Continue Shopping
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Address Not Selected Modal -->
+<div id="address-required-modal" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+  <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 transform transition-transform animate-pop-in shadow-2xl border-2 border-[#AA8B56]">
+    <div class="text-center mb-5">
+      <div class="w-20 h-20 rounded-full bg-red-100 mx-auto flex items-center justify-center mb-4">
+        <i class="fas fa-map-marker-alt text-red-500 text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-[#395144]">Delivery Address Required</h3>
+      <p class="text-gray-600 text-sm mt-3">Please select a delivery address to complete your order. You cannot proceed without a valid delivery address.</p>
+    </div>
+    <div class="flex justify-center">
+      <button type="button" id="close-address-modal" class="px-8 py-3 bg-[#395144] text-white rounded-lg font-medium hover:bg-[#4E6C50] transition-colors shadow-md">
+        OK, Got It
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Toggle summary content on mobile
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleSummarySidebar = document.getElementById('toggle-summary-sidebar');
+    const summarySidebarContent = document.getElementById('summary-sidebar-content');
+    const summarySidebarIcon = document.getElementById('summary-sidebar-icon');
+    
+    if (toggleSummarySidebar && summarySidebarContent && summarySidebarIcon) {
+      toggleSummarySidebar.addEventListener('click', function() {
+        summarySidebarContent.classList.toggle('hidden-mobile');
+        summarySidebarIcon.classList.toggle('fa-chevron-down');
+        summarySidebarIcon.classList.toggle('fa-chevron-up');
+      });
+      
+      // Check screen size and set initial state
+      function checkMobileSidebarView() {
+        if (window.innerWidth < 640) { // sm breakpoint in Tailwind
+          summarySidebarContent.classList.add('hidden-mobile');
+          summarySidebarIcon.classList.remove('fa-chevron-up');
+          summarySidebarIcon.classList.add('fa-chevron-down');
+        } else {
+          summarySidebarContent.classList.remove('hidden-mobile');
+        }
+      }
+      
+      // Initialize
+      checkMobileSidebarView();
+      
+      // Check on resize
+      window.addEventListener('resize', checkMobileSidebarView);
+    }
+    
+    // Handle the Place Order button click
+    const sidebarPlaceOrderBtn = document.getElementById('sidebar-place-order-btn');
+    const addressRequiredModal = document.getElementById('address-required-modal');
+    const closeAddressModal = document.getElementById('close-address-modal');
+    
+    if (sidebarPlaceOrderBtn) {
+      sidebarPlaceOrderBtn.addEventListener('click', function(event) {
+        // Prevent the default form submission behavior
+        event.preventDefault();
+        
+        // Multiple ways to check for address selection - improved for reliability
+        const addressSelect = document.querySelector('input[name="address_id"]:checked') || 
+                             document.querySelector('input[name="modal_address_id"]:checked');
+        const hiddenAddressField = document.getElementById('selected-address-id');
+        const addressDisplayText = document.getElementById('selected-address-line');
+        
+        // Check if there's no address selected in any of the possible ways
+        const noAddressSelected = (!addressSelect || !addressSelect.value) && 
+                                (!hiddenAddressField || !hiddenAddressField.value || hiddenAddressField.value === '') &&
+                                (!addressDisplayText || addressDisplayText.textContent === 'Select an address');
+        
+        if (noAddressSelected) {
+          // Show the address required modal
+          addressRequiredModal.classList.remove('hidden');
+          console.log('No delivery address selected - showing modal');
+        } else {
+          // Submit the form if address is selected
+          console.log('Address selected - submitting form');
+          const checkoutForm = document.getElementById('checkout-form');
+          if (checkoutForm) {
+            checkoutForm.submit();
+          } else {
+            console.error('Checkout form not found');
+            alert('Error: Checkout form not found. Please refresh the page and try again.');
+          }
+        }
+      });
+    }
+    
+    // Close the address modal
+    if (closeAddressModal) {
+      closeAddressModal.addEventListener('click', function() {
+        addressRequiredModal.classList.add('hidden');
+        
+        // Find the address section in different possible ways
+        const addressSection = document.querySelector('.delivery-address-section') || 
+                              document.getElementById('change-address-btn')?.closest('div').parentElement ||
+                              document.querySelector('.bg-white.rounded-2xl:has(h3:contains("Delivery Address"))');
+        
+        if (addressSection) {
+          // Scroll to the address section
+          addressSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Add a more noticeable highlight effect
+          addressSection.classList.add('highlight-section');
+          addressSection.style.border = '2px solid #AA8B56';
+          
+          // Trigger the address change button if it exists
+          const changeAddressBtn = document.getElementById('change-address-btn');
+          if (changeAddressBtn) {
+            // Add pulsing effect to draw attention to the button
+            changeAddressBtn.classList.add('pulse-attention');
+            
+            // Optional: Auto-click the change address button after a delay
+            setTimeout(() => {
+              changeAddressBtn.click();
+            }, 500);
+          }
+          
+          // Remove highlight after animation completes
+          setTimeout(() => {
+            addressSection.classList.remove('highlight-section');
+            addressSection.style.border = '';
+            if (changeAddressBtn) changeAddressBtn.classList.remove('pulse-attention');
+          }, 3000);
+        } else {
+          console.error('Address section not found');
+        }
+      });
+    }
+    
+    // Also handle clicks outside the modal to close it
+    window.addEventListener('click', function(event) {
+      if (event.target === addressRequiredModal) {
+        addressRequiredModal.classList.add('hidden');
+      }
+    });
+  });
+</script>
+
+<!-- Global Order Summary Update Function -->
+<script>
+  // This function is made available globally so it can be called from any part of the checkout process
+  window.updateKikapuOrderSummary = function(deliveryFee, methodName) {
+    console.log(`Global update: Setting delivery fee to TSh ${deliveryFee} for ${methodName}`);
+    
+    // Update fee display
+    const feeDisplay = document.getElementById('delivery-fee');
+    if (feeDisplay) {
+      feeDisplay.textContent = `TSh ${deliveryFee.toLocaleString()}`;
+    }
+    
+    // Update method display
+    const methodDisplay = document.getElementById('delivery-method-display');
+    if (methodDisplay) {
+      methodDisplay.textContent = methodName;
+    }
+    
+    const feeDisplaySmall = document.getElementById('delivery-fee-display');
+    if (feeDisplaySmall) {
+      feeDisplaySmall.textContent = `TSh ${deliveryFee.toLocaleString()}`;
+    }
+    
+    // Get the current subtotal
+    const subtotalDisplay = document.getElementById('delivery-subtotal');
+    let subtotal = 0;
+    if (subtotalDisplay) {
+      const subtotalText = subtotalDisplay.textContent.replace('TSh ', '').replace(/,/g, '');
+      subtotal = parseFloat(subtotalText) || 0;
+    }
+    
+    // Calculate VAT (18%)
+    const vat = Math.round((subtotal + deliveryFee) * 0.18);
+    const vatDisplay = document.getElementById('delivery-vat');
+    if (vatDisplay) {
+      vatDisplay.textContent = `TSh ${vat.toLocaleString()}`;
+    }
+    
+    // Calculate total
+    const total = subtotal + deliveryFee + vat;
+    const totalDisplay = document.getElementById('delivery-total');
+    if (totalDisplay) {
+      totalDisplay.textContent = `TSh ${total.toLocaleString()}`;
+    }
+    
+    // Store delivery info in localStorage for persistence
+    localStorage.setItem('kikapuDeliveryFee', deliveryFee);
+    localStorage.setItem('kikapuDeliveryMethod', methodName);
+    localStorage.setItem('kikapuVatAmount', vat);
+    localStorage.setItem('kikapuOrderTotal', total);
+  };
+  
+  // Initialize the order summary with the latest cart data on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      // First load any saved cart data
+      loadSavedCartData();
+      
+      // Then use standard delivery as default (2000 TSh)
+      window.updateKikapuOrderSummary(2000, 'Standard Delivery');
+    }, 200); // Short delay to ensure all elements are loaded
+  });
+  
+  // Key addition: Also reload cart data when ANY step of checkout becomes active
+  document.addEventListener('click', function(event) {
+    // Check if the clicked element is a step navigation button
+    if (event.target.closest('.stepper-item') || 
+        event.target.id === 'back-to-cart-btn' || 
+        event.target.id === 'continue-to-payment-btn' ||
+        event.target.closest('#back-to-cart-btn') ||
+        event.target.closest('#continue-to-payment-btn')) {
+      
+      // Short delay to ensure step transition has completed
+      setTimeout(function() {
+        console.log('Step navigation detected - reloading cart data');
+        loadSavedCartData();
+      }, 100);
+    }
+  });
+  
+  // Global function to update payment method in the order summary
+  window.updatePaymentMethodSummary = function(methodName, detailText) {
+    // Update method display
+    const methodDisplay = document.getElementById('payment-method-display');
+    if (methodDisplay) {
+      methodDisplay.textContent = methodName;
+    }
+    
+    // Update details display
+    const detailDisplay = document.getElementById('payment-detail-display');
+    if (detailDisplay) {
+      detailDisplay.textContent = detailText || '';
+    }
+    
+    // Store payment info in localStorage for persistence
+    localStorage.setItem('kikapuPaymentMethod', methodName);
+    localStorage.setItem('kikapuPaymentDetail', detailText || '');
+  };
+  
+  // This script ensures cart updates are preserved when navigating between checkout steps
+  function loadSavedCartData() {
+    // Only run when not in the cart step (where updates are managed differently)
+    const isCartStep = document.getElementById('step-1') && 
+                       document.getElementById('step-1').classList.contains('active');
+    
+    // Debug: Print current step information
+    console.log('====== CART DEBUG: CHECKOUT STEP TRANSITION ======');
+    console.log('Current step is cart step?', isCartStep);
+    
+    // Debug: Print cart items from HTML
+    const cartItemsHtml = document.querySelectorAll('.summary-content [id^="summary-qty-"]');
+    console.log('Cart items in HTML:', Array.from(cartItemsHtml).map(el => {
+      const itemId = el.id.replace('summary-qty-', '');
+      const qty = el.textContent;
+      const unitPrice = document.getElementById(`summary-unit-price-${itemId}`)?.dataset?.price || 'not found';
+      const subtotal = document.getElementById(`summary-item-total-${itemId}`)?.textContent || 'not found';
+      return { itemId, qty, unitPrice, subtotal };
+    }));
+    
+    // Debug: Print cart totals from HTML
+    const subtotal = document.getElementById('cart-subtotal')?.textContent || 'not found';
+    const deliveryFee = document.getElementById('cart-delivery-fee')?.textContent || 'not found';
+    const vat = document.getElementById('cart-vat')?.textContent || 'not found';
+    const total = document.getElementById('cart-final-total')?.textContent || 'not found';
+    console.log('Cart totals in HTML:', { subtotal, deliveryFee, vat, total });
+    
+    if (!isCartStep) {
+      try {
+        const savedCartData = localStorage.getItem('kikapu-cart-data');
+        
+        if (savedCartData) {
+          const cartData = JSON.parse(savedCartData);
+          const now = Date.now();
+          const maxAgeMs = 30 * 60 * 1000; // 30 minutes
+          
+          // Only use saved data if it's recent (within 30 minutes)
+          if (cartData && cartData.updatedAt && (now - cartData.updatedAt < maxAgeMs)) {
+            console.log('Loading saved cart data:', cartData);
+            
+            // Update totals
+            const subtotalEl = document.getElementById('cart-subtotal');
+            const deliveryFeeEl = document.getElementById('cart-delivery-fee');
+            const vatEl = document.getElementById('cart-vat');
+            const totalEl = document.getElementById('cart-final-total');
+            
+            // Helper function to update elements
+            function updateElement(el, value) {
+              if (el && value !== undefined) {
+                el.innerText = 'TSh ' + Math.round(value).toLocaleString();
+              }
+            }
+            
+            updateElement(subtotalEl, cartData.subtotal);
+            updateElement(deliveryFeeEl, cartData.deliveryFee);
+            updateElement(vatEl, cartData.vat);
+            updateElement(totalEl, cartData.total);
+            
+            // Also update simple text elements (no TSh prefix)
+            document.querySelectorAll('[id="summary-subtotal"]').forEach(el => {
+              el.innerText = Math.round(cartData.subtotal).toLocaleString();
+            });
+            document.querySelectorAll('[id="summary-delivery-fee"]').forEach(el => {
+              el.innerText = Math.round(cartData.deliveryFee).toLocaleString();
+            });
+            document.querySelectorAll('[id="summary-vat"]').forEach(el => {
+              el.innerText = Math.round(cartData.vat).toLocaleString();
+            });
+            document.querySelectorAll('[id="summary-total"]').forEach(el => {
+              el.innerText = Math.round(cartData.total).toLocaleString();
+            });
+            
+            // Update individual item quantities if they exist
+            if (cartData.items && cartData.items.length > 0) {
+              cartData.items.forEach(item => {
+                if (!item.id) return;
+                
+                const qtyEl = document.getElementById(`summary-qty-${item.id}`);
+                const totalEl = document.getElementById(`summary-item-total-${item.id}`);
+                
+                if (qtyEl) qtyEl.innerText = item.quantity;
+                if (totalEl) totalEl.innerText = Math.round(item.subtotal).toLocaleString();
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading cached cart data:', error);
+      }
+    }
+  }
+  
+  // Load saved cart data on DOMContentLoaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadSavedCartData);
+  } else {
+    // DOM already loaded, run immediately
+    loadSavedCartData();
+  }
+    console.log(`Global update: Setting payment method to ${methodName} (${detailText})`);
+    
+    // Update payment method display
+    const paymentMethodEl = document.getElementById('sidebar-payment-method');
+    if (paymentMethodEl) {
+      paymentMethodEl.textContent = methodName;
+    }
+    
+    // Update payment detail display
+    const paymentDetailEl = document.getElementById('sidebar-payment-detail');
+    if (paymentDetailEl) {
+      paymentDetailEl.textContent = detailText;
+    }
+    
+    // Store payment info in localStorage for persistence
+    localStorage.setItem('kikapuPaymentMethod', methodName);
+    localStorage.setItem('kikapuPaymentDetail', detailText);
+  };
+</script>
+
+<style>
+  /* Mobile summary toggle styles */
+  @media (max-width: 639px) {
+    .hidden-mobile {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    
+    .summary-content {
+      max-height: 1000px; /* Arbitrary large value */
+      overflow: hidden;
+      transition: max-height 0.3s ease-in;
+    }
+  }
+  
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #AA8B56 rgba(57, 81, 68, 0.1);
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgba(57, 81, 68, 0.1);
+    border-radius: 10px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #AA8B56;
+    border-radius: 10px;
+  }
+  
+  /* Animation for modal */
+  .animate-pop-in {
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  @keyframes popIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    75% {
+      transform: scale(1.05);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* Enhanced highlight effect for address section */
+  .highlight-section {
+    animation: highlightPulse 1.5s ease-in-out;
+    position: relative;
+    z-index: 10;
+  }
+  
+  @keyframes highlightPulse {
+    0% { box-shadow: 0 0 0 0 rgba(170, 139, 86, 0.8); }
+    50% { box-shadow: 0 0 0 15px rgba(170, 139, 86, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(170, 139, 86, 0); }
+  }
+  
+  /* Pulsing attention effect for buttons */
+  .pulse-attention {
+    animation: pulseAttention 1.5s infinite;
+  }
+  
+  @keyframes pulseAttention {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+</style>

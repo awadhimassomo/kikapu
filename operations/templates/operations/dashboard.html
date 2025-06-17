@@ -1,0 +1,1289 @@
+{% extends 'operations/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - KIKAPU Operations{% endblock %}
+{% block page_title %}Operations Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  .stat-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  .tool-card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .tool-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  .tool-card .card-overlay {
+    transition: all 0.3s ease;
+  }
+  .tool-card:hover .card-overlay {
+    opacity: 0.9;
+  }
+  .tool-card:hover .card-icon {
+    transform: scale(1.1);
+  }
+  .card-icon {
+    transition: transform 0.3s ease;
+  }
+  .progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e5e7eb;
+    overflow: hidden;
+  }
+  .progress-value {
+    height: 100%;
+    border-radius: 4px;
+    background-color: var(--primary-color);
+  }
+  
+  /* Modal styles */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    transition: all 0.3s ease;
+  }
+  .modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-content {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    max-width: 90%;
+    width: 500px;
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+  }
+  .modal.show .modal-content {
+    transform: translateY(0);
+  }
+  .modal-header {
+    padding: 1.5rem;
+    background: linear-gradient(to right, #395144, #4E6C50);
+    color: white;
+  }
+  .modal-body {
+    padding: 1.5rem;
+  }
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    background-color: #f9fafb;
+    display: flex;
+    justify-content: flex-end;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Banner -->
+<div class="relative bg-gradient-to-r from-primary to-secondary rounded-2xl shadow-lg mb-8 overflow-hidden">
+  <div class="absolute right-0 top-0 w-1/3 h-full opacity-20">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" class="w-full h-full"><path d="M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63" stroke-width="100" stroke="white" fill="none"></path></svg>
+  </div>
+  <div class="relative p-8 md:p-10 text-white z-10">
+    <h2 class="text-2xl md:text-3xl font-bold mb-2">Welcome to Kikapu Operations</h2>
+    <p class="text-white text-opacity-90 mb-4 max-w-2xl">Your central hub for managing marketplace products, relationships, and operations. Here's your overview for today.</p>
+    <div class="inline-flex items-center bg-white bg-opacity-20 rounded-full px-4 py-1 text-sm">
+      <i class="fas fa-calendar-alt mr-2"></i> April 27, 2025
+    </div>
+  </div>
+</div>
+
+<!-- Key Metrics Section: Enhanced -->
+<!-- Commodity Tools section has been removed -->
+
+<!-- Commodity Modal has been removed -->
+
+<!-- Order Statistics Section -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <!-- Total Orders -->
+  <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-indigo-500">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Total Orders</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ total_orders }}</h3>
+        <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+          <div class="bg-indigo-500 h-full w-full"></div>
+        </div>
+      </div>
+      <div class="h-16 w-16 bg-indigo-500 bg-opacity-10 rounded-full flex items-center justify-center">
+        <i class="fas fa-shopping-bag text-2xl text-indigo-500"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center justify-between">
+      <a href="{% url 'admin:marketplace_order_changelist' %}" class="text-sm font-medium text-indigo-600 flex items-center hover:underline group">
+        View all orders <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+      </a>
+      <span class="text-xs text-gray-500">100%</span>
+    </div>
+  </div>
+  
+  <!-- Pending Orders -->
+  <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-yellow-500">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pending Orders</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ pending_orders }}</h3>
+        <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div class="bg-yellow-500 h-full" {% if pending_percent > 0 %}style="width: {{ pending_percent }}%"{% else %}class="w-0"{% endif %}></div>
+          </div>
+      </div>
+      <div class="h-16 w-16 bg-yellow-500 bg-opacity-10 rounded-full flex items-center justify-center">
+        <i class="fas fa-clock text-2xl text-yellow-500"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center justify-between">
+      <a href="{% url 'admin:marketplace_order_changelist' %}?status__exact=PENDING" class="text-sm font-medium text-yellow-600 flex items-center hover:underline group">
+        View pending orders <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+      </a>
+      <span class="text-xs text-gray-500">{{ pending_percent }}%</span>
+    </div>
+  </div>
+  
+  <!-- Processing Orders -->
+  <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-orange-500">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Processing Orders</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ processing_orders }}</h3>
+        <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div class="bg-orange-500 h-full" {% if processing_percent > 0 %}style="width: {{ processing_percent }}%"{% else %}class="w-0"{% endif %}></div>
+          </div>
+      </div>
+      <div class="h-16 w-16 bg-orange-500 bg-opacity-10 rounded-full flex items-center justify-center">
+        <i class="fas fa-spinner text-2xl text-orange-500"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center justify-between">
+      <a href="{% url 'admin:marketplace_order_changelist' %}?status__exact=PROCESSING" class="text-sm font-medium text-orange-600 flex items-center hover:underline group">
+        View processing orders <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+      </a>
+      <span class="text-xs text-gray-500">{{ processing_percent }}%</span>
+    </div>
+  </div>
+  
+  <!-- Completed Orders -->
+  <div class="stat-card bg-white rounded-2xl shadow p-6 border-l-4 border-green-600">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Completed Orders</p>
+        <h3 class="text-3xl font-bold text-gray-800 mt-1">{{ completed_orders }}</h3>
+        <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div class="bg-green-600 h-full" {% if completed_percent > 0 %}style="width: {{ completed_percent }}%"{% else %}class="w-0"{% endif %}></div>
+          </div>
+      </div>
+      <div class="h-16 w-16 bg-green-600 bg-opacity-10 rounded-full flex items-center justify-center">
+        <i class="fas fa-check-circle text-2xl text-green-600"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center justify-between">
+      <a href="{% url 'admin:marketplace_order_changelist' %}?status__exact=COMPLETED" class="text-sm font-medium text-green-600 flex items-center hover:underline group">
+        View completed orders <i class="fas fa-arrow-right ml-1 transform group-hover:translate-x-1 transition-transform"></i>
+      </a>
+      <span class="text-xs text-gray-500">{{ completed_percent }}%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Product Management Section -->
+<div class="bg-white rounded-2xl shadow overflow-hidden mb-8">
+  <div class="bg-gradient-to-r from-primary to-secondary p-6 flex justify-between items-center">
+    <h2 class="text-xl font-bold text-white flex items-center">
+      <i class="fas fa-box mr-3"></i>
+      Product Management
+    </h2>
+    <a href="{% url 'admin:marketplace_product_add' %}" class="inline-flex items-center px-4 py-2 bg-accent hover:bg-opacity-90 text-white rounded-lg transition-colors text-sm font-medium shadow-md hover:shadow-lg">
+      <i class="fas fa-plus mr-2"></i>
+      <span>Add Product</span>
+    </a>
+  </div>
+  
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <!-- Total Products -->
+      <div class="bg-opacity-10 bg-primary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-cube text-xl text-primary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Total Products</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ total_products }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Available Products -->
+      <div class="bg-opacity-10 bg-green-600 rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-green-600 bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-check text-xl text-green-600"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Available</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ available_products }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Out of Stock Products -->
+      <div class="bg-opacity-10 bg-red-500 rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-red-500 bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-times text-xl text-red-500"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Out of Stock</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ out_of_stock_products }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Categories -->
+      <div class="bg-opacity-10 bg-accent rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-accent bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-tags text-xl text-accent"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Categories</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ category_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Products Table -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <h3 class="font-semibold text-gray-800">Recently Added Products</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for product in recent_products %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="h-10 w-10 flex-shrink-0">
+                    {% if product.images.first.image %}
+                    <img class="h-10 w-10 rounded-full object-cover" src="{{ product.images.first.image.url }}" alt="">
+                    {% else %}
+                    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                      <i class="fas fa-box"></i>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                    <div class="text-sm text-gray-500">{{ product.business.business_name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ product.category.name }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ product.price|floatformat:2 }} TSh</div>
+                <div class="text-sm text-gray-500">per {{ product.get_unit_display }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">{{ product.stock_quantity }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                {% if product.is_available and product.stock_quantity > 0 %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                  Available
+                </span>
+                {% elif not product.is_available %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                  Unavailable
+                </span>
+                {% else %}
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                  Out of Stock
+                </span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{% url 'admin:marketplace_product_change' product.id %}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit Product" aria-label="Edit Product">
+                  <i class="fas fa-edit"></i>
+                  <span class="sr-only">Edit Product</span>
+                </a>
+                <a href="{% url 'admin:marketplace_product_delete' product.id %}" class="text-red-600 hover:text-red-900" title="Delete Product" aria-label="Delete Product">
+                  <i class="fas fa-trash"></i>
+                  <span class="sr-only">Delete Product</span>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                Products will appear here
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-gray-200">
+        <a href="{% url 'admin:marketplace_product_changelist' %}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium flex items-center justify-center">
+          View All Products
+          <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User Management Section -->
+<div class="bg-white rounded-2xl shadow overflow-hidden mb-8">
+  <div class="bg-gradient-to-r from-primary to-secondary p-6 flex justify-between items-center">
+    <h2 class="text-xl font-bold text-white flex items-center">
+      <i class="fas fa-users mr-3"></i>
+      User Management
+    </h2>
+    <a href="{% url 'admin:registration_user_add' %}" class="inline-flex items-center px-4 py-2 bg-accent hover:bg-opacity-90 text-white rounded-lg transition-colors text-sm font-medium shadow-md hover:shadow-lg">
+      <i class="fas fa-plus mr-2"></i>
+      <span>Add User</span>
+    </a>
+  </div>
+  
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+      <!-- Total Users -->
+      <div class="bg-opacity-10 bg-primary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-users text-xl text-primary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Total Users</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ total_users }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Customers -->
+      <div class="bg-opacity-10 bg-secondary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-secondary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-user text-xl text-secondary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Customers</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ customer_count }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Businesses -->
+      <div class="bg-opacity-10 bg-accent rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-accent bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-store text-xl text-accent"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Businesses</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ business_count }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Agents -->
+      <div class="bg-opacity-20 bg-primary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-user-tie text-xl text-primary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Agents</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ agent_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Users Table -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <h3 class="font-semibold text-gray-800">Recently Registered Users</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Joined</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for user in recent_users %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="h-10 w-10 flex-shrink-0">
+                    {% if user.profile_image %}
+                    <img class="h-10 w-10 rounded-full object-cover" src="{{ user.profile_image.url }}" alt="">
+                    {% else %}
+                    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ user.firstName }} {{ user.lastName }}</div>
+                    <div class="text-sm text-gray-500">{{ user.email|default:"No email" }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                {% if user.user_type == 'CUSTOMER' %}bg-primary bg-opacity-10 text-primary
+                {% elif user.user_type == 'BUSINESS' %}bg-secondary bg-opacity-10 text-secondary
+                {% elif user.user_type == 'AGENT' %}bg-accent bg-opacity-10 text-accent
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {{ user.get_user_type_display }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ user.phoneNumber }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ user.date_joined|date:"M d, Y" }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{% url 'admin:registration_user_change' user.id %}" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                  <i class="fas fa-edit"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                Users will appear here
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-gray-200">
+        <a href="{% url 'admin:registration_user_changelist' %}" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium flex items-center justify-center">
+          View All Users
+          <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Group Delivery Management Section -->
+<div class="bg-white rounded-2xl shadow overflow-hidden mb-8">
+  <div class="bg-gradient-to-r from-primary to-secondary p-6 flex justify-between items-center">
+    <h2 class="text-xl font-bold text-white flex items-center">
+      <i class="fas fa-truck mr-3"></i>
+      Group Delivery Management
+    </h2>
+    <a href="/admin/marketplace/deliverygroup/add/" class="inline-flex items-center px-4 py-2 bg-accent hover:bg-opacity-90 text-white rounded-lg transition-colors text-sm font-medium shadow-md hover:shadow-lg">
+      <i class="fas fa-plus mr-2"></i>
+      <span>Add Delivery Group</span>
+    </a>
+  </div>
+  
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <!-- Active Groups -->
+      <div class="bg-opacity-10 bg-primary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-users text-xl text-primary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Active Groups</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ active_groups }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Scheduled Deliveries -->
+      <div class="bg-opacity-10 bg-secondary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-secondary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-calendar-alt text-xl text-secondary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Scheduled Deliveries</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ scheduled_deliveries }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Average Group Size -->
+      <div class="bg-opacity-10 bg-accent rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-accent bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-user-friends text-xl text-accent"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Avg. Group Size</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ avg_group_size|floatformat:1 }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Active Delivery Groups Table -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <h3 class="font-semibold text-gray-800">Active Delivery Groups</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Group Code</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leader</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delivery Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Slot</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for group in delivery_groups %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ group.code }}</div>
+                <div class="text-xs text-gray-500">Created {{ group.created_at|timesince }} ago</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="text-sm font-medium text-gray-900">{{ group.leader.user.firstName }} {{ group.leader.user.lastName }}</div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ group.order_count }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ group.delivery_date|date:"M d, Y" }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                {% if group.time_slot == 'MORNING' %}bg-amber-100 text-amber-800
+                {% elif group.time_slot == 'AFTERNOON' %}bg-blue-100 text-blue-800
+                {% else %}bg-purple-100 text-purple-800{% endif %}">
+                  {{ group.get_time_slot_display }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="/admin/marketplace/deliverygroup/{{ group.id }}/change/" class="text-indigo-600 hover:text-indigo-900 mr-3">
+                  <i class="fas fa-edit"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                Delivery groups will appear here
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-gray-200">
+        <a href="/admin/marketplace/deliverygroup/" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium flex items-center justify-center">
+          View All Delivery Groups
+          <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Management Section -->
+<div class="bg-white rounded-2xl shadow overflow-hidden mb-8">
+  <div class="bg-gradient-to-r from-primary to-secondary p-6 flex justify-between items-center">
+    <h2 class="text-xl font-bold text-white flex items-center">
+      <i class="fas fa-tags mr-3"></i>
+      Category Management
+    </h2>
+    <a href="{% url 'admin:marketplace_category_add' %}" class="inline-flex items-center px-4 py-2 bg-accent hover:bg-opacity-90 text-white rounded-lg transition-colors text-sm font-medium shadow-md hover:shadow-lg">
+      <i class="fas fa-plus mr-2"></i>
+      <span>Add Category</span>
+    </a>
+  </div>
+  
+  <div class="p-6">
+    <!-- Categories Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <!-- Total Categories -->
+      <div class="bg-opacity-10 bg-primary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-primary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-folder text-xl text-primary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Total Categories</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ category_count }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Top Level Categories -->
+      <div class="bg-opacity-10 bg-secondary rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-secondary bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-layer-group text-xl text-secondary"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Parent Categories</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ parent_category_count }}</h3>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Subcategories -->
+      <div class="bg-opacity-10 bg-accent rounded-xl p-4 border border-gray-200">
+        <div class="flex items-center">
+          <div class="h-12 w-12 rounded-full bg-accent bg-opacity-20 flex items-center justify-center mr-4">
+            <i class="fas fa-sitemap text-xl text-accent"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Subcategories</p>
+            <h3 class="text-2xl font-bold text-gray-800">{{ subcategory_count }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Categories Table -->
+    <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
+      <div class="p-4 bg-gray-50 border-b border-gray-200">
+        <h3 class="font-semibold text-gray-800">Categories</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parent</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for category in categories %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="h-10 w-10 flex-shrink-0">
+                    {% if category.image %}
+                    <img class="h-10 w-10 rounded-full object-cover" src="{{ category.image.url }}" alt="">
+                    {% else %}
+                    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                      <i class="fas fa-folder"></i>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ category.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ category.slug }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {% if category.parent %}
+                {{ category.parent.name }}
+                {% else %}
+                <span class="text-xs text-gray-400">None</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ category.product_count }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="/admin/marketplace/category/{{ category.id }}/change/" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Edit Category">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="/admin/marketplace/category/{{ category.id }}/delete/" class="text-red-600 hover:text-red-900" title="Delete Category">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                Categories will appear here
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-gray-200">
+        <a href="/admin/marketplace/category/" class="text-indigo-600 hover:text-indigo-900 text-sm font-medium flex items-center justify-center">
+          View All Categories
+          <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Additional Management Sections -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+  <!-- Order Management Section -->
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <div class="bg-gradient-to-r from-purple-600 to-purple-800 p-6">
+      <h2 class="text-xl font-bold text-white flex items-center">
+        <i class="fas fa-shopping-bag mr-3"></i>
+        Order Management
+      </h2>
+    </div>
+    <div class="p-6">
+      <div class="space-y-4">
+        <a href="{% url 'admin:marketplace_order_changelist' %}" class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+          <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-list text-purple-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="font-medium text-gray-800">View All Orders</h3>
+            <p class="text-sm text-gray-500">Access and manage all customer orders</p>
+          </div>
+          <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+        </a>
+        
+        <a href="{% url 'admin:marketplace_order_changelist' %}?status__exact=PENDING" class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+          <div class="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-clock text-orange-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="font-medium text-gray-800">Pending Orders</h3>
+            <p class="text-sm text-gray-500">View orders awaiting processing</p>
+          </div>
+          <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+        </a>
+        
+        <a href="{% url 'admin:marketplace_order_changelist' %}?status__exact=PROCESSING" class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+          <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-spinner text-blue-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="font-medium text-gray-800">Orders in Processing</h3>
+            <p class="text-sm text-gray-500">View orders being processed</p>
+          </div>
+          <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Customer Management -->
+  <div class="bg-white rounded-2xl shadow overflow-hidden">
+    <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 p-6">
+      <h2 class="text-xl font-bold text-white flex items-center">
+        <i class="fas fa-users mr-3"></i>
+        Customer Management
+      </h2>
+    </div>
+    <div class="p-6">
+      <div class="space-y-4">
+        <a href="{% url 'admin:registration_customerprofile_changelist' %}" class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+          <div class="h-10 w-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-user text-indigo-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="font-medium text-gray-800">Customer Profiles</h3>
+            <p class="text-sm text-gray-500">Manage customer accounts and profiles</p>
+          </div>
+          <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+        </a>
+        
+        <a href="/admin/auth/user/" class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+          <div class="h-10 w-10 bg-teal-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-user-cog text-teal-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="font-medium text-gray-800">User Accounts</h3>
+            <p class="text-sm text-gray-500">Manage all user accounts and permissions</p>
+          </div>
+          <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+        </a>
+        
+        <a href="/admin/registration/deliveryaddress/" class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+          <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-map-marker-alt text-green-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="font-medium text-gray-800">Delivery Addresses</h3>
+            <p class="text-sm text-gray-500">View and manage customer delivery addresses</p>
+          </div>
+          <i class="fas fa-chevron-right ml-auto text-gray-400"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- System & Support Tools -->
+<div class="bg-white rounded-2xl shadow overflow-hidden mb-8">
+  <div class="bg-gradient-to-r from-gray-700 to-gray-900 p-6">
+    <h2 class="text-xl font-bold text-white flex items-center">
+      <i class="fas fa-tools mr-3"></i>
+      System & Support Tools
+    </h2>
+  </div>
+  <div class="p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <a href="{% url 'admin:marketplace_category_changelist' %}" class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex items-center mb-3">
+          <div class="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-folder text-yellow-600"></i>
+          </div>
+          <h3 class="ml-3 font-medium text-gray-800">Product Categories</h3>
+        </div>
+        <p class="text-sm text-gray-500">Manage marketplace product categories</p>
+      </a>
+        {% if user.is_superuser %}
+      <a href="{% url 'operations:manage_nfc_cards' %}" class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex items-center mb-3">
+          <div class="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-credit-card text-red-600"></i>
+          </div>
+          <h3 class="ml-3 font-medium text-gray-800">NFC Cards</h3>
+        </div>
+        <p class="text-sm text-gray-500">Manage Kikapu NFC cards and applications</p>
+      </a>
+      {% endif %}
+      
+      <a href="/admin/tourism/touristattraction/" class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex items-center mb-3">
+          <div class="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-umbrella-beach text-blue-600"></i>
+          </div>
+          <h3 class="ml-3 font-medium text-gray-800">Tourism</h3>
+        </div>
+        <p class="text-sm text-gray-500">Manage tourism attractions and content</p>
+      </a>
+      
+      {% if user.is_superuser %}
+      <a href="/admin/django_celery_beat/periodictask/" class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex items-center mb-3">
+          <div class="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-clock text-purple-600"></i>
+          </div>
+          <h3 class="ml-3 font-medium text-gray-800">Scheduled Tasks</h3>
+        </div>
+        <p class="text-sm text-gray-500">Manage system scheduled tasks</p>
+      </a>
+      {% endif %}
+        <a href="/admin/marketplace/businessnotification/" class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex items-center mb-3">
+          <div class="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-bell text-green-600"></i>
+          </div>
+          <h3 class="ml-3 font-medium text-gray-800">Notifications</h3>
+        </div>
+        <p class="text-sm text-gray-500">View and manage business notifications</p>
+      </a>
+        {% if user.is_superuser %}
+      <a href="/admin/auth/group/" class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+        <div class="flex items-center mb-3">
+          <div class="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-user-shield text-indigo-600"></i>
+          </div>
+          <h3 class="ml-3 font-medium text-gray-800">User Groups</h3>
+        </div>
+        <p class="text-sm text-gray-500">Manage permission groups</p>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Pending Agent Verification Alert -->
+{% if unverified_agents > 0 %}
+<div class="bg-white rounded-2xl shadow mb-8">
+  <div class="border-b border-gray-200 px-6 py-4 bg-yellow-50">
+    <h2 class="text-xl font-bold text-yellow-800 flex items-center">
+      <i class="fas fa-exclamation-triangle mr-3 text-yellow-600"></i>
+      Agent Verification Required
+    </h2>
+  </div>
+  <div class="p-6">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-4">
+      <div>
+        <p class="text-gray-700 mb-2">
+          There {{ unverified_agents|pluralize:"is,are" }} <strong class="font-semibold text-yellow-700">{{ unverified_agents }}</strong> active {{ unverified_agents|pluralize:"agent,agents" }} waiting for verification.
+        </p>
+        <p class="text-gray-600 text-sm">
+          Agents must be verified before they can make postpaid recommendations. Verification ensures they are trustworthy.
+        </p>
+      </div>
+      <a href="{% url 'operations:manage_agents' %}" class="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium">
+        <span>Verify Agents Now</span>
+        <i class="fas fa-arrow-right ml-2"></i>
+      </a>
+    </div>
+    
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <i class="fas fa-info-circle text-yellow-400"></i>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-yellow-700">
+            <strong>Note:</strong> Agent verification is separate from activation. Agents are automatically active when they verify their phone, but they need your approval (verification) before making recommendations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="bg-white rounded-2xl shadow mb-8">
+  <div class="border-b border-gray-200 px-6 py-4">
+    <h2 class="text-xl font-bold text-gray-800">Quick Actions</h2>
+  </div>
+  <div class="p-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="{% url 'admin:registration_businessprofile_changelist' %}" class="flex flex-col items-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-colors">
+        <div class="h-12 w-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-store text-primary"></i>
+        </div>
+        <span class="text-sm font-medium text-gray-700">Manage Businesses</span>
+      </a>
+      
+      <a href="{% url 'operations:related_products' %}" class="flex flex-col items-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-colors">
+        <div class="h-12 w-12 bg-accent-color bg-opacity-10 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-link text-accent-color"></i>
+        </div>
+        <span class="text-sm font-medium text-gray-700">Link Products</span>
+      </a>
+      
+      <a href="{% url 'admin:index' %}?bypass_redirect=true" class="flex flex-col items-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-colors">
+        <div class="h-12 w-12 bg-secondary bg-opacity-10 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-cog text-secondary"></i>
+        </div>
+        <span class="text-sm font-medium text-gray-700">Admin Panel</span>
+      </a>
+      
+      <a href="{% url 'website:index' %}" class="flex flex-col items-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-colors">
+        <div class="h-12 w-12 bg-blue-500 bg-opacity-10 rounded-full flex items-center justify-center mb-3">
+          <i class="fas fa-eye text-blue-500"></i>
+        </div>
+        <span class="text-sm font-medium text-gray-700">View Website</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Operations Tools -->
+<div class="mb-8">
+  <h2 class="text-xl font-bold text-gray-800 mb-6">Operations Tools</h2>
+  
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Card 1: Agent Management -->
+    <div class="tool-card bg-white rounded-2xl shadow-md overflow-hidden group">
+      <div class="relative h-40 bg-gradient-to-r from-purple-600 to-purple-400">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <i class="card-icon fas fa-user-tie text-5xl text-white opacity-90"></i>
+        </div>
+        <div class="card-overlay absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-50"></div>
+      </div>
+      <div class="p-6">
+        <h3 class="font-bold text-lg text-gray-800">Agent Management</h3>
+        <p class="text-gray-600 mt-2 mb-4">Add, edit and manage delivery agents who can recommend customers for Postpaid accounts.</p>
+        <div class="flex items-center justify-between">          <a href="{% url 'operations:manage_agents' %}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+            <span>Manage Agents</span>
+            <i class="fas fa-chevron-right ml-2 text-xs"></i>
+          </a>
+          <div class="text-sm mt-2">
+            {% if unverified_agents > 0 %}
+              <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">{{ unverified_agents }} agents need verification</span>
+            {% endif %}
+            <span class="text-sm text-gray-500">{{ pending_recommendations }} recommendations pending</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Card 2: Related Products -->
+    <div class="tool-card bg-white rounded-2xl shadow-md overflow-hidden group">
+      <div class="relative h-40 bg-gradient-to-r from-primary to-primary-light">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <i class="card-icon fas fa-link text-5xl text-white opacity-90"></i>
+        </div>
+        <div class="card-overlay absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-50"></div>
+      </div>
+      <div class="p-6">
+        <h3 class="font-bold text-lg text-gray-800">Related Products Management</h3>
+        <p class="text-gray-600 mt-2 mb-4">Create and manage product relationships to improve customer suggestions and increase sales opportunities.</p>
+        <div class="flex items-center justify-between">
+          <a href="{% url 'operations:related_products' %}" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors text-sm font-medium">
+            <span>Manage Relations</span>
+            <i class="fas fa-chevron-right ml-2 text-xs"></i>
+          </a>
+          <span class="text-sm text-gray-500">{{ related_product_count }} pairs</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Card 3: Admin Panel -->
+    <div class="tool-card bg-white rounded-2xl shadow-md overflow-hidden group">
+      <div class="relative h-40 bg-gradient-to-r from-secondary to-secondary-light">
+        <div class="absolute inset-0 flex items-center justify-center">
+          <i class="card-icon fas fa-cog text-5xl text-white opacity-90"></i>
+        </div>
+        <div class="card-overlay absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-50"></div>
+      </div>
+      <div class="p-6">
+        <h3 class="font-bold text-lg text-gray-800">Admin Panel</h3>
+        <p class="text-gray-600 mt-2 mb-4">Access the Django admin interface for comprehensive site management and configuration.</p>
+        <div class="flex items-center justify-between">
+          <a href="{% url 'admin:index' %}?bypass_redirect=true" class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-dark transition-colors text-sm font-medium">
+            <span>Go to Admin</span>
+            <i class="fas fa-chevron-right ml-2 text-xs"></i>
+          </a>
+          <span class="text-sm text-gray-500">Full control</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NFC Card Statistics Section -->
+<div class="bg-white rounded-2xl shadow-md overflow-hidden mb-8">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-credit-card text-primary mr-3"></i>
+                <h3 class="text-lg font-semibold text-gray-700">NFC Cards</h3>
+            </div>
+            <a href="{% url 'operations:manage_nfc_cards' %}" class="text-sm text-primary hover:text-secondary">
+                Manage Cards <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Card Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+        <!-- Total Cards -->
+        <div class="stat-card bg-white rounded-lg border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="h-12 w-12 rounded-full bg-primary bg-opacity-10 flex items-center justify-center mr-4">
+                    <i class="fas fa-credit-card text-primary"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Cards</p>
+                    <h4 class="text-xl font-bold">{{ total_cards }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Cards -->
+        <div class="stat-card bg-white rounded-lg border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="h-12 w-12 rounded-full bg-green-500 bg-opacity-10 flex items-center justify-center mr-4">
+                    <i class="fas fa-check-circle text-green-500"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Active Cards</p>
+                    <h4 class="text-xl font-bold">{{ active_cards }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Assigned Cards -->
+        <div class="stat-card bg-white rounded-lg border border-gray-200 p-4">
+            <div class="flex items-center">
+                <div class="h-12 w-12 rounded-full bg-[#AA8B56] bg-opacity-10 flex items-center justify-center mr-4">
+                    <i class="fas fa-user text-[#AA8B56]"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Assigned Cards</p>
+                    <h4 class="text-xl font-bold">{{ assigned_cards }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Cards Table -->
+    <div class="px-6 pb-6">
+        <h4 class="font-semibold text-gray-700 mb-3">Recent Cards</h4>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Card Number</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for card in recent_cards %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ card.card_number }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if card.user %}
+                                {{ card.user.firstName }} {{ card.user.lastName }}
+                            {% else %}
+                                <span class="text-gray-400">Unassigned</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if card.is_active %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Inactive
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if card.user %}
+                                TSh {{ card.customer_balance|floatformat:2 }}
+                            {% else %}
+                                <span class="text-gray-400">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'operations:manage_nfc_cards' %}?search={{ card.card_number }}" 
+                               class="text-primary hover:text-secondary">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No cards found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Guide & Tips Section -->
+<div class="bg-white rounded-2xl shadow overflow-hidden">
+  <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+    <h2 class="text-xl font-bold text-gray-800">Documentation & Resources</h2>
+  </div>
+  
+  <div class="p-6">
+    <div class="flex flex-col space-y-4">
+      <div class="p-5 bg-yellow-50 rounded-xl border border-yellow-100">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 bg-yellow-100 rounded-full p-3">
+            <i class="fas fa-store text-yellow-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-md font-semibold text-yellow-800">Marketplace Model</h3>
+            <div class="mt-1 text-sm text-yellow-700">
+              <p>Kikapu operates as a marketplace where products can only be added by registered business accounts. Staff cannot add products directly but can manage business accounts and product relationships.</p>
+            </div>
+            <a href="{% url 'admin:registration_businessprofile_changelist' %}" class="mt-2 inline-block text-xs font-medium text-yellow-600 hover:underline">Manage registered businesses →</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-5 bg-blue-50 rounded-xl border border-blue-100">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
+            <i class="fas fa-lightbulb text-blue-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-md font-semibold text-blue-800">Optimizing Related Products</h3>
+            <div class="mt-1 text-sm text-blue-700">
+              <p>Creating relevant product relationships can increase average order value by up to 35%. Focus on complementary items that enhance the customer experience.</p>
+            </div>
+            <a href="#" class="mt-2 inline-block text-xs font-medium text-blue-600 hover:underline">Learn more about effective product relationships →</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-5 bg-green-50 rounded-xl border border-green-100">
+        <div class="flex items-start">
+          <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+            <i class="fas fa-question-circle text-green-600"></i>
+          </div>
+          <div class="ml-4">
+            <h3 class="text-md font-semibold text-green-800">Need Help?</h3>
+            <div class="mt-1 text-sm text-green-700">
+              <p>If you need assistance with the operations interface or have questions about managing the marketplace, our support team is ready to help.</p>
+            </div>
+            <a href="mailto:support@kikapu.com" class="mt-2 inline-block text-xs font-medium text-green-600 hover:underline">Contact support →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-6 text-center">
+      <p class="text-sm text-gray-500">
+        Kikapu Operations Dashboard v2.0 - Last updated April 2025
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Enhance dashboard interactivity
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add animation to stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.classList.add('shadow-lg');
+      });
+      card.addEventListener('mouseleave', function() {
+        this.classList.remove('shadow-lg');
+      });
+    });
+  });
+</script>
+{% endblock %}

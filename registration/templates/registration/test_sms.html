@@ -1,0 +1,54 @@
+{% extends 'auth_base.html' %}
+
+{% block title %}Test SMS Delivery{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-light p-4">
+                    <h3 class="mb-0 text-center">Test SMS Delivery</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="phoneNumber" class="form-label">Phone Number (with country code)</label>
+                            <input type="text" class="form-control form-control-lg" id="phoneNumber" name="phoneNumber" placeholder="+255XXXXXXXXX" required>
+                            <div class="form-text">Enter a valid phone number with country code (e.g., +255XXXXXXXXX)</div>
+                        </div>
+                                                
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Send Test OTP</button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">Testing Instructions</h5>
+                            <p>This page allows you to test if SMS delivery is working correctly:</p>
+                            <ol>
+                                <li>Enter a valid phone number with country code</li>
+                                <li>Click "Send Test OTP"</li>
+                                <li>Check if you receive the SMS with the OTP code</li>
+                            </ol>
+                            <p class="mb-0">If the system reports success but you don't receive an SMS, check your SMS provider settings.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

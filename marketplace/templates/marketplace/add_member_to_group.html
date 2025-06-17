@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Member to Group {{ group.code }} | Kikapu{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Add Member to Group {{ group.code }}</h3>
+                        <span class="badge bg-warning">Leader</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <h5><i class="fas fa-info-circle"></i> How it Works</h5>
+                        <p>Add an order on behalf of someone who doesn't have the app. You'll provide their details and add products for them.</p>
+                        <ol class="mb-0">
+                            <li>Enter their details below</li>
+                            <li>Add products to their order on the next screen</li>
+                            <li>The order will be added to your group</li>
+                        </ol>
+                    </div>
+
+                    <form method="post" action="{% url 'marketplace:add_member_to_group' code=group.code %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="name" class="form-label">Member Name:</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                            <small class="text-muted">Enter the name of the person you're ordering for</small>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="phone" class="form-label">Phone Number:</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" 
+                                   placeholder="e.g. +255 712 345678" required>
+                            <small class="text-muted">They may receive delivery notifications</small>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="address" class="form-label">Delivery Address:</label>
+                            <textarea id="address" name="address" class="form-control" rows="3" required></textarea>
+                            <small class="text-muted">Enter a detailed delivery address</small>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus"></i> Add Member & Continue to Products
+                            </button>
+                            <a href="{% url 'marketplace:group_detail' code=group.code %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Group
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

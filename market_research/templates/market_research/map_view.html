@@ -1,0 +1,511 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Market Price Map | Kikapu{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<style>
+  #map-container {
+    height: 75vh;
+    width: 100%;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .market-popup {
+    max-width: 300px;
+  }
+  
+  .market-popup h3 {
+    margin: 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .market-popup-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #4E6C50;
+  }
+  
+  .market-popup-details {
+    margin-top: 5px;
+    font-size: 0.875rem;
+  }
+  
+  .market-popup-date {
+    color: #666;
+    font-style: italic;
+    font-size: 0.75rem;
+    margin-top: 3px;
+  }
+  
+  .filters {
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+  }
+  
+  .stats-card {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: white;
+    text-align: center;
+  }
+  
+  .stats-card-title {
+    color: #666;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .stats-card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #395144;
+  }
+  
+  /* Use Kikapu brand colors */
+  .btn-primary {
+    background-color: #4E6C50;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #395144;
+  }
+  
+  .text-accent {
+    color: #AA8B56;
+  }
+  
+  .bg-light {
+    background-color: #F0EBCE;
+  }
+  
+  .cluster-low {
+    background-color: #C4D7B2;
+  }
+  
+  .cluster-medium {
+    background-color: #A0C49D;
+  }
+  
+  .cluster-high {
+    background-color: #4E6C50;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-screen-xl mx-auto px-4 py-6">
+  <!-- Page header with back button -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-primary">Market Price Map</h1>
+    <a href="{% url 'market_research:market_research_dashboard' %}" class="btn-primary flex items-center space-x-2">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      </svg>
+      <span>Back to Dashboard</span>
+    </a>
+  </div>
+  
+  <!-- Stats row -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div class="stats-card">
+      <div class="stats-card-title">Total Markets</div>
+      <div class="stats-card-value" id="total-markets">...</div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-card-title">Average Price</div>
+      <div class="stats-card-value" id="average-price">...</div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-card-title">Price Range (TSh)</div>
+      <div class="stats-card-value" id="price-range">...</div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-card-title">Regions Tracked</div>
+      <div class="stats-card-value" id="regions-count">...</div>
+    </div>
+  </div>
+  
+  <!-- Filter controls -->
+  <div class="filters mb-6">
+    <div class="flex flex-wrap gap-4 justify-between items-end">
+      <div class="w-full md:w-auto">
+        <label for="commodity-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Commodity</label>
+        <select id="commodity-filter" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+          <option value="all">All Commodities</option>
+          {% for commodity in commodities %}
+            <option value="{{ commodity }}">{{ commodity }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="w-full md:w-auto">
+        <label for="region-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Region</label>
+        <select id="region-filter" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+          <option value="all">All Regions</option>
+          <!-- Will be populated dynamically from market data -->
+        </select>
+      </div>
+      
+      <div class="w-full md:w-auto">
+        <label for="sort-by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+        <select id="sort-by" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm">
+          <option value="price-asc">Price (Low to High)</option>
+          <option value="price-desc">Price (High to Low)</option>
+          <option value="date-desc">Most Recent First</option>
+          <option value="date-asc">Oldest First</option>
+        </select>
+      </div>
+      
+      <div>
+        <button id="apply-filters" class="btn-primary flex items-center">
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          Apply Filters
+        </button>
+      </div>
+      
+      <div>
+        <button id="reset-filters" class="border border-gray-300 bg-white text-gray-700 py-2 px-4 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+          Reset
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Map container -->
+  <div id="map-container"></div>
+  
+  <!-- Market list (Collapsible) -->
+  <div class="mt-6 bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 flex justify-between items-center cursor-pointer" id="market-list-toggle">
+      <h3 class="text-lg font-medium text-gray-900">Market List</h3>
+      <svg class="h-5 w-5 text-gray-500 transform transition-transform" id="toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+    <div class="overflow-x-auto" id="market-list-container" style="max-height: 400px;">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Region</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commodity</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200" id="market-list-body">
+          <!-- Will be populated dynamically -->
+          <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+              Loading market data...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map centered on Tanzania
+    const map = L.map('map-container').setView([-6.3690, 34.8888], 6);
+    
+    // Add the tile layer (OpenStreetMap)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Parse market data passed from the view
+    const marketData = {% if market_data %}JSON.parse('{{ market_data|escapejs }}'){% else %}[]{% endif %};
+    
+    // Initialize marker cluster group with custom styling
+    const markers = L.markerClusterGroup({
+      iconCreateFunction: function(cluster) {
+        const count = cluster.getChildCount();
+        let className = 'cluster-low';
+        
+        if (count > 10) {
+          className = 'cluster-high';
+        } else if (count > 5) {
+          className = 'cluster-medium';
+        }
+        
+        return L.divIcon({
+          html: '<div><span>' + count + '</span></div>',
+          className: 'marker-cluster ' + className,
+          iconSize: L.point(40, 40)
+        });
+      }
+    });
+    
+    // Create markers for each market
+    const allMarkers = [];
+    const uniqueRegions = new Set();
+    let minPrice = Infinity;
+    let maxPrice = -Infinity;
+    let totalPrice = 0;
+    let priceCount = 0;
+    
+    marketData.forEach(market => {
+      // Track stats
+      uniqueRegions.add(market.region);
+      const price = parseFloat(market.avg_price);
+      if (price < minPrice) minPrice = price;
+      if (price > maxPrice) maxPrice = price;
+      totalPrice += price;
+      priceCount++;
+      
+      // Create marker
+      const marker = L.marker([market.latitude, market.longitude])
+        .bindPopup(createPopupContent(market));
+      
+      // Store reference to market data in marker
+      marker.marketData = market;
+      
+      // Add to cluster group
+      markers.addLayer(marker);
+      
+      // Add to array for filtering
+      allMarkers.push(marker);
+    });
+    
+    // Add markers to map
+    map.addLayer(markers);
+    
+    // Populate unique regions in filter dropdown
+    const regionFilter = document.getElementById('region-filter');
+    Array.from(uniqueRegions).sort().forEach(region => {
+      const option = document.createElement('option');
+      option.value = region;
+      option.textContent = region;
+      regionFilter.appendChild(option);
+    });
+    
+    // Update stats
+    document.getElementById('total-markets').textContent = marketData.length;
+    document.getElementById('average-price').textContent = 'TSh ' + Math.round(totalPrice / priceCount).toLocaleString();
+    document.getElementById('price-range').textContent = Math.round(minPrice).toLocaleString() + ' - ' + Math.round(maxPrice).toLocaleString();
+    document.getElementById('regions-count').textContent = uniqueRegions.size;
+    
+    // Create popup content
+    function createPopupContent(market) {
+      return `
+        <div class="market-popup">
+          <h3>${market.name}</h3>
+          <div class="market-popup-price">TSh ${Math.round(market.avg_price).toLocaleString()} / ${market.unit}</div>
+          <div class="market-popup-details">
+            <strong>${market.commodity}</strong> in ${market.region}
+          </div>
+          <div class="market-popup-date">Last updated: ${market.last_updated}</div>
+        </div>
+      `;
+    }
+    
+    // Function to filter markers
+    function filterMarkers() {
+      const commodityValue = document.getElementById('commodity-filter').value;
+      const regionValue = document.getElementById('region-filter').value;
+      const sortValue = document.getElementById('sort-by').value;
+      
+      // Clear current markers
+      markers.clearLayers();
+      
+      // Filter and sort
+      let filteredMarkers = allMarkers.filter(marker => {
+        const market = marker.marketData;
+        
+        // Apply commodity filter
+        if (commodityValue !== 'all' && market.commodity !== commodityValue) {
+          return false;
+        }
+        
+        // Apply region filter
+        if (regionValue !== 'all' && market.region !== regionValue) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      // Sorting
+      filteredMarkers.sort((a, b) => {
+        const marketA = a.marketData;
+        const marketB = b.marketData;
+        
+        if (sortValue === 'price-asc') {
+          return marketA.avg_price - marketB.avg_price;
+        } else if (sortValue === 'price-desc') {
+          return marketB.avg_price - marketA.avg_price;
+        } else if (sortValue === 'date-desc') {
+          return new Date(marketB.date_observed) - new Date(marketA.date_observed);
+        } else if (sortValue === 'date-asc') {
+          return new Date(marketA.date_observed) - new Date(marketB.date_observed);
+        }
+        
+        return 0;
+      });
+      
+      // Add filtered markers back to the map
+      filteredMarkers.forEach(marker => markers.addLayer(marker));
+      
+      // Update the market list
+      updateMarketList(filteredMarkers);
+      
+      // Update filtered stats
+      if (filteredMarkers.length > 0) {
+        let totalPrice = 0;
+        let minPrice = Infinity;
+        let maxPrice = -Infinity;
+        const uniqueRegions = new Set();
+        
+        filteredMarkers.forEach(marker => {
+          const market = marker.marketData;
+          const price = parseFloat(market.avg_price);
+          
+          uniqueRegions.add(market.region);
+          totalPrice += price;
+          if (price < minPrice) minPrice = price;
+          if (price > maxPrice) maxPrice = price;
+        });
+        
+        document.getElementById('total-markets').textContent = filteredMarkers.length;
+        document.getElementById('average-price').textContent = 'TSh ' + Math.round(totalPrice / filteredMarkers.length).toLocaleString();
+        document.getElementById('price-range').textContent = Math.round(minPrice).toLocaleString() + ' - ' + Math.round(maxPrice).toLocaleString();
+        document.getElementById('regions-count').textContent = uniqueRegions.size;
+      } else {
+        document.getElementById('total-markets').textContent = '0';
+        document.getElementById('average-price').textContent = 'N/A';
+        document.getElementById('price-range').textContent = 'N/A';
+        document.getElementById('regions-count').textContent = '0';
+      }
+    }
+    
+    // Update market list table
+    function updateMarketList(markers) {
+      const tbody = document.getElementById('market-list-body');
+      tbody.innerHTML = ''; // Clear existing content
+      
+      if (markers.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+            No markets found matching the selected filters.
+          </td>
+        `;
+        tbody.appendChild(row);
+        return;
+      }
+      
+      markers.forEach((marker, index) => {
+        const market = marker.marketData;
+        const row = document.createElement('tr');
+        row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+        
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${market.name}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${market.region}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${market.commodity}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            TSh ${Math.round(market.avg_price).toLocaleString()} / ${market.unit}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${market.last_updated}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <button class="locate-market text-accent hover:text-accent-dark" data-lat="${market.latitude}" data-lng="${market.longitude}">
+              Locate
+            </button>
+          </td>
+        `;
+        
+        tbody.appendChild(row);
+      });
+      
+      // Add event listeners to locate buttons
+      document.querySelectorAll('.locate-market').forEach(button => {
+        button.addEventListener('click', function() {
+          const lat = parseFloat(this.getAttribute('data-lat'));
+          const lng = parseFloat(this.getAttribute('data-lng'));
+          
+          map.setView([lat, lng], 13);
+          
+          // Find and open the popup for this marker
+          markers.forEach(marker => {
+            const mLat = marker.getLatLng().lat;
+            const mLng = marker.getLatLng().lng;
+            
+            if (Math.abs(mLat - lat) < 0.0001 && Math.abs(mLng - lng) < 0.0001) {
+              marker.openPopup();
+            }
+          });
+        });
+      });
+    }
+    
+    // Toggle market list visibility
+    const marketListToggle = document.getElementById('market-list-toggle');
+    const marketListContainer = document.getElementById('market-list-container');
+    const toggleIcon = document.getElementById('toggle-icon');
+    
+    marketListToggle.addEventListener('click', function() {
+      if (marketListContainer.style.display === 'none') {
+        marketListContainer.style.display = 'block';
+        toggleIcon.classList.remove('transform', 'rotate-180');
+      } else {
+        marketListContainer.style.display = 'none';
+        toggleIcon.classList.add('transform', 'rotate-180');
+      }
+    });
+    
+    // Initialize market list
+    updateMarketList(allMarkers);
+    
+    // Filter button click handler
+    document.getElementById('apply-filters').addEventListener('click', filterMarkers);
+    
+    // Reset filters
+    document.getElementById('reset-filters').addEventListener('click', function() {
+      document.getElementById('commodity-filter').value = 'all';
+      document.getElementById('region-filter').value = 'all';
+      document.getElementById('sort-by').value = 'price-asc';
+      
+      // Reset to original state
+      markers.clearLayers();
+      allMarkers.forEach(marker => markers.addLayer(marker));
+      updateMarketList(allMarkers);
+      
+      // Reset stats
+      document.getElementById('total-markets').textContent = marketData.length;
+      document.getElementById('average-price').textContent = 'TSh ' + Math.round(totalPrice / priceCount).toLocaleString();
+      document.getElementById('price-range').textContent = Math.round(minPrice).toLocaleString() + ' - ' + Math.round(maxPrice).toLocaleString();
+      document.getElementById('regions-count').textContent = uniqueRegions.size;
+    });
+  });
+</script>
+{% endblock %}

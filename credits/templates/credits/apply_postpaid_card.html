@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apply for Postpaid Kikapu Card | Kikapu Arusha{% endblock %}
+
+{% block extra_css %}
+  <style>
+    @keyframes pulse-card {
+      0% { box-shadow: 0 10px 20px rgba(57, 81, 68, 0.2); }
+      50% { box-shadow: 0 15px 30px rgba(57, 81, 68, 0.4); }
+      100% { box-shadow: 0 10px 20px rgba(57, 81, 68, 0.2); }
+    }
+    #card-container.flipped {
+      transform: rotateY(180deg);
+    }
+    .gradient-primary {
+      background: linear-gradient(135deg, #395144 0%, #4E6C50 100%);
+    }
+    .gradient-secondary {
+      background: linear-gradient(135deg, #4E6C50 0%, #395144 100%);
+    }
+    
+    /* Credit score progress classes */
+    .progress-0 { width: 0%; }
+    .progress-10 { width: 10%; }
+    .progress-20 { width: 20%; }
+    .progress-30 { width: 30%; }
+    .progress-40 { width: 40%; }
+    .progress-50 { width: 50%; }
+    .progress-60 { width: 60%; }
+    .progress-70 { width: 70%; }
+    .progress-80 { width: 80%; }
+    .progress-90 { width: 90%; }
+    .progress-100 { width: 100%; }
+  </style>
+  {% endblock %}
+
+  {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prepaid Kikapu Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/kTcZ1HO+2aWdXYdzO5VYgfW0P6GmT6vPp+8VfuNS+7xB9h9bKvlh1FQTOa6D+Hbqmq9h6zBx5DtpQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body class="bg-gray-100 font-sans p-6">
+<div class="max-w-6xl mx-auto">
+  <div class="bg-white p-8 rounded-xl shadow-md grid md:grid-cols-2 gap-10">
+    <div>
+      <div id="card-container" class="relative w-full h-[280px] cursor-pointer [perspective:1000px] [transform-style:preserve-3d] transition-transform duration-800">
+        <div id="card-front" class="gradient-primary absolute w-full h-full p-6 text-white rounded-2xl shadow-lg flex flex-col justify-between z-10 [transform-style:preserve-3d] [backface-visibility:hidden]">
+          <div>
+            <img src="https://via.placeholder.com/60" alt="Kikapu Logo" class="w-12 h-12 absolute top-4 right-6">
+            <h2 class="text-2xl font-bold tracking-wider mb-1">KIKAPU Card</h2>
+            <p class="text-xs text-white/80">Postpaid - Buy now, pay later.</p>
+          </div>
+          <div class="mt-auto">
+            <div class="tracking-widest font-mono text-lg mb-2" id="card-number">XXXX XXXX XXXX XXXX</div>
+            <div class="uppercase text-sm font-semibold" id="card-name">{{ request.user.get_full_name|default:request.user.username|upper }}</div>
+            <div class="text-xs mt-1 text-white/80">Passcode protected</div>
+          </div>
+        </div>
+        <div id="card-back" class="gradient-secondary absolute w-full h-full p-6 text-white rounded-2xl shadow-lg flex flex-col justify-between [transform:rotateY(180deg)] [transform-style:preserve-3d] [backface-visibility:hidden]">
+          <div class="text-xs leading-relaxed">
+            <p>This is a postpaid card with an initial credit limit of TSh {{ initial_credit_limit|default:'25,000' }}.</p>
+            <p>With good payment history, your credit limit can increase over time.</p>
+            <p class="mt-2">Your 4-digit passcode will be required for all transactions.</p>
+          </div>
+          <div class="text-xs text-white/70 mt-6">
+            <p>For help, call +255 123 456 789</p>
+            <p>Annual fee: TSh 2,000</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 bg-white p-5 rounded-xl shadow">
+        <!-- Passcode Setup Section -->
+        <div class="mb-4 border-b border-gray-200 pb-4">
+          <h3 class="text-[#395144] font-medium mb-2">Set Your Security Passcode</h3>
+          <p class="text-sm text-gray-600 mb-3">Create a 4-digit passcode to protect your card from unauthorized use.</p>
+          <div class="flex space-x-2 justify-center">
+            <input type="password" maxlength="1" class="passcode-digit w-12 h-12 text-center text-xl border border-gray-300 rounded shadow-sm focus:border-[#4E6C50] focus:ring focus:ring-[#4E6C50] focus:ring-opacity-20" pattern="[0-9]" inputmode="numeric" required>
+            <input type="password" maxlength="1" class="passcode-digit w-12 h-12 text-center text-xl border border-gray-300 rounded shadow-sm focus:border-[#4E6C50] focus:ring focus:ring-[#4E6C50] focus:ring-opacity-20" pattern="[0-9]" inputmode="numeric" required>
+            <input type="password" maxlength="1" class="passcode-digit w-12 h-12 text-center text-xl border border-gray-300 rounded shadow-sm focus:border-[#4E6C50] focus:ring focus:ring-[#4E6C50] focus:ring-opacity-20" pattern="[0-9]" inputmode="numeric" required>
+            <input type="password" maxlength="1" class="passcode-digit w-12 h-12 text-center text-xl border border-gray-300 rounded shadow-sm focus:border-[#4E6C50] focus:ring focus:ring-[#4E6C50] focus:ring-opacity-20" pattern="[0-9]" inputmode="numeric" required>
+          </div>
+          <input type="hidden" id="card-passcode" name="card_passcode">
+          <p class="text-xs text-gray-500 mt-2 text-center">This passcode will be required for all card transactions</p>
+        </div>
+        
+        <!-- Credit Score Section -->
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-[#395144] font-medium">Your Credit Score</h3>
+          <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Fair</span>
+        </div>
+        <div class="bg-white p-5 rounded-lg text-center">
+            <div class="relative inline-block w-32 h-32">
+              <div class="absolute inset-0 bg-gray-200 rounded-full">
+                {% if credit_score %}
+                  <div class="absolute bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 h-full rounded-full {% if credit_score_percentage %}progress-{{ credit_score_percentage|floatformat:0 }}{% else %}progress-0{% endif %}"></div>
+                {% else %}
+                  <div class="absolute bg-gradient-to-r from-red-500 via-yellow-400 to-green-500 h-full rounded-full progress-0"></div>
+                {% endif %}
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                {% if credit_score %}
+                  <span class="text-3xl font-bold">{{ credit_score.score }}</span>
+                {% else %}
+                  <span class="text-3xl font-bold">-</span>
+                {% endif %}
+              </div>
+            </div>
+      </div>
+      <div class="bg-white p-6 rounded-xl shadow mt-6">
+        <h3 class="text-[#395144] text-xl font-semibold mb-3">Eligibility Check</h3>
+        <p class="text-sm text-gray-700 mb-2">You must spend at least <span class="font-semibold">TSh 100,000</span> on Kikapu Marketplace to apply for a postpaid card.</p>
+        <div class="bg-gray-100 p-4 rounded-lg flex items-center justify-between">
+          <span class="font-semibold">Current Purchase History</span>
+          <span class="text-[#395144] font-bold">TSh {{ purchase_history_amount|default:'0' }}</span>
+        </div>
+        <div class="relative h-3 mt-2 bg-gray-200 rounded">
+          <div class="absolute h-3 bg-[#4E6C50] rounded {% if purchase_history_percentage %}progress-{{ purchase_history_percentage|floatformat:0 }}{% else %}progress-0{% endif %}"></div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500">
+          {% if is_eligible %}
+            You've reached the TSh 100,000 purchase threshold and are eligible to apply!
+          {% else %}
+            Once you reach TSh 100,000 in purchases, you'll unlock eligibility to apply.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div>
+      <form class="space-y-5 bg-white p-6 rounded-xl shadow" method="post" action="{% url 'credits:apply_postpaid_card' %}" id="postpaidApplicationForm">
+        <h2 class="text-[#395144] text-2xl font-bold mb-4">Apply for Postpaid Kikapu Card</h2>
+        {% csrf_token %}
+        <div>
+          <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+          <input type="text" id="fullName" name="fullName" value="{{ request.user.get_full_name|default:request.user.username }}" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm" required>
+        </div>
+        <div>
+          <label for="emailAddress" class="block text-sm font-medium text-gray-700">Email Address</label>
+          <input type="email" id="emailAddress" name="email" value="{{ request.user.email }}" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm" required>
+        </div>
+        <div>
+          <label for="incomeSource" class="block text-sm font-medium text-gray-700 mb-1">Income Source</label>
+          <select id="incomeSource" class="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm">
+            <option value="employment">Employment</option>
+            <option value="business">Business</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="monthlyIncome" class="block text-sm font-medium text-gray-700">Monthly Income (TSh)</label>
+          <input type="number" id="monthlyIncome" name="monthly_income" placeholder="0.00" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm" required>
+        </div>
+        <div>
+          <label for="paymentMethod" class="block text-sm font-medium text-gray-700 mb-1">Preferred Payment Method</label>
+          <select id="paymentMethod" name="payment_method" class="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm" required>
+            <option value="mobile">Mobile Money</option>
+            <option value="bank">Bank Transfer</option>
+          </select>
+        </div>
+        <div>
+          <label for="paymentFrequency" class="block text-sm font-medium text-gray-700 mb-1">Payment Frequency</label>
+          <select id="paymentFrequency" class="block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm">
+            <option value="monthly">Monthly</option>
+            <option value="biweekly">Biweekly</option>
+            <option value="weekly">Weekly</option>
+          </select>
+        </div>
+        <div class="flex items-center">
+          <input id="termsCheckbox" name="terms_accepted" type="checkbox" required class="h-4 w-4 text-[#395144] focus:ring-[#4E6C50] border-gray-300 rounded">
+          <label for="termsCheckbox" class="text-sm text-gray-700 ml-2">I accept the <a href="#" class="underline text-[#395144]">Terms & Conditions</a></label>
+        </div>
+        <div class="text-end">
+          <button type="submit" class="w-full px-6 py-3 text-white font-semibold bg-gradient-to-r from-[#395144] to-[#4E6C50] rounded-xl shadow hover:from-[#4E6C50] hover:to-[#395144] transition-all">
+            Submit Application
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="mt-10">
+    <h3 class="text-[#395144] text-xl font-semibold mb-4">Postpaid Card Benefits</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Buy Now, Pay Later</h5>
+        <p class="text-gray-600 text-sm">Shop using your card and settle the balance based on your selected billing cycle.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ 20% Holiday Discounts</h5>
+        <p class="text-gray-600 text-sm">Enjoy exclusive discounts during holiday seasons if you're in good standing.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Credit Limit Growth</h5>
+        <p class="text-gray-600 text-sm">Your credit limit can grow with responsible usage and timely payments.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Boost Credit Profile</h5>
+        <p class="text-gray-600 text-sm">Strengthen your Kikapu credit profile by using and repaying consistently.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const cardContainer = document.getElementById('card-container');
+      if (cardContainer) {
+        cardContainer.addEventListener('click', function () {
+          this.classList.toggle('flipped');
+        });
+      }
+      
+      // Handle passcode input fields
+      const passcodeDigits = document.querySelectorAll('.passcode-digit');
+      const passcodeHiddenInput = document.getElementById('card-passcode');
+      
+      // Auto-focus next input when digit is entered
+      passcodeDigits.forEach((digit, index) => {
+        digit.addEventListener('input', function(e) {
+          // Only allow numeric input
+          this.value = this.value.replace(/[^0-9]/g, '');
+          
+          // Move to next input if available
+          if (this.value && index < passcodeDigits.length - 1) {
+            passcodeDigits[index + 1].focus();
+          }
+          
+          // Update hidden field with complete passcode
+          updatePasscodeValue();
+        });
+        
+        // Handle backspace to go to previous input
+        digit.addEventListener('keydown', function(e) {
+          if (e.key === 'Backspace' && !this.value && index > 0) {
+            passcodeDigits[index - 1].focus();
+          }
+        });
+      });
+      
+      // Update the hidden input with the complete passcode
+      function updatePasscodeValue() {
+        let passcode = '';
+        passcodeDigits.forEach(digit => {
+          passcode += digit.value;
+        });
+        passcodeHiddenInput.value = passcode;
+      }
+      
+      // Form validation
+      const postpaidForm = document.getElementById('postpaidApplicationForm');
+      if (postpaidForm) {
+        postpaidForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          
+          // Check if passcode is complete (4 digits)
+          if (passcodeHiddenInput.value.length !== 4) {
+            alert('Please enter a complete 4-digit passcode');
+            return false;
+          }
+          
+          // Check terms checkbox
+          const termsCheckbox = document.getElementById('termsCheckbox');
+          if (!termsCheckbox.checked) {
+            alert('Please accept the Terms & Conditions to continue');
+            return false;
+          }
+          
+          // Form is valid, update card name and submit
+          document.getElementById('card-name').textContent = document.getElementById('fullName').value.toUpperCase();
+          this.submit();
+        });
+      }
+    });
+  </script>
+
+{% endblock %}

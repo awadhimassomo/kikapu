@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Apply for Prepaid Kikapu Card | Kikapu Arusha{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Custom styles that can't be done with Tailwind */
+    @keyframes pulse-card {
+        0% { box-shadow: 0 10px 20px rgba(57, 81, 68, 0.2); }
+        50% { box-shadow: 0 15px 30px rgba(57, 81, 68, 0.4); }
+        100% { box-shadow: 0 10px 20px rgba(57, 81, 68, 0.2); }
+    }
+    
+    #card-container.flipped {
+        transform: rotateY(180deg);
+    }
+    
+    /* Custom gradients */
+    .gradient-primary {
+        background: linear-gradient(135deg, #395144 0%, #4E6C50 100%);
+    }
+    
+    .gradient-secondary {
+        background: linear-gradient(135deg, #4E6C50 0%, #395144 100%);
+    }
+
+    .gradient-accent {
+        background: linear-gradient(135deg, #AA8B56 0%, #F0EBCE 100%);
+    }
+
+    /* Tailwind configuration for custom colors */
+    :root {
+        --primary: #395144;
+        --secondary: #4E6C50;
+        --accent: #AA8B56;
+        --light: #F0EBCE;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prepaid Kikapu Card</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/kTcZ1HO+2aWdXYdzO5VYgfW0P6GmT6vPp+8VfuNS+7xB9h9bKvlh1FQTOa6D+Hbqmq9h6zBx5DtpQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="bg-gray-100 font-sans p-6">
+<div class="max-w-6xl mx-auto">
+  <div class="bg-white p-8 rounded-xl shadow-md grid md:grid-cols-2 gap-10">
+    <div>
+        <div id="card-container" class="relative w-full h-[280px] cursor-pointer [perspective:1000px] [transform-style:preserve-3d] transition-transform duration-800">
+          
+          <!-- Card Front Side -->
+          <div id="card-front" class="gradient-primary absolute w-full h-full p-6 text-white rounded-2xl shadow-lg flex flex-col justify-between z-10 [transform-style:preserve-3d] [backface-visibility:hidden]">
+            <div>
+              <img src="{% static 'website/images/kikapuu.png' %}" onerror="this.src='https://via.placeholder.com/60'" alt="Kikapu Logo" class="w-12 h-12 absolute top-4 right-6">
+              <h2 class="text-2xl font-bold tracking-wider mb-1">KIKAPU Card</h2>
+              <p class="text-xs text-white/80">Tap to pay.</p>
+            </div>
+            <div class="mt-auto">
+              <div class="tracking-widest font-mono text-lg mb-2" id="card-number">XXXX XXXX XXXX XXXX</div>
+              <div class="uppercase text-sm font-semibold" id="card-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+            </div>
+          </div>
+      
+          <!-- Card Back Side -->
+          <div id="card-back" class="gradient-secondary absolute w-full h-full p-6 text-white rounded-2xl shadow-lg flex flex-col justify-between [transform:rotateY(180deg)] [transform-style:preserve-3d] [backface-visibility:hidden]">
+            <div class="text-xs leading-relaxed">
+              <p>This is not a credit card and it's not used to purchase things.</p>
+              <p>It's only used for Kikapu credits only.</p>
+            </div>
+            <div class="text-xs text-white/70 mt-6">
+              <p>For help, call +255 123 456 789</p>
+            </div>
+          </div>
+      
+        </div>
+      </div>
+      
+
+    <div>
+      <h2 class="text-[#395144] text-2xl font-bold mb-4">Apply for Prepaid Kikapu Card</h2>
+      <form class="space-y-5" method="post" action="{% url 'credits:apply_prepaid_card' %}" id="prepaidApplicationForm">
+        {% csrf_token %}
+        <div class="mb-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-[#395144]">Who is this card for?</span>
+            <div class="flex items-center space-x-4">
+              <label class="inline-flex items-center">
+                <input type="radio" name="card_recipient" value="self" checked class="h-4 w-4 text-[#395144] focus:ring-[#AA8B56]" onchange="toggleRecipientFields(this.value)">
+                <span class="ml-2 text-sm text-gray-700">For myself</span>
+              </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="card_recipient" value="other" class="h-4 w-4 text-[#395144] focus:ring-[#AA8B56]" onchange="toggleRecipientFields(this.value)">
+                <span class="ml-2 text-sm text-gray-700">For someone else</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label for="fullName" class="block text-sm font-medium text-gray-700">Full Name</label>
+          <input type="text" id="fullName" name="full_name" value="{% if request.user.is_authenticated %}{{ request.user.get_full_name|default:request.user.username }}{% endif %}" data-original="{% if request.user.is_authenticated %}{{ request.user.get_full_name|default:request.user.username }}{% endif %}" placeholder="Enter full name" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#AA8B56] focus:border-[#AA8B56]" required>
+          <div class="text-xs text-gray-500 mt-1">This name will appear on the Kikapu card</div>
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+          <input type="email" id="email" name="email" value="{% if request.user.is_authenticated %}{{ request.user.email }}{% endif %}" data-original="{% if request.user.is_authenticated %}{{ request.user.email }}{% endif %}" placeholder="Enter email address" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#AA8B56] focus:border-[#AA8B56]" required>
+          <div class="text-xs text-gray-500 mt-1">We'll send card details to this email</div>
+        </div>
+        <div>
+          <label for="phone" class="block text-sm font-medium text-gray-700">Phone number</label>
+          <input type="tel" id="phone" name="phone" value="{% if request.user.is_authenticated %}{{ request.user.phoneNumber }}{% endif %}" data-original="{% if request.user.is_authenticated %}{{ request.user.phoneNumber }}{% endif %}" placeholder="+255 XXX XXX XXX" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#AA8B56] focus:border-[#AA8B56]" required>
+          <div class="text-xs text-gray-500 mt-1">Include country code (+255) for SMS notifications</div>
+        </div>
+        <div>
+          <label for="initial_deposit" class="block text-sm font-medium text-gray-700">Initial Deposit (TSh)</label>
+          <input type="number" id="initial_deposit" name="initial_deposit" value="25000" min="25000" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#AA8B56] focus:border-[#AA8B56]" required>
+          <div class="text-xs text-gray-500 mt-1">Minimum TSh 25,000 | Recommended TSh 50,000 for full benefits</div>
+        </div>
+        
+        <!-- Linked Cards Section -->
+        <div class="mt-8 border-t border-gray-200 pt-6">
+          <h3 class="text-lg font-medium text-[#395144] mb-4">Additional Linked Cards</h3>
+          <p class="text-sm text-gray-500 mb-4">You can request additional cards that are linked to your main account. These can be given to family members with their own spending limits.</p>
+          
+          <div>
+            <label for="linked_cards" class="block text-sm font-medium text-gray-700">Number of Linked Cards</label>
+            <select id="linked_cards" name="linked_cards" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-[#AA8B56] focus:border-[#AA8B56]">
+              <option value="0">None</option>
+              <option value="1">1 Additional Card</option>
+              <option value="2">2 Additional Cards</option>
+              <option value="3">3 Additional Cards</option>
+              <option value="4">4 Additional Cards</option>
+              <option value="5">5 Additional Cards</option>
+            </select>
+          </div>
+          
+          <div id="linked_cards_details" class="hidden mt-4 p-4 bg-[#F0EBCE]/30 rounded-lg">
+            <p class="text-sm text-[#395144] font-medium mb-3">Linked card details will be collected after your application is approved.</p>
+            <ul class="text-xs text-gray-600 list-disc pl-5 space-y-1">
+              <li>You can specify names and relationships of card recipients</li>
+              <li>Set individual spending limits for each card</li>
+              <li>All linked cards draw from your main account balance</li>
+              <li>You'll receive notifications when linked cards are used</li>
+            </ul>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="mt-10">
+    <h3 class="text-[#395144] text-xl font-semibold mb-4">Card Benefits</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Easy Top-up</h5>
+        <p class="text-gray-600 text-sm">M-Pesa, Tigo Pesa & Airtel Money supported for instant reloads.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ 20% Discounts</h5>
+        <p class="text-gray-600 text-sm">Special holiday discounts for loyal customers.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Build Credit</h5>
+        <p class="text-gray-600 text-sm">Improve your credit score with regular usage.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Secure Shopping</h5>
+        <p class="text-gray-600 text-sm">Protected transactions throughout the marketplace.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-10">
+    <h3 class="text-[#395144] text-xl font-semibold mb-4">Additional Benefits</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ No Annual Fees</h5>
+        <p class="text-gray-600 text-sm">No hidden charges or recurring fees.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Instant Notifications</h5>
+        <p class="text-gray-600 text-sm">Receive alerts for every transaction you make.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Exclusive Deals</h5>
+        <p class="text-gray-600 text-sm">Access member-only discounts in the Kikapu marketplace.</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <h5 class="font-semibold mb-2">✔ Cashback Rewards</h5>
+        <p class="text-gray-600 text-sm">Earn cashback on select purchases and grow your balance.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-10">
+    <h3 class="text-[#395144] text-xl font-semibold mb-3">Kikapu Card Terms &amp; Conditions</h3>
+    <div class="flex items-start mb-4">
+      <input id="termsCheckbox" type="checkbox" class="mt-1 mr-2 border-gray-300 rounded text-[#395144] focus:ring-[#AA8B56]">
+      <label for="termsCheckbox" class="text-sm text-gray-700">I have read and accept the
+        <a href="#" class="text-[#395144] underline" onclick="document.getElementById('termsContent').style.display='block'; this.style.display='none'; return false;">Terms &amp; Conditions</a></label>
+    </div>
+    <div id="termsContent" class="bg-white p-6 rounded-xl shadow text-sm text-gray-700 whitespace-pre-wrap hidden">
+1. Introduction
+These Terms and Conditions govern the use of the Kikapu Prepaid Card issued by Kikapu Marketplace Limited. By applying for and using the Card, you agree to these terms.
+
+2. Definitions
+"Card" means the Kikapu Prepaid Card issued to you.
+"We", "us", or "our" means Kikapu Marketplace Limited.
+"You" or "your" means the cardholder.
+
+3. Card Issuance and Activation
+3.1. To be eligible for a Prepaid Card, you must make a minimum deposit of TSh 25,000.
+3.2. The Card will be activated upon successful processing of your application and initial deposit.
+
+4. Card Usage
+4.1. The Card can only be used for purchases within the Kikapu Marketplace platform.
+4.2. You cannot spend more than the available balance on your Card.
+
+5. Fees
+5.1. There is no annual fee for the Prepaid Card.
+5.2. We reserve the right to introduce or modify fees with prior notice.
+
+6. Expiration
+6.1. The Card is valid for 6 months from the date of issuance.
+6.2. Any remaining balance at expiration will be refunded to you.
+
+7. Holiday Discounts
+7.1. Cardholders with good credit history may be eligible for a 20% discount during holiday seasons.
+7.2. Eligibility for discounts is determined solely by us based on your usage patterns and credit score.
+
+8. Lost or Stolen Cards
+8.1. You must notify us immediately if your Card is lost, stolen, or compromised.
+8.2. You may be responsible for unauthorized transactions made before you notify us.
+
+9. Privacy
+9.1. We collect, use, and share your information as described in our Privacy Policy.
+
+10. Changes to Terms
+10.1. We may change these terms at any time with notice to you.
+10.2. Continued use of your Card after changes means you accept the new terms.
+
+11. Governing Law
+11.1. These terms are governed by the laws of Tanzania.
+    </div>
+    <div class="text-end mt-6">
+      <button type="submit" form="prepaidApplicationForm" class="px-6 py-3 text-white font-semibold bg-gradient-to-r from-[#395144] to-[#4E6C50] rounded-xl shadow hover:-translate-y-1 hover:shadow-lg transition-all">
+        Continue to Payment
+      </button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const depositInput = document.getElementById('initial_deposit');
+    const form = document.getElementById('prepaidApplicationForm');
+    const cardOwner = document.getElementById('card-name');
+    const cardNumber = document.getElementById('card-number');
+    const cardContainer = document.getElementById('card-container');
+    const linkedCardsSelect = document.getElementById('linked_cards');
+    const linkedCardsDetails = document.getElementById('linked_cards_details');
+    
+    // Card animation effect
+    const kikapuCard = document.querySelector('.kikapu-card');
+    if (kikapuCard) {
+        kikapuCard.addEventListener('mousemove', function(e) {
+            const rect = kikapuCard.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element
+            const y = e.clientY - rect.top;  // y position within the element
+            
+            // Calculate rotation based on mouse position
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateY = ((x - centerX) / centerX) * 5; // -5 to +5 degrees
+            const rotateX = ((centerY - y) / centerY) * 5; // -5 to +5 degrees
+            
+            kikapuCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        kikapuCard.addEventListener('mouseleave', function() {
+            kikapuCard.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        });
+    }
+    
+    // Card flip on click
+    if (cardContainer) {
+        // Click on card toggles between front and back
+        cardContainer.addEventListener('click', function() {
+            this.classList.toggle('flipped');
+        });
+    }
+    
+    // Generate random card number for display
+    function generateRandomCardNumber() {
+        // Create a more realistic card number format
+        return '5' + Math.floor(Math.random() * 1000).toString().padStart(3, '0') + ' XXXX XXXX ' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    }
+    
+    // Update card details
+    if (cardNumber) {
+        cardNumber.textContent = generateRandomCardNumber();
+    }
+    
+    if (cardOwner) {
+        const name = document.getElementById('fullName').value.trim().toUpperCase();
+        cardOwner.textContent = name || 'YOUR NAME';
+    }
+    
+    // Form validation
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+    }
+    
+    // Ensure minimum deposit and update UI
+    if (depositInput) {
+        const updateDepositUI = function() {
+            const value = parseFloat(depositInput.value);
+            if (value < 25000) {
+                depositInput.value = 25000;
+            }
+            
+            // Update recommendation message based on amount
+            const formText = depositInput.parentElement.nextElementSibling;
+            if (value >= 50000) {
+                formText.innerHTML = 'Great choice! You qualify for all premium benefits.';
+                formText.classList.add('text-green-600');
+                formText.classList.remove('text-gray-500');
+            } else {
+                formText.innerHTML = 'Minimum TSh 25,000 | Recommended TSh 50,000 for full benefits';
+                formText.classList.add('text-gray-500');
+                formText.classList.remove('text-green-600');
+            }
+        };
+        
+        depositInput.addEventListener('change', updateDepositUI);
+        depositInput.addEventListener('input', updateDepositUI);
+    }
+    
+    // Terms checkbox visual feedback
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    if (termsCheckbox) {
+        termsCheckbox.addEventListener('change', function() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (this.checked) {
+                submitBtn.classList.add('animate-pulse');
+            } else {
+                submitBtn.classList.remove('animate-pulse');
+            }
+        });
+    }
+    
+    // Linked cards functionality
+    if (linkedCardsSelect && linkedCardsDetails) {
+        linkedCardsSelect.addEventListener('change', function() {
+            if (parseInt(this.value) > 0) {
+                linkedCardsDetails.classList.remove('hidden');
+            } else {
+                linkedCardsDetails.classList.add('hidden');
+            }
+        });
+    }
+    
+    // Function to toggle between self and other recipient
+    window.toggleRecipientFields = function(value) {
+        const nameField = document.getElementById('fullName');
+        const emailField = document.getElementById('email');
+        const phoneField = document.getElementById('phone');
+        
+        if (value === 'self') {
+            // For myself - prefill with user data
+            const originalName = nameField.getAttribute('data-original');
+            const originalEmail = emailField.getAttribute('data-original');
+            const originalPhone = phoneField.getAttribute('data-original');
+            
+            if (originalName) nameField.value = originalName;
+            if (originalEmail) emailField.value = originalEmail;
+            if (originalPhone) phoneField.value = originalPhone;
+        } else {
+            // For someone else - clear fields
+            nameField.value = '';
+            emailField.value = '';
+            phoneField.value = '';
+            
+            // Focus on the name field for immediate input
+            nameField.focus();
+        }
+        
+        // Update card name display
+        const nameValue = nameField.value.trim() || 'YOUR NAME';
+        document.getElementById('card-name').textContent = nameValue.toUpperCase();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,892 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Kikapu NFC Card | Kikapu{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Card container styling */
+    .card-container {
+        background-color: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .card-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+    }
+    
+    /* Kikapu card styling */
+    .kikapu-card {
+        position: relative;
+        height: 240px;
+        border-radius: 16px;
+        padding: 28px;
+        background: linear-gradient(135deg, #395144, #4E6C50);
+        color: white;
+        box-shadow: 0 15px 25px rgba(57, 81, 68, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .kikapu-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+    }
+    
+    .prepaid-card {
+        background: linear-gradient(135deg, #395144, #4E6C50);
+    }
+    
+    .postpaid-card {
+        background: linear-gradient(135deg, #AA8B56, #D4BB8C);
+    }
+    
+    .card-chip {
+        position: absolute;
+        top: 94px;
+        left: 28px;
+        width: 45px;
+        height: 35px;
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .card-chip::before {
+        content: '';
+        width: 35px;
+        height: 25px;
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+    
+    .nfc-indicator {
+        position: absolute;
+        top: 93px;
+        left: 90px;
+        width: 25px;
+        height: 25px;
+    }
+    
+    .nfc-indicator::before {
+        content: ')))';
+        font-size: 18px;
+        font-weight: bold;
+        color: rgba(255, 255, 255, 0.8);
+        transform: rotate(90deg);
+    }
+    
+    .card-logo {
+        position: absolute;
+        top: 25px;
+        right: 25px;
+        opacity: 0.9;
+        width: 60px;
+    }
+    
+    .kikapu-badge {
+        position: absolute;
+        bottom: 25px;
+        right: 25px;
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.95);
+        letter-spacing: 1px;
+        background-color: rgba(255,255,255,0.15);
+        padding: 5px 12px;
+        border-radius: 20px;
+    }
+    
+    .card-number {
+        letter-spacing: 2px;
+        font-size: 19px;
+        margin-top: 10px;
+        font-family: 'Courier New', monospace;
+        word-spacing: 8px;
+    }
+    
+    .kp-number {
+        position: absolute;
+        top: 54px;
+        left: 28px;
+        font-size: 15px;
+        font-family: 'Courier New', monospace;
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .card-type {
+        position: absolute;
+        top: 25px;
+        left: 28px;
+        text-transform: uppercase;
+        font-size: 15px;
+        letter-spacing: 1px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.95);
+    }
+    
+    .card-owner {
+        position: absolute;
+        bottom: 28px;
+        left: 28px;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    
+    .card-balance {
+        position: absolute;
+        top: 55%;
+        left: 28px;
+        transform: translateY(-50%);
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .card-balance .currency {
+        font-size: 18px;
+        opacity: 0.9;
+        font-weight: normal;
+        margin-right: 4px;
+    }
+    
+    .card-limit {
+        font-size: 15px;
+        opacity: 0.9;
+        margin-top: 6px;
+        font-weight: 500;
+    }
+    
+    /* Features list styling */
+    .features-list {
+        margin-bottom: 0;
+    }
+    
+    .features-list li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .features-list li:last-child {
+        margin-bottom: 0;
+    }
+    
+    .features-list i {
+        color: #4E6C50;
+        margin-right: 12px;
+        font-size: 1.1rem;
+        margin-top: 3px;
+        min-width: 20px;
+        text-align: center;
+    }
+    
+    .features-list i.red {
+        color: #dc3545;
+    }
+    
+    .features-list i.orange {
+        color: #fd7e14;
+    }
+    
+    .features-list i.success {
+        color: #198754;
+    }
+    
+    .features-list i.warning {
+        color: #ffc107;
+    }
+    
+    /* Application card styling */
+    .application-card {
+        border-left: 5px solid #4E6C50;
+        border-radius: 12px;
+    }
+    
+    /* Credit score styling */
+    .score-meter {
+        height: 10px;
+        border-radius: 5px;
+        background-color: #e9ecef;
+        position: relative;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+    
+    .score-value {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #dc3545, #ffc107, #4E6C50);
+        transition: width 1s ease;
+        border-radius: 5px;
+    }
+    
+    /* Discount alert styling */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+    
+    .discount-alert {
+        animation: pulse 2.5s infinite;
+        background-color: rgba(170, 139, 86, 0.1);
+        border: 1px solid rgba(170, 139, 86, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+    }
+    
+    /* PIN security section */
+    .pin-dots {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .pin-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        margin: 0 6px;
+    }
+    
+    .pin-dot.active {
+        background-color: #395144;
+    }
+    
+    /* Agent recommendation badge */
+    .agent-recommended {
+        position: absolute;
+        top: 65px;
+        right: 25px;
+        background-color: rgba(255, 215, 0, 0.2);
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+    
+    /* Button styling */
+    .btn-kikapu {
+        background-color: #395144;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        transition: all 0.3s;
+        border: none;
+    }
+    
+    .btn-kikapu:hover {
+        background-color: #4E6C50;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(57, 81, 68, 0.2);
+    }
+    
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    
+    /* Card header styling */
+    .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid rgba(0,0,0,0.08);
+        padding: 18px 24px;
+    }
+    
+    .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        color: #333;
+        font-size: 18px;
+    }
+    
+    /* Card body styling */
+    .card-body {
+        padding: 24px;
+    }
+    
+    /* Section styling */
+    .section-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .section-subtitle {
+        color: #6c757d;
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+    
+    /* Badge styling */
+    .badge {
+        padding: 6px 12px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Comparison table styling */
+    .comparison-table th {
+        background-color: rgba(57, 81, 68, 0.05);
+        color: #333;
+        font-weight: 600;
+        border-bottom: 2px solid rgba(57, 81, 68, 0.1);
+    }
+    
+    .comparison-table td {
+        padding: 16px 12px;
+        vertical-align: middle;
+    }
+    
+    /* Feature icon styling */
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(57, 81, 68, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+    
+    .feature-icon i {
+        font-size: 32px;
+        color: #4E6C50;
+    }
+    
+    /* Alert styling */
+    .alert {
+        border-radius: 12px;
+        padding: 16px 20px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 767px) {
+        .kikapu-card {
+            height: 220px;
+            padding: 20px;
+        }
+        
+        .card-balance {
+            font-size: 28px;
+        }
+        
+        .card-number {
+            margin-top: 50px;
+            font-size: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-md-8">
+            <h1 class="section-title">Kikapu NFC Card</h1>
+            <p class="section-subtitle">Your NFC-powered payment card for the Kikapu ecosystem</p>
+        </div>
+        {% if not has_card and not pending_applications %}
+        <div class="col-md-4 text-end d-flex align-items-center justify-content-md-end mt-3 mt-md-0">
+            <a href="{% url 'credits:check_eligibility' %}" class="btn btn-kikapu">
+                <i class="fas fa-credit-card me-2"></i> Get Your Card
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if has_card %}
+        <!-- Active Card Display -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <div class="kikapu-card {% if card.card_type == 'PREPAID' %}prepaid-card{% else %}postpaid-card{% endif %}">
+                    <div class="card-header-section">
+                        <div class="card-type">{{ card.get_card_type_display }} Card</div>
+                        <div class="kp-number">KP{{ card.card_number|slice:":8" }}</div>
+                    </div>
+                    <div class="card-chip"></div>
+                    <div class="nfc-indicator"></div>
+                    <div class="card-balance">
+                        <span class="currency">TSh</span>{{ card.balance|floatformat:"0"|intcomma }}
+                        {% if card.card_type == 'POSTPAID' %}
+                            <div class="card-limit">Credit Limit: TSh {{ card.credit_limit|floatformat:"0"|intcomma }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer-section">
+                        <div class="card-number">{{ card.card_number }}</div>
+                        <div class="card-owner">{{ request.user.get_full_name }}</div>
+                        <div class="kikapu-badge">
+                            {% if card.card_type == 'POSTPAID' %}
+                                POSTPAID
+                            {% else %}
+                                PREPAID
+                            {% endif %}
+                        </div>
+                        {% if has_agent_recommendation %}
+                        <div class="agent-recommended">AGENT RECOMMENDED</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-container">
+                    <div class="card-header">
+                        <h5>Your Card Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled features-list">
+                            <li>
+                                <i class="fas fa-fingerprint"></i> 
+                                <div>
+                                    <strong>KP Number:</strong>
+                                    <div>{{ card.card_number }}</div>
+                                </div>
+                            </li>
+                            <li>
+                                <i class="fas fa-calendar-check"></i> 
+                                <div>
+                                    <strong>Issued on:</strong>
+                                    <div>{{ card.issued_at|date:"d M Y" }}</div>
+                                </div>
+                            </li>
+                            <li>
+                                {% if card.is_active %}
+                                    <i class="fas fa-check-circle success"></i>
+                                    <div>
+                                        <strong>Status:</strong>
+                                        <div class="text-success">Active</div>
+                                    </div>
+                                {% else %}
+                                    <i class="fas fa-times-circle red"></i>
+                                    <div>
+                                        <strong>Status:</strong>
+                                        <div class="text-danger">Inactive</div>
+                                    </div>
+                                {% endif %}
+                            </li>
+                            {% if card.card_type == 'PREPAID' %}
+                                <li>
+                                    <i class="fas fa-clock"></i>
+                                    <div>
+                                        <strong>Expires:</strong>
+                                        <div>{{ card.expire_date|date:"d M Y" }}</div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <i class="fas fa-lock"></i>
+                                    <div>
+                                        <strong>PIN Protection:</strong>
+                                        <div>
+                                            {% if card.passcode %}
+                                            <span class="text-success">Enabled</span> 
+                                            <a href="{% url 'credits:manage_card' %}" class="text-primary ms-2 small">(Change PIN)</a>
+                                            {% else %}
+                                            <span class="text-warning">Not Set</span> 
+                                            <a href="{% url 'credits:manage_card' %}" class="text-primary ms-2 small">(Set PIN Now)</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li>
+                                    {% if card.is_annual_fee_due %}
+                                        <i class="fas fa-exclamation-circle warning"></i>
+                                        <div>
+                                            <strong>Annual Fee:</strong>
+                                            <div class="text-warning">Due Now</div>
+                                        </div>
+                                    {% else %}
+                                        <i class="fas fa-check-circle success"></i>
+                                        <div>
+                                            <strong>Annual Fee:</strong>
+                                            <div>Paid until {{ card.last_annual_fee_date|date:"d M Y"|default:"N/A" }}</div>
+                                        </div>
+                                    {% endif %}
+                                </li>
+                                <li>
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div>
+                                        <strong>Available Credit:</strong>
+                                        <div>TSh {{ card.get_available_credit|floatformat:"0"|intcomma }}</div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <i class="fas fa-lock"></i>
+                                    <div>
+                                        <strong>PIN Protection:</strong>
+                                        <div>
+                                            {% if card.passcode %}
+                                            <span class="text-success">Enabled</span> 
+                                            <a href="{% url 'credits:manage_card' %}" class="text-primary ms-2 small">(Change PIN)</a>
+                                            {% else %}
+                                            <span class="text-danger">REQUIRED</span>
+                                            <a href="{% url 'credits:manage_card' %}" class="text-primary ms-2 small">(Set PIN Now)</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        <div class="mt-4">
+                            <a href="{% url 'credits:manage_card' %}" class="btn btn-kikapu w-100">
+                                <i class="fas fa-cog me-2"></i> Manage Card
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credit Score & Discounts -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card-container">
+                    <div class="card-header">
+                        <h5>Your Credit Score</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <span class="display-5 fw-bold">{{ credit_score.score }}</span>
+                                <span class="text-muted ms-2">/ 1000</span>
+                            </div>
+                            <span class="badge rounded-pill 
+                                {% if credit_score.get_score_category == 'Excellent' %}bg-success
+                                {% elif credit_score.get_score_category == 'Good' %}bg-primary
+                                {% elif credit_score.get_score_category == 'Fair' %}bg-warning text-dark
+                                {% elif credit_score.get_score_category == 'Poor' %}bg-warning
+                                {% else %}bg-danger{% endif %}">
+                                {{ credit_score.get_score_category }}
+                            </span>
+                        </div>
+                        
+                        <div class="score-meter">
+                            <div class="score-value" style="width: {{ credit_score.score|default:0|floatformat:0 }}%;"></div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6 class="fw-bold mb-3">How to improve your score:</h6>
+                            <ul class="mb-0">
+                                <li class="mb-2">Make regular purchases in our marketplace</li>
+                                <li class="mb-2">Pay your postpaid balance on time</li>
+                                <li class="mb-2">Participate in our recycling program</li>
+                                <li class="mb-2">Get recommended by a Kikapu Agent (+50 points)</li>
+                                <li>Maintain consistent activity on your account</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card-container">
+                    <div class="card-header">
+                        <h5>Transaction Security</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center py-3">
+                            <div class="feature-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h5 class="fw-bold mb-3">PIN Protection</h5>
+                            <p class="text-muted mb-3">Your Kikapu NFC Card requires PIN authorization for all transactions, ensuring your account stays secure.</p>
+                            
+                            <div class="pin-dots mb-4">
+                                <div class="pin-dot active"></div>
+                                <div class="pin-dot active"></div>
+                                <div class="pin-dot active"></div>
+                                <div class="pin-dot active"></div>
+                            </div>
+                            
+                            <div class="card-container bg-light mb-4">
+                                <div class="card-body py-3">
+                                    <h6 class="fw-bold mb-2">How it works:</h6>
+                                    <p class="mb-0 text-start">Tap your card on an NFC reader, enter your 4-digit PIN on the keypad, and your transaction is securely processed.</p>
+                                </div>
+                            </div>
+                            
+                            {% if card.passcode %}
+                            <a href="{% url 'credits:manage_card' %}" class="btn btn-kikapu">
+                                <i class="fas fa-key me-2"></i> Change PIN
+                            </a>
+                            {% else %}
+                            <a href="{% url 'credits:manage_card' %}" class="btn btn-kikapu">
+                                <i class="fas fa-key me-2"></i> Set Your PIN
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% elif pending_applications %}
+        <!-- Pending Application Status -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="application-card card-container">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center">
+                            <div class="me-4">
+                                <i class="fas fa-clock fa-3x text-warning"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-2">Application in Progress</h4>
+                                <p class="fs-5 mb-0">Your {{ pending_applications.0.get_card_type_display }} Card application is being processed.</p>
+                            </div>
+                            <div class="ms-auto">
+                                <a href="{% url 'credits:view_application' app_id=pending_applications.0.id %}" class="btn btn-kikapu">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- No Card Yet - Card Options -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4">
+                <div class="card-container h-100">
+                    <div class="card-header">
+                        <h5>Prepaid Card</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <div class="text-center mb-4">
+                            <div class="feature-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Pay-As-You-Go</h4>
+                            <p class="text-muted mb-4">Load money and use it for purchases in the marketplace</p>
+                        </div>
+                        <ul class="list-unstyled features-list mb-4">
+                            <li><i class="fas fa-check success"></i> Available for everyone</li>
+                            <li><i class="fas fa-check success"></i> No annual fee</li>
+                            <li><i class="fas fa-check success"></i> NFC tap & PIN payment</li>
+                            <li><i class="fas fa-check success"></i> Unique KPNumber for your account</li>
+                            <li><i class="fas fa-check success"></i> Recycling rewards program</li>
+                            <li><i class="fas fa-info-circle"></i> Minimum deposit: TSh 25,000</li>
+                        </ul>
+                        <div class="mt-auto">
+                            <a href="{% url 'credits:apply_prepaid_card' %}" class="btn btn-kikapu w-100">
+                                Apply Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card-container h-100">
+                    <div class="card-header">
+                        <h5>Postpaid Card</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <div class="text-center mb-4">
+                            <div class="feature-icon" style="background-color: rgba(170, 139, 86, 0.1);">
+                                <i class="fas fa-credit-card" style="color: #AA8B56;"></i>
+                            </div>
+                            <h4 class="fw-bold mb-3">Buy Now, Pay Later</h4>
+                            <p class="text-muted mb-4">Shop now and pay for your purchases at the end of the month</p>
+                        </div>
+                        <ul class="list-unstyled features-list mb-4">
+                            <li>
+                                {% if postpaid_eligible %}
+                                    <i class="fas fa-check success"></i> <strong>You're eligible!</strong>
+                                {% else %}
+                                    <i class="fas fa-times red"></i> Must spend TSh 25,000+ (Current: TSh {{ total_spending|floatformat:"0"|intcomma }})
+                                {% endif %}
+                            </li>
+                            <li>
+                                {% if agent_recommended %}
+                                    <i class="fas fa-check success"></i> <strong>Agent Recommended</strong>
+                                {% else %}
+                                    <i class="fas fa-info-circle"></i> Agent recommendation improves approval odds
+                                {% endif %}
+                            </li>
+                            <li><i class="fas fa-info-circle"></i> Annual fee: TSh 2,000</li>
+                            <li><i class="fas fa-check success"></i> NFC tap & PIN authentication</li>
+                            <li><i class="fas fa-check success"></i> Credit limit based on usage history</li>
+                            <li><i class="fas fa-check success"></i> Must be registered for ≥30 days</li>
+                        </ul>
+                        <div class="mt-auto">
+                            {% if postpaid_eligible %}
+                                <a href="{% url 'credits:apply_postpaid_card' %}" class="btn btn-kikapu w-100">
+                                    Apply Now
+                                </a>
+                            {% else %}
+                                <button class="btn btn-secondary w-100" disabled>
+                                    Not Eligible Yet
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card-container">
+                    <div class="card-header">
+                        <h5>Compare Card Options</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 30%">Feature</th>
+                                        <th style="width: 35%">Prepaid Card</th>
+                                        <th style="width: 35%">Postpaid Card</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Eligibility</strong></td>
+                                        <td>Anyone</td>
+                                        <td>Spent TSh 25,000+ on marketplace<br>Registered for ≥30 days</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Fee</strong></td>
+                                        <td>No annual fee</td>
+                                        <td>TSh 2,000 per year</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>NFC Payment</strong></td>
+                                        <td>Tap + PIN</td>
+                                        <td>Tap + PIN</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Minimum Amount</strong></td>
+                                        <td>TSh 25,000 minimum deposit</td>
+                                        <td>No minimum deposit</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Credit Limit</strong></td>
+                                        <td>N/A (prepaid only)</td>
+                                        <td>Based on usage & credit score<br>(starts at TSh 25,000)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Agent Recommendation</strong></td>
+                                        <td>Not required</td>
+                                        <td>Optional but improves approval odds<br>(+50 credit score points)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Recycling Rewards</strong></td>
+                                        <td>Earn credits through recycling activities</td>
+                                        <td>Earn credits through recycling activities</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Top-Up Options</strong></td>
+                                        <td colspan="2">M-Pesa, Tigo Pesa, Airtel Money, card, or bank</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Recycling Rewards Section -->
+    <div class="row mt-5">
+        <div class="col-12 mb-4">
+            <h2 class="section-title">Recycling Rewards</h2>
+            <p class="section-subtitle">Earn Kikapu credits by recycling materials</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card-container h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon" style="background-color: rgba(73, 160, 120, 0.1);">
+                        <i class="fas fa-recycle" style="color: #49a078;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Plastic</h4>
+                    <p class="mb-3">Recycle plastic bottles, containers, and packaging.</p>
+                    <div class="alert alert-success mb-0">
+                        <strong>250g</strong> = <strong>1 Kikapu Credit</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card-container h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon" style="background-color: rgba(157, 192, 139, 0.1);">
+                        <i class="fas fa-newspaper" style="color: #9dc08b;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Paper</h4>
+                    <p class="mb-3">Recycle newspapers, magazines, cardboard, and paper waste.</p>
+                    <div class="alert alert-success mb-0">
+                        <strong>250g</strong> = <strong>1 Kikapu Credit</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card-container h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon" style="background-color: rgba(170, 139, 86, 0.1);">
+                        <i class="fas fa-drum" style="color: #AA8B56;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-3">Metal</h4>
+                    <p class="mb-3">Recycle aluminum cans, metal containers, and small metal items.</p>
+                    <div class="alert alert-success mb-0">
+                        <strong>250g</strong> = <strong>1 Kikapu Credit</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 text-center mt-2">
+            <a href="{% url 'credits:recycle_submit' %}" class="btn btn-kikapu">
+                <i class="fas fa-recycle me-2"></i> Start Recycling Now
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

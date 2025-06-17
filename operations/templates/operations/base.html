@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kikapu Operations{% endblock %}</title>
+    {% load static %}
+    <!-- Tailwind CSS -->
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #395144;
+            --primary-light: #4a6857;
+            --secondary-color: #4E6C50;
+            --secondary-light: #5e8161;
+            --accent-color: #AA8B56;
+            --accent-light: #c0a16c;
+            --light-color: #F0EBCE;
+        }
+        
+        .sidebar {
+            background-color: var(--secondary-color);
+            min-height: 100vh;
+            width: 256px; /* Fixed width */
+        }
+        
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.85);
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-link:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: white;
+        }
+        
+        .sidebar-link.active {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-left-color: var(--accent-color);
+            color: white;
+        }
+        
+        .main-content {
+            min-height: 100vh;
+            background-color: #f9f9f9;
+        }
+        
+        .top-bar {
+            background-color: white;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .btn-accent:hover {
+            background-color: #95784b;
+        }
+        
+        /* Django Admin link styling */
+        .django-admin-link {
+            background-color: var(--accent-color);
+            color: white;
+        }
+        
+        .django-admin-link:hover {
+            background-color: #95784b;
+        }
+        
+        /* Simple solution: Just make sure content starts after sidebar */
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 256px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-100">
+    <div class="flex w-full">
+        <!-- Sidebar -->
+        {% if user.is_authenticated and user.is_staff %}
+        <div class="sidebar hidden md:block fixed top-0 left-0 bottom-0 z-40 overflow-y-auto">
+            <div class="p-4 flex items-center space-x-2">
+                <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-8">
+                <span class="text-white font-bold text-xl">KIKAPU Ops</span>
+            </div>
+            
+            <div class="mt-6">
+                <a href="{% url 'operations:dashboard' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if request.path == '/operations/dashboard/' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'operations:manage_agents' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/operations/agents/' in request.path %}active{% endif %}">
+                    <i class="fas fa-user-tie w-5 text-center"></i>
+                    <span>Delivery Agents</span>
+                </a>
+                <a href="{% url 'operations:related_products' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/operations/related-products/' in request.path %}active{% endif %}">
+                    <i class="fas fa-link w-5 text-center"></i>
+                    <span>Related Products</span>
+                </a>
+                <a href="{% url 'operations:manage_nfc_cards' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/operations/nfc-cards/' in request.path %}active{% endif %}">
+                    <i class="fas fa-credit-card w-5 text-center"></i>
+                    <span>Card Management</span>
+                </a>
+                <a href="{% url 'market_research:market_research_dashboard' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/market_research/' in request.path %}active{% endif %}">
+                    <i class="fas fa-chart-line w-5 text-center"></i>
+                    <span>Market Research</span>
+                </a>
+                <a href="{% url 'admin:index' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3">
+                    <i class="fas fa-cog w-5 text-center"></i>
+                    <span>Operations Admin</span>
+                </a>
+                <a href="/admin/?bypass_redirect=true" class="sidebar-link py-3 px-4 flex items-center space-x-3 django-admin-link">
+                    <i class="fas fa-tools w-5 text-center"></i>
+                    <span>Django Admin</span>
+                </a>
+                <div class="border-t border-gray-700 my-4"></div>
+                <a href="{% url 'website:index' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3">
+                    <i class="fas fa-home w-5 text-center"></i>
+                    <span>Return to Site</span>
+                </a>
+                <a href="{% url 'registration:logout' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3">
+                    <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Main Content - Simplified approach with direct margin -->
+        <div class="main-content flex-1 w-full">
+            <!-- Top Bar -->
+            <div class="top-bar p-4 flex justify-between items-center">
+                {% if user.is_authenticated and user.is_staff %}
+                <button id="sidebar-toggle" class="md:hidden text-gray-600 hover:text-gray-900" title="Toggle Sidebar">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                {% endif %}
+                
+                <h1 class="text-xl font-bold text-gray-800">{% block page_title %}Kikapu Operations{% endblock %}</h1>
+                
+                {% if user.is_authenticated %}
+                <div class="flex items-center space-x-3">
+                    <span class="text-gray-600">{{ user.get_full_name|default:user.username }}</span>
+                    <img src="https://ui-avatars.com/api/?name={{ user.get_full_name|default:user.username }}&background=4E6C50&color=fff" 
+                         alt="{{ user.username }}" class="h-8 w-8 rounded-full border-2 border-white shadow">
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Page Content -->
+            <div class="p-6">
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div class="p-4 mb-3 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Sidebar -->
+    {% if user.is_authenticated and user.is_staff %}
+    <div id="mobile-sidebar" class="sidebar fixed inset-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-8">
+                <span class="text-white font-bold text-xl">KIKAPU Ops</span>
+            </div>
+            <button id="close-sidebar" class="text-white hover:text-gray-300" title="Close Sidebar">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <div class="mt-6">
+            <a href="{% url 'operations:dashboard' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if request.path == '/operations/dashboard/' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt w-5 text-center"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'operations:manage_agents' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/operations/agents/' in request.path %}active{% endif %}">
+                <i class="fas fa-user-tie w-5 text-center"></i>
+                <span>Delivery Agents</span>
+            </a>
+            <a href="{% url 'operations:related_products' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/operations/related-products/' in request.path %}active{% endif %}">
+                <i class="fas fa-link w-5 text-center"></i>
+                <span>Related Products</span>
+            </a>
+            <a href="{% url 'operations:manage_nfc_cards' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/operations/nfc-cards/' in request.path %}active{% endif %}">
+                <i class="fas fa-credit-card w-5 text-center"></i>
+                <span>Card Management</span>
+            </a>
+            <a href="{% url 'market_research:market_research_dashboard' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3 {% if '/market_research/' in request.path %}active{% endif %}">
+                <i class="fas fa-chart-line w-5 text-center"></i>
+                <span>Market Research</span>
+            </a>
+            <a href="{% url 'admin:index' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3">
+                <i class="fas fa-cog w-5 text-center"></i>
+                <span>Operations Admin</span>
+            </a>
+            <a href="/admin/?bypass_redirect=true" class="sidebar-link py-3 px-4 flex items-center space-x-3 django-admin-link">
+                <i class="fas fa-tools w-5 text-center"></i>
+                <span>Django Admin</span>
+            </a>
+            <div class="border-t border-gray-700 my-4"></div>
+            <a href="{% url 'website:index' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3">
+                <i class="fas fa-home w-5 text-center"></i>
+                <span>Return to Site</span>
+            </a>
+            <a href="{% url 'registration:logout' %}" class="sidebar-link py-3 px-4 flex items-center space-x-3">
+                <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden"></div>
+    {% endif %}
+    
+    <!-- Bootstrap & Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const closeSidebar = document.getElementById('close-sidebar');
+            const mobileSidebar = document.getElementById('mobile-sidebar');
+            const sidebarBackdrop = document.getElementById('sidebar-backdrop');
+            
+            if (sidebarToggle && mobileSidebar && sidebarBackdrop) {
+                sidebarToggle.addEventListener('click', function() {
+                    mobileSidebar.classList.remove('-translate-x-full');
+                    sidebarBackdrop.classList.remove('hidden');
+                });
+                
+                function hideSidebar() {
+                    mobileSidebar.classList.add('-translate-x-full');
+                    sidebarBackdrop.classList.add('hidden');
+                }
+                
+                if (closeSidebar) {
+                    closeSidebar.addEventListener('click', hideSidebar);
+                }
+                
+                sidebarBackdrop.addEventListener('click', hideSidebar);
+            }
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

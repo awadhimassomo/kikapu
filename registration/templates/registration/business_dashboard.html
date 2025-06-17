@@ -1,0 +1,907 @@
+{% extends 'base.html' %}
+
+{% block title %}Business Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Root Variables */
+    :root {
+        --primary: #395144;
+        --primary-dark: #2A3C33;
+        --secondary: #4E6C50;
+        --accent: #AA8B56;
+        --accent-light: #F0EBCE;
+        --bg-light: #F5F3EE;
+        --text-dark: #1F2937;
+        --text-medium: #4B5563;
+        --text-light: #6B7280;
+        --border-light: #E9E3D5;
+    }
+    
+    /* Animations */
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-pulse-slow {
+        animation: pulseSlow 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulseSlow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    .animation-delay-200 { animation-delay: 0.2s; }
+    .animation-delay-300 { animation-delay: 0.3s; }
+    .animation-delay-400 { animation-delay: 0.4s; }
+    .animation-delay-500 { animation-delay: 0.5s; }
+    
+    /* Framework Overrides */
+    .dashboard-section {
+        margin-bottom: 3rem;
+    }
+    
+    .dashboard-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .dashboard-subtitle {
+        font-size: 0.875rem;
+        color: var(--text-medium);
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Cards */
+    .card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-light);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.03);
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.06);
+    }
+    
+    .card-header {
+        background-color: rgba(240, 235, 206, 0.3);
+        border-bottom: 1px solid var(--border-light);
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .card-header-title {
+        color: var(--primary);
+        font-weight: 600;
+        font-size: 1.125rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .card-header-title i {
+        color: var(--accent);
+        margin-right: 0.75rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Stat Cards */
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid var(--border-light);
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.06);
+    }
+    
+    .stat-card.featured {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-medium);
+        margin-bottom: 0.75rem;
+    }
+    
+    .stat-card.featured .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-card.featured .stat-value {
+        color: white;
+    }
+    
+    .stat-desc {
+        font-size: 0.875rem;
+        color: var(--text-medium);
+    }
+    
+    .stat-card.featured .stat-desc {
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .stat-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(240, 235, 206, 0.6);
+        color: var(--primary);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1) rotate(10deg);
+    }
+    
+    /* Action Links */
+    .action-link {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem;
+        border-bottom: 1px solid var(--border-light);
+        transition: all 0.2s ease;
+    }
+    
+    .action-link:last-child {
+        border-bottom: none;
+    }
+    
+    .action-link:hover {
+        background-color: rgba(240, 235, 206, 0.2);
+    }
+    
+    .action-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .action-link:hover .action-icon {
+        transform: scale(1.1);
+    }
+    
+    .action-title {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 1rem;
+    }
+    
+    .action-desc {
+        font-size: 0.875rem;
+        color: var(--text-medium);
+        margin-top: 0.25rem;
+    }
+    
+    .action-arrow {
+        margin-left: auto;
+        color: #CBD5E0;
+        transition: all 0.2s ease;
+    }
+    
+    .action-link:hover .action-arrow {
+        transform: translateX(4px);
+        color: var(--primary);
+    }
+    
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        color: white;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        transform: translateY(-2px);
+    }
+    
+    .btn-accent {
+        background-color: var(--accent);
+    }
+    
+    .btn-accent:hover {
+        background-color: #957948;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+    }
+    
+    .btn-outline:hover {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    /* Profile Items */
+    .profile-item {
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .profile-item:hover {
+        background-color: rgba(240, 235, 206, 0.3);
+    }
+    
+    .profile-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--secondary);
+        margin-bottom: 0.375rem;
+    }
+    
+    .profile-value {
+        font-size: 1rem;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+    
+    /* Table Styling */
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .data-table th {
+        background-color: rgba(240, 235, 206, 0.3);
+        color: var(--secondary);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1rem 1.5rem;
+        text-align: left;
+    }
+    
+    .data-table td {
+        padding: 1.25rem 1.5rem;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--border-light);
+    }
+    
+    .data-table tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .data-table tr:hover td {
+        background-color: rgba(240, 235, 206, 0.1);
+    }
+    
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .status-badge-yellow {
+        background-color: #FEF3C7;
+        color: #92400E;
+    }
+    
+    .status-badge-blue {
+        background-color: #DBEAFE;
+        color: #1E40AF;
+    }
+    
+    .status-badge-indigo {
+        background-color: #E0E7FF;
+        color: #3730A3;
+    }
+    
+    .status-badge-green {
+        background-color: #D1FAE5;
+        color: #065F46;
+    }
+    
+    .status-badge-red {
+        background-color: #FEE2E2;
+        color: #991B1B;
+    }
+    
+    .status-indicator {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 9999px;
+        margin-right: 0.5rem;
+    }
+    
+    .status-indicator-yellow {
+        background-color: #F59E0B;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-indicator-blue {
+        background-color: #3B82F6;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.4; }
+        100% { opacity: 1; }
+    }
+    
+    /* Empty State */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1.5rem;
+        text-align: center;
+    }
+    
+    .empty-icon {
+        width: 6rem;
+        height: 6rem;
+        background-color: rgba(240, 235, 206, 0.5);
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 2rem;
+        color: var(--accent);
+        font-size: 2.5rem;
+    }
+    
+    .empty-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-desc {
+        font-size: 1rem;
+        color: var(--text-medium);
+        max-width: 30rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .card-header, .card-body {
+            padding: 1rem;
+        }
+        
+        .stat-card {
+            padding: 1rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+        }
+        
+        .action-link {
+            padding: 1rem;
+        }
+        
+        .action-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+        
+        .data-table th, 
+        .data-table td {
+            padding: 0.75rem 1rem;
+        }
+        
+        .data-table th:nth-child(3),
+        .data-table td:nth-child(3) {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Spacer -->
+<div class="h-24 bg-[#F5F3EE]"></div>
+
+
+
+<!-- Main Dashboard Content -->
+<div class="bg-[#F5F3EE] min-h-screen pb-20">
+    <div class="container mx-auto px-6">
+        <!-- Overview Section -->
+        <div class="dashboard-section mb-16">
+            <div class="dashboard-title">Dashboard Overview</div>
+            <div class="dashboard-subtitle">Key metrics and statistics for your business</div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Total Products Card -->
+                <div>
+                    <div class="stat-card featured h-full relative overflow-hidden">
+                        <!-- Background Icon -->
+                        <div class="absolute right-3 bottom-0 text-[120px] opacity-10 transform -rotate-12">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <div class="stat-label">Total Products</div>
+                            <div class="stat-value">{{ product_count|default:"0" }}</div>
+                            <div class="stat-desc">Items in your inventory</div>
+                            
+                            <div class="mt-6">
+                                <a href="{% url 'marketplace:business_product_list' %}" class="inline-flex items-center text-white hover:text-[#F0EBCE] transition-colors">
+                                    <span>View All Products</span>
+                                    <i class="fas fa-arrow-right ml-2 text-xs transition-transform group-hover:translate-x-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Orders Card -->
+                <div>
+                    <div class="stat-card">
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="stat-label">Total Orders</div>
+                                <div class="stat-value">{{ order_count|default:"0" }}</div>
+                                <div class="stat-desc">Customer purchases</div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-[#E9E3D5]">
+                            <a href="#" class="inline-flex items-center text-[#395144] hover:text-[#AA8B56] font-medium transition-colors">
+                                <span>View Order History</span>
+                                <i class="fas fa-chevron-right ml-1 text-xs transition-transform group-hover:translate-x-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reviews Card -->
+                <div>
+                    <div class="stat-card">
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="stat-label">Customer Reviews</div>
+                                <div class="stat-value">{{ review_count|default:"0" }}</div>
+                                <div class="stat-desc">Avg. Rating: <span class="text-[#AA8B56] font-medium">4.8/5</span></div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-[#E9E3D5]">
+                            <a href="#" class="inline-flex items-center text-[#395144] hover:text-[#AA8B56] font-medium transition-colors">
+                                <span>Manage Reviews</span>
+                                <i class="fas fa-chevron-right ml-1 text-xs transition-transform group-hover:translate-x-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Customers Card -->
+                <div>
+                    <div class="stat-card">
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="stat-label">Total Customers</div>
+                                <div class="stat-value">{{ customer_count|default:"0" }}</div>
+                                <div class="stat-desc">Across <span class="text-[#AA8B56] font-medium">{{ regions_count|default:"3" }} regions</span></div>
+                            </div>
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-4 border-t border-[#E9E3D5]">
+                            <a href="#" class="inline-flex items-center text-[#395144] hover:text-[#AA8B56] font-medium transition-colors">
+                                <span>Customer Analytics</span>
+                                <i class="fas fa-chevron-right ml-1 text-xs transition-transform group-hover:translate-x-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Profile & Quick Actions Section -->
+        <div class="dashboard-section mb-16">
+            <div class="dashboard-title">Business Information</div>
+            <div class="dashboard-subtitle">Manage your profile and take quick actions</div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Business Profile -->
+                <div>
+                    <div class="card h-full">
+                        <div class="card-header flex justify-between items-center">
+                            <div class="card-header-title">
+                                <i class="fas fa-store"></i>
+                                <span>Business Profile</span>
+                            </div>
+                            <a href="#" class="btn btn-outline text-sm py-1.5 px-3">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </a>
+                        </div>
+                        
+                        <div class="card-body">
+                            <div class="profile-item">
+                                <div class="profile-label">Business Name</div>
+                                <div class="profile-value">{{ business.business_name|default:"Kilimanjaro Organics" }}</div>
+                            </div>
+                            
+                            <div class="profile-item">
+                                <div class="profile-label">Business Type</div>
+                                <div class="profile-value">{{ business.business_type|default:"Organic Food Supplier" }}</div>
+                            </div>
+                            
+                            <div class="profile-item">
+                                <div class="profile-label">Address</div>
+                                <div class="profile-value">{{ business.business_address|default:"123 Sokoine Road, Arusha, Tanzania" }}</div>
+                            </div>
+                            
+                            <div class="profile-item">
+                                <div class="profile-label">Phone</div>
+                                <div class="profile-value">{{ business.business_phone|default:"+255 752 123 456" }}</div>
+                            </div>
+                            
+                            <div class="mt-6 pt-4 border-t border-[#E9E3D5] text-xs flex items-center">
+                                <span class="bg-[#F0EBCE] text-[#395144] px-2.5 py-1.5 rounded-full font-medium">Profile verified</span>
+                                <span class="text-gray-500 ml-3">Last updated: {{ business.updated_at|date:"M d, Y"|default:"Apr 19, 2025" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="lg:col-span-2">
+                    <div class="card h-full">
+                        <div class="card-header">
+                            <div class="card-header-title">
+                                <i class="fas fa-bolt"></i>
+                                <span>Quick Actions</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-[#E9E3D5]">
+                            <div>
+                                <a href="{% url 'marketplace:business_product_add' %}" class="action-link">
+                                    <div class="action-icon bg-[#395144]/10">
+                                        <i class="fas fa-plus text-[#395144]"></i>
+                                    </div>
+                                    <div>
+                                        <div class="action-title">Add New Product</div>
+                                        <div class="action-desc">Create and publish a listing</div>
+                                    </div>
+                                    <div class="action-arrow">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                </a>
+                                
+                                <a href="{% url 'marketplace:business_product_list' %}" class="action-link">
+                                    <div class="action-icon bg-[#4E6C50]/10">
+                                        <i class="fas fa-boxes text-[#4E6C50]"></i>
+                                    </div>
+                                    <div>
+                                        <div class="action-title">Manage Products</div>
+                                        <div class="action-desc">Edit or update inventory</div>
+                                    </div>
+                                    <div class="action-arrow">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <div>
+                                <a href="#orders-section" class="action-link">
+                                    <div class="action-icon bg-[#AA8B56]/10">
+                                        <i class="fas fa-shipping-fast text-[#AA8B56]"></i>
+                                    </div>
+                                    <div>
+                                        <div class="action-title">Manage Orders</div>
+                                        <div class="action-desc">Process customer orders</div>
+                                    </div>
+                                    <div class="action-arrow">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                </a>
+                                
+                                <a href="#" class="action-link">
+                                    <div class="action-icon bg-blue-50">
+                                        <i class="fas fa-chart-line text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="action-title">View Analytics</div>
+                                        <div class="action-desc">Sales and performance data</div>
+                                    </div>
+                                    <div class="action-arrow">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Notifications Section -->
+        <div class="dashboard-section mb-16">
+            <div class="dashboard-title">Notifications</div>
+            <div class="dashboard-subtitle">Recent notifications about your business</div>
+            
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <div class="card-header-title">
+                        <i class="fas fa-bell"></i>
+                        <span>Recent Notifications</span>
+                        {% if unread_notifications_count %}
+                            <span class="ml-2 bg-[#AA8B56] text-white text-xs rounded-full px-2 py-1">{{ unread_notifications_count }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="#" class="text-[#395144] hover:text-[#AA8B56] text-sm font-medium flex items-center">
+                        <span>Mark All As Read</span>
+                        <i class="fas fa-check ml-2 text-xs"></i>
+                    </a>
+                </div>
+                
+                {% if recent_notifications %}
+                <div class="divide-y divide-[#E9E3D5]">
+                    {% for notification in recent_notifications %}
+                    <div class="p-4 hover:bg-[#F0EBCE]/20 transition-colors {% if not notification.is_read %}bg-[#F0EBCE]/10{% endif %}">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 mt-0.5">
+                                {% if notification.notification_type == 'NEW_ORDER' %}
+                                <div class="w-10 h-10 rounded-full bg-[#4E6C50]/10 flex items-center justify-center text-[#4E6C50]">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                {% elif notification.notification_type == 'ORDER_STATUS' %}
+                                <div class="w-10 h-10 rounded-full bg-[#AA8B56]/10 flex items-center justify-center text-[#AA8B56]">
+                                    <i class="fas fa-sync-alt"></i>
+                                </div>
+                                {% elif notification.notification_type == 'LOW_STOCK' %}
+                                <div class="w-10 h-10 rounded-full bg-[#DC2626]/10 flex items-center justify-center text-[#DC2626]">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                {% else %}
+                                <div class="w-10 h-10 rounded-full bg-[#395144]/10 flex items-center justify-center text-[#395144]">
+                                    <i class="fas fa-info-circle"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-[#395144] font-semibold">{{ notification.title }}</h4>
+                                    <span class="text-xs text-gray-500">{{ notification.created_at|date:"M d, g:i a" }}</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">{{ notification.message }}</p>
+                                {% if notification.order %}
+                                <div class="mt-2">
+                                    <a href="#" class="inline-flex items-center text-sm font-medium text-[#4E6C50] hover:text-[#AA8B56]">
+                                        <span>View Order Details</span>
+                                        <i class="fas fa-arrow-right ml-1 text-xs"></i>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state py-10">
+                    <div class="empty-icon animate-float" style="width: 4rem; height: 4rem;">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <div class="empty-title text-lg">No Notifications</div>
+                    <div class="empty-desc text-sm max-w-lg">You don't have any notifications yet. When you receive orders or there are updates about your business, they will appear here.</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Orders Section -->
+        <div class="dashboard-section" id="orders-section">
+            <div class="dashboard-title">Recent Activity</div>
+            <div class="dashboard-subtitle">Your latest orders and business transactions</div>
+            
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <div class="card-header-title">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Recent Orders</span>
+                    </div>
+                    <a href="#" class="text-[#395144] hover:text-[#AA8B56] text-sm font-medium flex items-center">
+                        <span>View All Orders</span>
+                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                    </a>
+                </div>
+                
+                {% if recent_orders %}
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th class="hidden md:table-cell">Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td class="font-medium text-[#395144]">#{{ order.order_number }}</td>
+                                <td>
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-[#F0EBCE] flex items-center justify-center text-[#395144] mr-3 font-bold text-xs">
+                                            {{ order.customer.user.firstName|first|default:"J" }}{{ order.customer.user.lastName|first|default:"D" }}
+                                        </div>
+                                        <span>{{ order.customer.user.firstName|default:"John" }} {{ order.customer.user.lastName|default:"Doe" }}</span>
+                                    </div>
+                                </td>
+                                <td class="hidden md:table-cell">{{ order.order_date|date:"M d, Y" }}</td>
+                                <td class="font-medium">{{ order.total_amount }} TSh</td>
+                                <td>
+                                    <div class="
+                                        {% if order.status == 'PENDING' %}status-badge status-badge-yellow
+                                        {% elif order.status == 'PROCESSING' %}status-badge status-badge-blue
+                                        {% elif order.status == 'SHIPPED' %}status-badge status-badge-indigo
+                                        {% elif order.status == 'DELIVERED' %}status-badge status-badge-green
+                                        {% elif order.status == 'CANCELLED' %}status-badge status-badge-red
+                                        {% else %}status-badge status-badge-gray{% endif %}
+                                    ">
+                                        {% if order.status == 'PENDING' or order.status == 'PROCESSING' %}
+                                        <span class="
+                                            {% if order.status == 'PENDING' %}status-indicator status-indicator-yellow
+                                            {% else %}status-indicator status-indicator-blue{% endif %}
+                                        "></span>
+                                        {% endif %}
+                                        {{ order.status|title }}
+                                    </div>
+                                </td>
+                                <td class="text-right">
+                                    <a href="#" class="btn btn-outline text-sm py-1.5 px-4">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon animate-float">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="empty-title">No Orders Yet</div>
+                    <div class="empty-desc">Once customers start placing orders, they will appear here. Start by adding products to your inventory.</div>
+                    <a href="{% url 'marketplace:business_product_add' %}" class="btn btn-primary shadow-lg">
+                        <i class="fas fa-plus mr-2"></i>
+                        Add Your First Product
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add smooth scrolling to anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // Staggered animation for cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.card, .stat-card');
+        
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100 * index);
+        });
+    });
+</script>
+{% endblock %}

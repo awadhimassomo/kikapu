@@ -1,0 +1,168 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/unusable_password_field.css' %}">
+  <style>
+    /* Kikapu brand colors */
+    :root {
+      --primary: #395144;
+      --secondary: #4E6C50;
+      --accent: #AA8B56;
+      --light: #F0EBCE;
+      --text-dark: #1F2937;
+      --text-medium: #4B5563;
+      --text-light: #6B7280;
+      --border-light: #E9E3D5;
+    }
+    
+    /* Form styling */
+    .form-row {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    
+    .form-row label {
+      font-weight: 600;
+      color: var(--text-dark);
+      font-size: 14px;
+    }
+    
+    .form-row input, .form-row select, .form-row textarea {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #D1D5DB;
+      width: 100%;
+      max-width: 400px;
+      font-size: 14px;
+      transition: border-color 0.3s ease;
+    }
+    
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+      border-color: var(--primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(57, 81, 68, 0.1);
+    }
+    
+    .help {
+      font-size: 12px;
+      color: var(--text-medium);
+      margin-top: 4px;
+    }
+    
+    .errorlist {
+      list-style: none;
+      padding: 0;
+      color: #B91C1C;
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    
+    /* Custom submit button */
+    .submit-row input {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      transition: background-color 0.3s ease;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 6px;
+    }
+    
+    .submit-row input:hover {
+      background-color: #2A3C33;
+      border-color: #2A3C33;
+    }
+    
+    /* Form section header */
+    .form-section-header {
+      background-color: rgba(240, 235, 206, 0.3);
+      padding: 12px 16px;
+      margin: 24px 0 16px 0;
+      border-radius: 8px;
+      font-weight: 600;
+      color: var(--primary);
+      border-left: 4px solid var(--accent);
+    }
+    
+    /* Instructions block */
+    .instruction-block {
+      background-color: rgba(170, 139, 86, 0.1);
+      border: 1px solid rgba(170, 139, 86, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 24px 0;
+      color: var(--text-dark);
+    }
+    
+    .instruction-block h3 {
+      color: var(--accent);
+      margin-top: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .instruction-block p {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+  </style>
+{% endblock %}
+
+{% block form_top %}
+  <div class="instruction-block">
+    <h3>{% translate "Creating a new user" %}</h3>
+    <p>{% translate "After you've created a user, you'll be able to edit more user options such as permissions and group memberships." %}</p>
+    <p>{% translate "All fields marked with an asterisk (*) are required." %}</p>
+  </div>
+  
+  <!-- Basic information section -->
+  <div class="form-section-header">
+    {% translate "Basic Information" %}
+  </div>
+{% endblock %}
+
+{% block after_field_sets %}
+  <!-- Password section -->
+  <div class="form-section-header">
+    {% translate "Password" %}
+  </div>
+  
+  <div class="instruction-block">
+    <p>{% translate "Passwords must be at least 8 characters and contain a mix of letters, numbers, and special characters." %}</p>
+    <p>{% translate "Choose a strong password that you don't use for other accounts." %}</p>
+  </div>
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/unusable_password_field.css' %}">
+{% endblock %}
+
+{% block admin_change_form_document_ready %}
+  {{ block.super }}
+  <script src="{% static 'admin/js/unusable_password_field.js' %}" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add asterisks to required fields
+      const requiredFields = ['id_username', 'id_password1', 'id_password2'];
+      requiredFields.forEach(function(id) {
+        const label = document.querySelector(`label[for="${id}"]`);
+        if (label && !label.textContent.includes('*')) {
+          label.innerHTML += ' <span style="color: #B91C1C;">*</span>';
+        }
+      });
+      
+      // Improve form layout
+      const formRows = document.querySelectorAll('.form-row');
+      formRows.forEach(function(row) {
+        // Add space between label and field
+        const labelDiv = row.querySelector('div.field-box label');
+        const fieldDiv = row.querySelector('div.field-box div');
+        if (labelDiv && fieldDiv) {
+          labelDiv.style.marginBottom = '6px';
+        }
+      });
+    });
+  </script>
+{% endblock %}

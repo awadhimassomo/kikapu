@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Delivery Group | Kikapu{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Create Group Delivery</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> About Group Delivery</h5>
+                        <p>Create a delivery group and invite friends, family or neighbors to join. Everyone in the group will have their delivery fee split equally, and as the group leader, you'll receive a 10% discount on your subtotal!</p>
+                    </div>
+
+                    <form method="post" action="{% url 'marketplace:create_group' %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label for="delivery_date" class="form-label">Delivery Date:</label>
+                            <input type="date" id="delivery_date" name="delivery_date" class="form-control" 
+                                   min="{{ min_date }}" required>
+                            <small class="text-muted">Select a delivery date (must be a future date)</small>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="time_slot" class="form-label">Delivery Time:</label>
+                            <select id="time_slot" name="time_slot" class="form-select" required>
+                                <option value="" selected disabled>-- Select a Time Slot --</option>
+                                {% for value, display in time_slots %}
+                                <option value="{{ value }}">{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="alert alert-success">
+                            <strong>As group leader you will:</strong>
+                            <ul class="mb-0">
+                                <li>Receive a 10% discount on your order</li>
+                                <li>Be able to add orders for others</li>
+                                <li>Get a shareable link to send to friends</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-users"></i> Create Group
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

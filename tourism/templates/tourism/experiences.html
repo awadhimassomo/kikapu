@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Farm Experiences - KIKAPU Tourism{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="bg-[#F0EBCE] py-8 mb-8">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center gap-3 mb-4">
+            <img src="{% static 'website/images/kikapuu.png' %}" alt="Kikapu Logo" class="h-12 w-auto object-contain" />
+            <h1 class="text-3xl font-bold text-[#395144]">Farm Experiences</h1>
+        </div>
+        <p class="text-gray-700 mb-4">Discover unique agricultural experiences in Arusha, Tanzania</p>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mx-auto px-4 pb-16">
+    <!-- Location Banner -->
+    <div class="py-3 mb-6 flex justify-between items-center border-b border-gray-200">
+        <div class="flex items-center text-sm">
+            <i class="fas fa-map-marker-alt text-[#395144] mr-2"></i>
+            <span id="user-location">Arusha, Tanzania</span>
+        </div>
+        <div>
+            <span class="text-green-600 text-sm"><i class="fas fa-check-circle mr-1"></i> Available for booking</span>
+        </div>
+    </div>
+
+    <!-- Introduction Section -->
+    <div class="mb-10">
+        <h2 class="text-2xl font-bold text-[#395144] mb-4">Experience Local Agriculture</h2>
+        <p class="text-gray-700 mb-6">Connect with local farms and immerse yourself in unique agricultural experiences. From coffee plantations to farmhouse stays, we offer a range of activities that highlight Tanzania's rich farming heritage.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#F0EBCE] p-3 rounded-full mr-4">
+                        <i class="fas fa-home text-[#395144] text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-[#395144]">Farmhouse Retreats</h3>
+                </div>
+                <p class="text-gray-600">Stay at authentic farms and experience rural life firsthand.</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#F0EBCE] p-3 rounded-full mr-4">
+                        <i class="fas fa-seedling text-[#395144] text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-[#395144]">Farm Tours</h3>
+                </div>
+                <p class="text-gray-600">Guided tours of working farms showcasing local agricultural practices.</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                <div class="flex items-center mb-4">
+                    <div class="bg-[#F0EBCE] p-3 rounded-full mr-4">
+                        <i class="fas fa-utensils text-[#395144] text-xl"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-[#395144]">Farm-to-Table Dining</h3>
+                </div>
+                <p class="text-gray-600">Enjoy fresh meals prepared with ingredients harvested directly from the farm.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Experiences Listing -->
+    <h2 class="text-2xl font-bold text-[#395144] mb-6">Available Experiences</h2>
+    
+    {% if experiences %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for experience in experiences %}
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                    <div class="relative h-56">
+                        {% if experience.image %}
+                            <img src="{{ experience.image.url }}" alt="{{ experience.title }}" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                        {% else %}
+                            <img src="{% static 'website/images/placeholder.jpg' %}" alt="{{ experience.title }}" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                        {% endif %}
+                        <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">
+                            {% if experience.experience_type == 'FARMHOUSE' %}
+                                Farmhouse Retreat
+                            {% elif experience.experience_type == 'RESTAURANT' %}
+                                Farm Restaurant
+                            {% else %}
+                                Farm Experience
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-semibold text-[#395144] mb-1">{{ experience.title }}</h3>
+                        <div class="flex items-center mt-1 mb-3">
+                            <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                                <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                                <span class="text-sm font-medium text-[#395144]">{{ experience.location }}</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{ experience.description }}</p>
+                        <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                            <div class="text-lg font-bold text-[#395144]">TSh {{ experience.price_per_day|floatformat:0 }}<span class="text-sm font-normal"> / day</span></div>
+                            <a href="{% url 'tourism:book_experience' experience.id %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Sample Farm Experiences (only shown when no actual experiences exist) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Farm Experience 1 -->
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                <div class="relative h-56">
+                    <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                         alt="Kilimanjaro Coffee Farm" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                    <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Farmhouse Retreat</span>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <h3 class="text-xl font-semibold text-[#395144] mb-1">Kilimanjaro Coffee Farm</h3>
+                    <div class="flex items-center mt-1 mb-3">
+                        <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                            <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                            <span class="text-sm font-medium text-[#395144]">Kilimanjaro Region</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm line-clamp-3 mb-4">Experience the full coffee journey from bean to cup at our working coffee farm with stunning views of Mount Kilimanjaro.</p>
+                    <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                        <div class="text-lg font-bold text-[#395144]">TSh 150,000<span class="text-sm font-normal"> / day</span></div>
+                        <a href="{% url 'tourism:book_farmhouse' %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Farm Experience 2 -->
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                <div class="relative h-56">
+                    <img src="https://images.unsplash.com/photo-1516253593875-bd7ba052fbc5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                         alt="Arusha Organic Farm" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                    <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Farm Tour</span>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <h3 class="text-xl font-semibold text-[#395144] mb-1">Arusha Organic Farm</h3>
+                    <div class="flex items-center mt-1 mb-3">
+                        <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                            <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                            <span class="text-sm font-medium text-[#395144]">Arusha</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm line-clamp-3 mb-4">Learn about sustainable farming practices and organic food production with hands-on activities for the whole family.</p>
+                    <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                        <div class="text-lg font-bold text-[#395144]">TSh 75,000<span class="text-sm font-normal"> / day</span></div>
+                        <a href="{% url 'tourism:book_farmhouse' %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Farm Experience 3 -->
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                <div class="relative h-56">
+                    <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                         alt="Tanzania Farm Cuisine" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                    <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Farm Restaurant</span>
+                </div>
+                <div class="p-6 flex-grow flex flex-col">
+                    <h3 class="text-xl font-semibold text-[#395144] mb-1">Tanzania Farm Cuisine</h3>
+                    <div class="flex items-center mt-1 mb-3">
+                        <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                            <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                            <span class="text-sm font-medium text-[#395144]">Dar es Salaam</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 text-sm line-clamp-3 mb-4">Experience traditional Tanzanian cuisine made from locally-sourced ingredients in a beautiful farm setting.</p>
+                    <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                        <div class="text-lg font-bold text-[#395144]">TSh 100,000<span class="text-sm font-normal"> / day</span></div>
+                        <a href="{% url 'tourism:book_restaurant' %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                            <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Call to Action -->
+    <div class="mt-16 bg-[#395144] rounded-xl p-8 text-white">
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="mb-6 md:mb-0 md:mr-8">
+                <h3 class="text-2xl font-bold mb-2">Have a farm or experience to share?</h3>
+                <p class="text-gray-200">Join our platform and showcase your agricultural experience to visitors.</p>
+            </div>
+            <a href="{% url 'website:contact' %}" class="whitespace-nowrap bg-[#AA8B56] hover:bg-[#95784b] px-6 py-3 rounded-lg font-medium transition-colors">
+                Contact Us
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

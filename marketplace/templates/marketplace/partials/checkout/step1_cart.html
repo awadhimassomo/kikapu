@@ -1,0 +1,1152 @@
+
+{% load static %}
+
+<!-- Link to mobile-optimized CSS -->
+<link rel="stylesheet" href="{% static 'css/cart-mobile.css' %}">
+
+<div class="flex flex-col md:flex-row items-start gap-6 w-full mx-auto" id="step-1">
+  <!-- Offline indicator for PWA - shown when connection is lost -->
+  <div class="offline-indicator w-full hidden bg-amber-50 border-l-4 border-amber-400 p-3 rounded-lg text-amber-700 text-sm font-medium animate-pulse" id="offline-indicator">
+    <i class="fas fa-wifi-slash mr-2"></i> You're currently offline. Some features may be limited.
+  </div>
+  
+  <!-- Shopping Cart Card - Modern Design -->
+  <div class="custom-cart-container bg-white rounded-2xl shadow-lg p-5 md:p-6 lg:p-7 flex flex-col flex-1 animate-fade-in-up border border-gray-100">
+    <div class="sticky top-0 z-10 bg-white pt-1 pb-4 backdrop-blur-sm bg-opacity-95">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pb-4 border-b border-gray-100">
+        <div class="flex items-center gap-3">
+          <div class="bg-[#F0EBCE] bg-opacity-70 p-2.5 rounded-full shadow-sm">
+            <i class="fas fa-shopping-basket text-[#395144] text-xl"></i>
+          </div>
+          <h2 class="text-xl md:text-2xl font-bold text-[#395144] tracking-tight">My Cart</h2>
+        </div>
+        
+        {% if cart_items|length > 0 %}
+          <span class="text-sm bg-gradient-to-r from-[#395144] to-[#4E6C50] text-white py-1.5 px-4 rounded-full flex items-center gap-2 shadow-sm">
+            <i class="fas fa-basket-shopping text-[#F0EBCE]"></i>
+            <span>{{ cart_items|length }} item{% if cart_items|length != 1 %}s{% endif %}</span>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+    
+    {% if cart_items %}
+      <div class="overflow-x-auto">
+        <div id="empty-cart-message" class="hidden py-12 text-center">
+          <div class="flex justify-center">
+            <div class="relative">
+              <div class="text-7xl text-gray-200 mb-4 transform transition-all duration-700 hover:scale-110">
+                <i class="fas fa-shopping-basket"></i>
+              </div>
+              <div class="absolute -top-1 -right-1 text-2xl text-[#395144] animate-bounce">
+                <i class="fas fa-plus-circle"></i>
+              </div>
+            </div>
+          </div>
+          <h3 class="text-xl font-medium text-[#395144] mb-3">Your basket is empty</h3>
+          <p class="text-gray-500 mb-8 max-w-md mx-auto">Discover fresh, locally-sourced products from farmers in your area and add them to your cart.</p>
+          <a href="{% url 'marketplace:marketplace' %}" class="inline-block bg-gradient-to-r from-[#395144] to-[#4E6C50] text-white font-bold py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px]">
+            <i class="fas fa-store mr-2"></i> Explore Marketplace
+          </a>
+        </div>
+        
+        <!-- Added Clear Cart button -->
+        <div class="flex justify-end mb-4">
+          <button id="clear-cart-btn" class="text-gray-500 hover:text-[#395144] text-sm flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-[#F0EBCE] hover:bg-opacity-30 transition-all">
+            <i class="fas fa-trash-alt"></i>
+            <span>Clear Cart</span>
+          </button>
+        </div>
+        
+        <table class="w-full" id="cart-table">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="pb-4 font-medium text-[#395144] text-left">My Shopping Cart</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart_items %}
+            <tr class="cart-item">
+              <input type="hidden" class="item-id" value="{{ item.id }}">
+              <td class="py-3" colspan="4">
+                <!-- Modern Card-based UI for each product item -->
+                <div class="bg-white rounded-xl border border-gray-100 hover:border-[#4E6C50]/30 shadow-sm hover:shadow transition-all duration-300 p-4 mb-4 relative overflow-hidden group">
+                  <div class="flex items-center gap-4">
+                    <!-- Image with enhanced styling -->
+                    <div class="relative flex-shrink-0">
+                      <div class="overflow-hidden rounded-lg shadow-sm transition-all duration-300 w-20 h-20 group-hover:shadow">
+                        {% if item.product.images.exists %}
+                          <img 
+                            src="{{ item.product.images.first.image.url }}" 
+                            alt="{{ item.product.name }}" 
+                            class="w-20 h-20 object-cover group-hover:scale-105 transition-all duration-500"
+                            loading="lazy"
+                          >
+                        {% else %}
+                          <img 
+                            src="/static/images/placeholder.png" 
+                            alt="{{ item.product.name }}" 
+                            class="w-20 h-20 object-cover group-hover:scale-105 transition-all duration-500"
+                            loading="lazy"
+                          >
+                        {% endif %}
+                      </div>
+                      {% if item.product.is_organic %}
+                        <span class="absolute -top-1 -right-1 bg-gradient-to-r from-[#AA8B56] to-[#C8B6A6] text-white text-xs py-0.5 px-2 rounded-full shadow-sm font-medium">Organic</span>
+                      {% endif %}
+                    </div>
+                    
+                    <!-- Product Info (modern layout) -->
+                    <div class="flex-grow flex flex-col md:flex-row gap-3 w-full">
+                      <!-- Product details with enhanced typography -->
+                      <div class="flex-1">
+                        <div class="font-semibold text-[#395144] text-sm md:text-base tracking-tight mb-0.5 group-hover:text-[#4E6C50] transition-colors">{{ item.product.name }}</div>
+                        <div class="text-xs text-gray-600 mb-1.5">{{ item.product.category.name }}</div>
+                        <div class="flex flex-wrap gap-1.5">
+                          {% if item.product.farm %}
+                            <span class="text-xs bg-[#F0EBCE] bg-opacity-60 text-[#395144] py-1 px-2.5 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+                              <i class="fas fa-farm-house text-[#AA8B56]"></i>
+                              {{ item.product.farm.name }}
+                            </span>
+                          {% endif %}
+                          {% if item.product.is_local %}
+                            <span class="text-xs bg-[#F0EBCE] bg-opacity-60 text-[#395144] py-1 px-2.5 rounded-full inline-flex items-center gap-1.5 shadow-sm">
+                              <i class="fas fa-map-pin text-[#AA8B56]"></i>
+                              Local
+                            </span>
+                          {% endif %}
+                        </div>
+                      </div>
+                      
+                      <!-- Redesigned Quantity controls -->
+                      <div class="flex items-center justify-start md:justify-center">
+                        <div class="quantity-control flex items-center bg-gray-50 rounded-full p-1.5 border border-gray-100 shadow-sm group-hover:border-[#4E6C50]/30 transition-all">
+                          <button 
+                            type="button"
+                            class="decrease-quantity w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-gradient-to-r from-[#395144] to-[#4E6C50] hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#395144] focus:ring-opacity-50"
+                            data-item-id="{{ item.id }}"
+                            data-action="decrease"
+                            {% if item.quantity <= 1 %}title="Remove item"{% else %}title="Decrease quantity"{% endif %}
+                            onclick="updateQuantity(this, '{{ item.id }}', 'decrease')"
+                          >
+                            <i class="fas {% if item.quantity <= 1 %}fa-trash-alt{% else %}fa-minus{% endif %} text-xs"></i>
+                          </button>
+                          <div class="item-quantity min-w-[2.5rem] px-2 text-center font-semibold text-[#395144] whitespace-nowrap text-sm" id="qty-{{ item.id }}">{{ item.quantity }}</div>
+                          <button 
+                            type="button"
+                            class="increase-quantity w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-gradient-to-r from-[#395144] to-[#4E6C50] hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#395144] focus:ring-opacity-50"
+                            data-item-id="{{ item.id }}"
+                            data-action="increase" 
+                            title="Increase quantity"
+                            onclick="updateQuantity(this, '{{ item.id }}', 'increase')"
+                          >
+                            <i class="fas fa-plus text-xs"></i>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- Modern Price and actions -->                      
+                      <div class="flex items-center justify-between md:justify-end gap-2 ml-auto">
+                        <div class="flex flex-col items-end whitespace-nowrap">
+                          <div class="item-total text-sm md:text-base text-[#395144] font-bold tracking-tight" id="subtotal-{{ item.id }}">TSh&nbsp;{{ item.subtotal|floatformat:0 }}</div>
+                          <div class="item-price text-xs text-[#AA8B56] mt-0.5" id="unit-price-{{ item.id }}" data-price="{{ item.product.price|floatformat:0 }}">@ TSh&nbsp;{{ item.product.price|floatformat:0 }}</div>
+                        </div>
+                        
+                        <form method="POST" action="{% url 'marketplace:remove_from_cart' item.id %}" class="inline">
+                          {% csrf_token %}
+                          <button 
+                            type="submit"
+                            class="remove-item text-gray-400 hover:text-red-500 transition-all p-2 hover:bg-red-50 rounded-full focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 group shadow-sm border border-transparent hover:border-red-100" 
+                            title="Remove item" 
+                            hx-post="{% url 'marketplace:remove_from_cart' item.id %}" 
+                            hx-target="#step-1" 
+                            hx-swap="outerHTML"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' 
+                            hx-confirm="Are you sure you want to remove this item from your cart?"
+                          >
+                            <i class="fas fa-trash-alt group-hover:rotate-12 transition-transform"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Related Products - Modern Design -->
+      <div class="mt-10 pt-6 border-t border-gray-100">
+        <h3 class="text-lg md:text-xl font-bold text-[#395144] mb-5 flex items-center gap-2">
+          <div class="bg-[#F0EBCE] bg-opacity-70 p-2 rounded-full shadow-sm">
+            <i class="fas fa-lightbulb text-[#AA8B56]"></i>
+          </div>
+          <span>You Might Also Like</span>
+        </h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {% if suggested_products %}
+            {% for product in suggested_products %}
+            <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group">
+              <div class="relative h-24 overflow-hidden">
+                {% if product.images.exists %}
+                  <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                {% else %}
+                  <img src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                {% endif %}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                {% if product.is_organic %}
+                  <span class="absolute top-2 right-2 bg-[#AA8B56] text-white text-xs py-0.5 px-1.5 rounded-full shadow-sm">Organic</span>
+                {% endif %}
+              </div>
+              <div class="p-2.5">
+                <div class="font-medium text-gray-800 text-sm truncate group-hover:text-[#395144] transition-colors">{{ product.name }}</div>
+                <div class="text-xs text-gray-500 mt-0.5 truncate">{{ product.category.name }}</div>
+                <div class="flex justify-between items-center mt-1.5">
+                  <span class="font-bold text-[#395144] text-sm">TSh {{ product.price|floatformat:0 }}</span>
+                  <a 
+                    href="{% url 'marketplace:add_to_cart' product.id %}" 
+                    title="Add to cart" 
+                    class="text-xs bg-[#395144] text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-[#4E6C50] transition-colors focus:outline-none focus:ring-2 focus:ring-[#395144] focus:ring-opacity-50 hover:scale-110 transition-transform"
+                    hx-post="{% url 'marketplace:add_to_cart' product.id %}"
+                    hx-target="#step-1"
+                    hx-swap="outerHTML"
+                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    hx-indicator=".htmx-indicator"
+                  >
+                    <i class="fas fa-plus text-xs"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-span-full text-center py-6">
+              <p class="text-gray-500 text-sm">Complete more purchases to see personalized product suggestions.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- Navigation buttons -->
+      <div class="flex justify-between items-center mt-6">
+        <a href="{% url 'marketplace:marketplace' %}" class="inline-flex items-center gap-2 text-[#395144] py-2 px-4 hover:bg-[#F0EBCE] hover:bg-opacity-30 rounded-lg transition-colors">
+          <i class="fas fa-arrow-left"></i>
+          <span>Continue Shopping</span>
+        </a>
+        <button type="button" class="checkout-bottom-btn inline-flex items-center justify-center gap-2 bg-[#395144] hover:bg-[#4E6C50] text-white font-medium py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 group w-full md:w-auto">
+          <span>Proceed to Delivery</span>
+          <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </button>
+      </div>
+    {% else %}
+      <div class="text-center py-24 px-6">
+        <div class="relative inline-block mx-auto">
+          <div class="w-32 h-32 bg-light rounded-full flex items-center justify-center mb-8 relative overflow-hidden">
+            <i class="fas fa-shopping-basket text-5xl text-accent-color animate-pulse"></i>
+          </div>
+          <div class="absolute -bottom-2 right-0 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md animate-bounce">
+            <i class="fas fa-plus text-primary"></i>
+          </div>
+        </div>
+        <!-- Changed: text-2xl -> text-xl md:text-2xl -->
+        <h3 class="text-xl md:text-2xl font-bold text-primary mb-4">Your cart is empty</h3>
+        <p class="text-gray-600 mb-8 max-w-md mx-auto">Browse our marketplace to discover fresh, locally sourced products from farmers in your area.</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="{% url 'marketplace:marketplace' %}" class="bg-primary hover:bg-secondary text-white font-medium py-3 px-8 rounded-full shadow-md hover:shadow-lg transition-all inline-flex items-center justify-center gap-2">
+            <i class="fas fa-store"></i>
+            <span>Explore Marketplace</span>
+          </a>
+          {% if user.is_authenticated %}
+            <a href="#" class="border-2 border-primary text-primary hover:bg-primary hover:text-white font-medium py-3 px-8 rounded-full transition-colors hover:shadow-md inline-flex items-center justify-center gap-2">
+              <i class="fas fa-heart"></i>
+              <span>View Saved Items</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Order Summary Card -->
+  <div class="flex-shrink-0 md:w-96 lg:w-[560px] sticky top-24 h-fit max-h-screen">
+    {% include 'marketplace/partials/checkout/order_summary.html' %}
+  </div>
+</div>
+
+
+<!-- JavaScript for PWA features -->
+<script>
+  // Only initialize touch variables and event listeners if they don't already exist
+  if (typeof window.cartTouchHandlersInitialized === 'undefined') {
+    // Pull-to-refresh functionality
+    window.touchStartY = 0;
+    window.touchEndY = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+      window.touchStartY = e.touches[0].clientY;
+    }, false);
+    
+    document.addEventListener('touchend', function(e) {
+      window.touchEndY = e.changedTouches[0].clientY;
+      handleSwipe();
+    }, false);
+    
+    // Mark that we've initialized these handlers
+    window.cartTouchHandlersInitialized = true;
+  }
+  
+  function handleSwipe() {
+    // If user has pulled down at least 100px from top of page and is at the top
+    if ((window.touchEndY - window.touchStartY > 100) && window.scrollY < 10) {
+      // Show pull-to-refresh indicator
+      const pullIndicator = document.createElement('div');
+      pullIndicator.className = 'pull-to-refresh-indicator';
+      pullIndicator.innerHTML = '<i class="fas fa-sync-alt fa-spin mr-2"></i> Refreshing...';
+      document.querySelector('main').prepend(pullIndicator);
+      
+      // Refresh the page
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    }
+  }
+  
+  // Listen for network status changes (only add once)
+  if (typeof window.networkListenersInitialized === 'undefined') {
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    window.networkListenersInitialized = true;
+  }
+  
+  function updateOnlineStatus() {
+    const offlineIndicator = document.getElementById('offline-indicator');
+    if (offlineIndicator) {
+      if (!navigator.onLine) {
+        offlineIndicator.style.display = 'block';
+      } else {
+        offlineIndicator.style.display = 'none';
+      }
+    }
+  }
+  
+  // Initialize offline status
+  updateOnlineStatus();
+  
+  // Mobile checkout button
+  if (!window.checkoutMobileBtnInitialized) {
+    const checkoutMobileBtn = document.getElementById('checkout-mobile-btn');
+    if (checkoutMobileBtn) {
+      checkoutMobileBtn.addEventListener('click', function() {
+        // Trigger the same action as the desktop checkout button
+        document.querySelector('.checkout-btn').click();
+      });
+      window.checkoutMobileBtnInitialized = true;
+    }
+  }
+  
+  // Connect bottom navigation button to checkout functionality
+  const checkoutBottomBtn = document.querySelector('.checkout-bottom-btn');
+  if (checkoutBottomBtn) {
+    checkoutBottomBtn.addEventListener('click', function() {
+      // Trigger the same action as the main checkout button
+      document.querySelector('.checkout-btn').click();
+    });
+  }
+  
+  // Quick search fab
+  const quickSearchFab = document.getElementById('quick-search-fab');
+  if (quickSearchFab) {
+    quickSearchFab.addEventListener('click', function() {
+      window.location.href = "{% url 'marketplace:marketplace' %}";
+    });
+  }
+  
+  // Animation for cart changes
+  function animateCartChange() {
+    const cartIcon = document.querySelector('.fa-shopping-cart');
+    if (cartIcon) {
+      cartIcon.classList.add('add-to-cart-animation');
+      setTimeout(() => {
+        cartIcon.classList.remove('add-to-cart-animation');
+      }, 500);
+    }
+  }
+  
+  // Use standard AJAX instead of HTMX to prevent flickering
+  // This function will be used to load content without page refresh
+  function loadContent(url, targetId, callback) {
+    // Store current dimensions to maintain layout stability
+    const targetElement = document.getElementById(targetId);
+    let currentHeight = null;
+    let currentWidth = null;
+    
+    if (targetElement) {
+      currentHeight = targetElement.offsetHeight;
+      currentWidth = targetElement.offsetWidth;
+    }
+    
+    // Create and send XHR request
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        // Only update the content if the target element exists
+        if (targetElement) {
+          // Set minimum height temporarily to prevent layout shifts
+          targetElement.style.minHeight = currentHeight + 'px';
+          if (window.innerWidth >= 768) {
+            targetElement.style.minWidth = currentWidth + 'px';
+          }
+          
+          // Update the content
+          targetElement.innerHTML = xhr.responseText;
+          
+          // Animate cart icon to indicate successful update
+          animateCartChange();
+          
+          // After a delay, let the container resize naturally
+          setTimeout(() => {
+            targetElement.style.transition = 'all 0.3s ease-in-out';
+            targetElement.style.minHeight = '';
+            targetElement.style.minWidth = '';
+          }, 300);
+          
+          // Execute callback if provided
+          if (typeof callback === 'function') {
+            callback();
+          }
+        }
+      } else {
+        console.error('Request failed with status:', xhr.status);
+      }
+    };
+    
+    xhr.onerror = function() {
+      console.error('Network error occurred');
+    };
+    
+    xhr.send();
+  }
+
+  // JavaScript to handle quantity updates without page reload
+  function updateQuantity(buttonElement, itemId, action) {
+
+    // Show loading state on the button
+    const originalContent = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i>';
+    buttonElement.disabled = true;
+    
+    // Get the current quantity
+    const qtyElement = document.getElementById(`qty-${itemId}`);
+    let currentQty = parseInt(qtyElement.innerText);
+    
+    // Calculate new quantity
+    let newQty = currentQty;
+    if (action === 'increase') {
+      newQty = currentQty + 1;
+    } else if (action === 'decrease') {
+      newQty = currentQty - 1;
+    }
+    
+    // Get current cart count from badge elements
+    const currentCountEl = document.querySelector('#cart-badge-desktop') || 
+                         document.querySelector('#cart-count-mobile') || 
+                         document.querySelector('.cart-badge');
+                         
+    if (currentCountEl) {
+      // Get current count and calculate new count based on action
+      const currentCount = parseInt(currentCountEl.textContent || '0');
+      let newCount = currentCount;
+      
+      if (action === 'increase') {
+        newCount = currentCount + 1;
+      } else if (action === 'decrease' && newQty > 0) {
+        newCount = currentCount - 1;
+      } else if (action === 'decrease' && newQty === 0) {
+        // Item being removed completely
+        newCount = currentCount - 1;
+      }
+      
+      // Use the global updateCartCount function if available
+      if (typeof window.updateCartCount === 'function') {
+        window.updateCartCount(newCount, true); // true = optimistic update
+      } else {
+        // Direct update as fallback
+        currentCountEl.textContent = newCount;
+      }
+    }
+    
+    // Helper function to safely update price elements with proper TSh formatting
+    function updatePriceElement(elementId, value) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.innerText = 'TSh ' + Math.round(value).toLocaleString();
+      }
+    }
+
+    // Helper function to update all elements with the same ID
+    function updateAllPriceElements(selector, value) {
+      document.querySelectorAll(selector).forEach(el => {
+        el.innerText = Math.round(value).toLocaleString();
+      });
+    }
+    
+    // Perform UI update synchronously (no waiting for server)
+    if (newQty > 0) {
+      // Update the main quantity display
+      qtyElement.innerText = newQty;
+      
+      // Get unit price and update subtotal
+      const unitPrice = parseFloat(document.getElementById(`unit-price-${itemId}`).getAttribute('data-price'));
+      const newItemSubtotal = unitPrice * newQty;
+      
+      // Update main subtotal
+      const subtotalElement = document.getElementById(`subtotal-${itemId}`);
+      if (subtotalElement) {
+        subtotalElement.innerText = 'TSh ' + newItemSubtotal.toLocaleString();
+      }
+      
+      // Update order summary elements
+      const summaryQtyElement = document.getElementById(`summary-qty-${itemId}`);
+      const summaryItemTotalElement = document.getElementById(`summary-item-total-${itemId}`);
+      const summaryUnitPriceElement = document.getElementById(`summary-unit-price-${itemId}`);
+      
+      if (summaryQtyElement) summaryQtyElement.innerText = newQty;
+      if (summaryUnitPriceElement) summaryUnitPriceElement.innerText = unitPrice.toLocaleString();
+      if (summaryItemTotalElement) summaryItemTotalElement.innerText = newItemSubtotal.toLocaleString();
+      
+      // Recalculate cart totals
+      let newCartSubtotal = 0;
+      document.querySelectorAll('[id^="subtotal-"]').forEach(element => {
+        const subtotal = parseFloat(element.innerText.replace('TSh ', '').replace(/,/g, ''));
+        if (!isNaN(subtotal)) {
+          newCartSubtotal += subtotal;
+        }
+      });
+      
+      // Calculate related values
+      const deliveryFee = 2000;
+      const vat = Math.round((newCartSubtotal + deliveryFee) * 0.18);
+      const finalTotal = Math.round(newCartSubtotal) + Math.round(deliveryFee) + Math.round(vat);
+      
+      // Update all cart totals in the UI
+      updatePriceElement('cart-subtotal', newCartSubtotal);
+      updatePriceElement('cart-delivery-fee', deliveryFee);
+      updatePriceElement('cart-vat', vat);
+      updatePriceElement('cart-final-total', finalTotal);
+      
+      // Update any other instances in other templates
+      updateAllPriceElements('[id="summary-subtotal"]', newCartSubtotal);
+      updateAllPriceElements('[id="summary-delivery-fee"]', deliveryFee);
+      updateAllPriceElements('[id="summary-vat"]', vat);
+      updateAllPriceElements('[id="summary-total"]', finalTotal);
+      
+     
+      
+      // IMPORTANT: Store cart data in localStorage to preserve between checkout steps
+      // Initialize cart data object for localStorage
+      let cartData = {
+        timestamp: new Date().toISOString(),
+        subtotal: newCartSubtotal,
+        total: finalTotal,
+        items: []
+      };
+      
+      // Debug the structure before adding items
+      console.log('Initial cart data structure:', JSON.stringify(cartData));
+      
+      // Collect all cart items (FIXED version)
+      cartData.items = []; // Explicitly reset the items array
+      
+      // Method 1: Try to get items from the main cart display
+      const cartItems = document.querySelectorAll('.cart-item');
+      console.log('Found', cartItems.length, 'cart items in the main display');
+      
+      if (cartItems.length > 0) {
+        cartItems.forEach(item => {
+          const itemId = item.getAttribute('data-item-id');
+          if (!itemId) {
+            console.warn('Found cart item without data-item-id attribute');
+            return;
+          }
+          
+          const qtyEl = document.getElementById(`qty-${itemId}`);
+          const priceEl = document.getElementById(`unit-price-${itemId}`);
+          
+          if (qtyEl && priceEl) {
+            const qty = parseInt(qtyEl.innerText) || 0;
+            const price = parseFloat(priceEl.getAttribute('data-price')) || 0;
+            const subtotal = qty * price;
+            
+            cartData.items.push({
+              id: itemId,
+              quantity: qty,
+              price: price,
+              subtotal: subtotal
+            });
+            
+            console.log(`Added item ${itemId} to cart data: qty=${qty}, price=${price}, subtotal=${subtotal}`);
+          } else {
+            console.warn(`Missing qty or price elements for item ${itemId}`);
+          }
+        });
+      } else {
+        // Method 2: Fallback - try to get items from all qty elements directly
+        console.log('No cart items found with class .cart-item, trying alternate method');
+        
+        const qtyElements = document.querySelectorAll('[id^="qty-"]');
+        console.log('Found', qtyElements.length, 'qty elements');
+        
+        qtyElements.forEach(qtyEl => {
+          const itemId = qtyEl.id.replace('qty-', '');
+          const priceEl = document.getElementById(`unit-price-${itemId}`);
+          
+          if (priceEl) {
+            const qty = parseInt(qtyEl.innerText) || 0;
+            const price = parseFloat(priceEl.getAttribute('data-price')) || 0;
+            const subtotal = qty * price;
+            
+            cartData.items.push({
+              id: itemId,
+              quantity: qty,
+              price: price,
+              subtotal: subtotal
+            });
+            
+            console.log(`Added item ${itemId} to cart data using alternate method: qty=${qty}, price=${price}, subtotal=${subtotal}`);
+          } else {
+            console.warn(`Missing price element for item ${itemId} in alternate method`);
+          }
+        });
+      }
+      
+      // Verify we found items
+      if (cartData.items.length === 0) {
+        console.error('Failed to find any cart items! This will cause issues with the order summary.');
+      } else {
+        console.log('Successfully added', cartData.items.length, 'items to cart data');
+      }
+      
+      // Final validation and cleanup before saving
+      if (cartData.items.length === 0) {
+        // If no items were found with the normal methods, try one more direct approach
+        // by checking the order summary directly
+        const orderSummaryItems = document.querySelectorAll('[id^="summary-qty-"]');
+        console.log('Trying order summary items as last resort, found:', orderSummaryItems.length);
+        
+        orderSummaryItems.forEach(el => {
+          const itemId = el.id.replace('summary-qty-', '');
+          const qty = parseInt(el.innerText) || 0;
+          const priceEl = document.getElementById(`summary-unit-price-${itemId}`);
+          const subtotalEl = document.getElementById(`summary-item-total-${itemId}`);
+          
+          if (priceEl && qty > 0) {
+            const price = parseFloat(priceEl.getAttribute('data-price')) || 0;
+            const subtotal = subtotalEl ? 
+              (parseFloat(subtotalEl.innerText.replace(/,/g, '')) || price * qty) : 
+              price * qty;
+            
+            cartData.items.push({
+              id: itemId,
+              quantity: qty,
+              price: price,
+              subtotal: subtotal
+            });
+            
+            console.log(`Emergency recovery: Added item ${itemId} from order summary: qty=${qty}, price=${price}`);
+          }
+        });
+      }
+      
+      // Save to localStorage with additional verification
+      if (cartData.items.length > 0 || document.querySelectorAll('[id^="qty-"]').length === 0) {
+        // Only save if we have items or if there are genuinely no items in the cart
+        localStorage.setItem('kikapu-cart-data', JSON.stringify(cartData));
+        console.log('Saved cart data to localStorage:', cartData);
+      } else {
+        console.error('CRITICAL: Not saving to localStorage because items array is empty but qty elements exist');
+        // Try to recover by loading existing data and adding current items
+        try {
+          const existingData = JSON.parse(localStorage.getItem('kikapu-cart-data') || '{}');
+          if (existingData.items && existingData.items.length > 0) {
+            console.log('Recovered items from existing localStorage:', existingData.items.length);
+            cartData.items = existingData.items;
+            // Update the timestamp but keep the items
+            existingData.timestamp = new Date().toISOString();
+            existingData.subtotal = cartData.subtotal;
+            existingData.total = cartData.total;
+            localStorage.setItem('kikapu-cart-data', JSON.stringify(existingData));
+            console.log('Used existing localStorage items with updated totals');
+            cartData = existingData; // Use the updated data for debug display
+          }
+        } catch (e) {
+          console.error('Failed to recover localStorage data:', e);
+        }
+      }
+      
+      // DEBUG: Output cart data to the page for debugging
+      let debugOutput = document.getElementById('cart-debug-output');
+      if (!debugOutput) {
+        debugOutput = document.createElement('div');
+        debugOutput.id = 'cart-debug-output';
+        debugOutput.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: lime; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 50vw; max-height: 30vh; overflow: auto;';
+        document.body.appendChild(debugOutput);
+      }
+      
+      debugOutput.innerHTML = '<strong>CART STEP DEBUG DATA:</strong><br>' + 
+        'Timestamp: ' + new Date().toISOString() + '<br>' +
+        'Subtotal: TSh ' + Math.round(cartData.subtotal).toLocaleString() + '<br>' +
+        'Items: ' + cartData.items.length + '<br><br>';
+      
+      cartData.items.forEach(item => {
+        debugOutput.innerHTML += 
+          'Item ID: ' + item.id + '<br>' +
+          'Quantity: ' + item.quantity + '<br>' +
+          'Price: TSh ' + Math.round(item.price).toLocaleString() + '<br>' +
+          'Subtotal: TSh ' + Math.round(item.subtotal).toLocaleString() + '<br><br>';
+      });
+      
+      // Also store the HTML element IDs that exist in this step
+      const itemIds = [];
+      document.querySelectorAll('[id^="qty-"]').forEach(el => {
+        const id = el.id.replace('qty-', '');
+        itemIds.push({id: id, elementId: el.id, quantity: el.innerText});
+      });
+      debugOutput.innerHTML += '<strong>HTML Elements:</strong><br>' + JSON.stringify(itemIds);
+      
+      // Helper function to update debug output with current cart data
+      window.updateDebugOutput = function(cartData) {
+        let debugOutput = document.getElementById('cart-debug-output');
+        if (!debugOutput) {
+          debugOutput = document.createElement('div');
+          debugOutput.id = 'cart-debug-output';
+          debugOutput.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.8); color: lime; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; max-width: 50vw; max-height: 30vh; overflow: auto;';
+          document.body.appendChild(debugOutput);
+        }
+        
+        debugOutput.innerHTML = '<strong>CART STEP DEBUG DATA:</strong><br>' + 
+          'Timestamp: ' + new Date().toISOString() + '<br>' + 
+          'Subtotal: TSh ' + Math.round(cartData.subtotal).toLocaleString() + '<br>' + 
+          'Items: ' + cartData.items.length + '<br><br>';
+        
+        cartData.items.forEach(item => {
+          debugOutput.innerHTML += 
+            'Item ID: ' + item.id + '<br>' + 
+            'Quantity: ' + item.quantity + '<br>' + 
+            'Price: TSh ' + Math.round(item.price).toLocaleString() + '<br>' + 
+            'Subtotal: TSh ' + Math.round(item.subtotal).toLocaleString() + '<br><br>';
+        });
+        
+        // Also show HTML elements
+        const itemIds = [];
+        document.querySelectorAll('[id^="qty-"]').forEach(el => {
+          const id = el.id.replace('qty-', '');
+          itemIds.push({id: id, elementId: el.id, quantity: el.innerText});
+        });
+        debugOutput.innerHTML += '<strong>HTML Elements:</strong><br>' + JSON.stringify(itemIds);
+      }
+      
+      // Animate cart icon
+      animateCartChange();
+      
+      // Update cart count in header (estimate)
+      if (typeof updateCartCount === 'function') {
+        // This will be an estimate, but server will confirm exact count later
+        const estimatedCartCount = action === 'increase' ? 
+          (window.lastCartCount || 0) + 1 : 
+          (window.lastCartCount || 0) - (newQty === 0 ? 1 : 0);
+        
+        updateCartCount(Math.max(0, estimatedCartCount));
+      }
+      
+      console.log(`UI updated: Item=${itemId}, Qty=${newQty}, Subtotal=${newItemSubtotal}, Total=${finalTotal}`);
+    }
+    
+    // Always restore button state immediately
+    setTimeout(() => {
+      buttonElement.innerHTML = originalContent;
+      buttonElement.disabled = false;
+    }, 300); // Small delay for visual feedback
+    
+    // BACKGROUND process: Send the update to the server
+    // But we won't use the response to update the UI (except for errors)
+    const formData = new FormData();
+    formData.append('action', action);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    fetch(`/marketplace/cart/update/${itemId}/`, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    })
+    .then(response => response.json())
+    .then(data => {
+      // We only use server data for three things:
+      // 1. Tracking errors
+      // 2. Handling item removal (if server confirms item should be removed)
+      // 3. Updating the precise cart count in the header
+      
+      if (!data.success) {
+        // Server reported an error - show message and revert changes
+        qtyElement.innerText = currentQty;
+        const unitPrice = parseFloat(document.getElementById(`unit-price-${itemId}`).getAttribute('data-price'));
+        const subtotalElement = document.getElementById(`subtotal-${itemId}`);
+        if (subtotalElement) {
+          subtotalElement.innerText = 'TSh ' + (unitPrice * currentQty).toLocaleString();
+        }
+        alert(data.message || 'There was an error updating your cart');
+        
+        // Force recalculation of totals after reverting item
+        let revertCartSubtotal = 0;
+        document.querySelectorAll('[id^="subtotal-"]').forEach(element => {
+          const subtotal = parseFloat(element.innerText.replace('TSh ', '').replace(/,/g, ''));
+          if (!isNaN(subtotal)) revertCartSubtotal += subtotal;
+        });
+        
+        // Recalculate related values
+        const deliveryFee = 2000;
+        const vat = Math.round((revertCartSubtotal + deliveryFee) * 0.18);
+        const finalTotal = Math.round(revertCartSubtotal) + Math.round(deliveryFee) + Math.round(vat);
+        
+        // Update all totals
+        updatePriceElement('cart-subtotal', revertCartSubtotal);
+        updatePriceElement('cart-vat', vat);
+        updatePriceElement('cart-final-total', finalTotal);
+        updateAllPriceElements('[id="summary-subtotal"]', revertCartSubtotal);
+        updateAllPriceElements('[id="summary-vat"]', vat);
+        updateAllPriceElements('[id="summary-total"]', finalTotal);
+        return;
+      }
+      
+      // CRUCIAL FIX: Calculate total cart count from ALL items rather than using data.cart_count
+      // This ensures we update the badge with the total items in cart, not just the count of the modified item
+      let totalCartCount = 0;
+      
+      // If server provides cart_total directly, use that
+      if (data.cart_total_items !== undefined) {
+        totalCartCount = parseInt(data.cart_total_items);
+      } 
+      // If server provides cart items, count them
+      else if (data.cart_items && Array.isArray(data.cart_items)) {
+        data.cart_items.forEach(item => {
+          if (item && item.quantity) {
+            totalCartCount += parseInt(item.quantity);
+          }
+        });
+      // If there's a dataset available, use it
+      } else if (data.cart_data && data.cart_data.items && Array.isArray(data.cart_data.items)) {
+        data.cart_data.items.forEach(item => {
+          if (item && item.quantity) {
+            totalCartCount += parseInt(item.quantity);
+          }
+        });
+      // Or count from DOM as fallback
+      } else {
+        // Get all quantity elements in the cart
+        document.querySelectorAll('[id^="qty-"]').forEach(el => {
+          if (el && el.innerText) {
+            totalCartCount += parseInt(el.innerText || 0);
+          }
+        });
+      }
+      
+      console.log('Total cart count calculated:', totalCartCount);
+      
+      // Use the global updateCartCount function if it exists
+      if (window.updateCartCount && totalCartCount > 0) {
+        window.updateCartCount(totalCartCount);
+      } 
+      
+      // Also dispatch event for other components
+      document.dispatchEvent(new CustomEvent('cart:updated', {
+        detail: { count: totalCartCount }
+      }));
+      
+      // Synchronize localStorage with the updated server data
+      try {
+        // Get existing cart data from localStorage
+        let cartData = JSON.parse(localStorage.getItem('kikapu-cart-data') || '{}');
+        
+        // Always initialize full cart data structure if it's missing
+        if (!cartData.timestamp) cartData.timestamp = new Date().toISOString();
+        if (typeof cartData.subtotal !== 'number') cartData.subtotal = 0;
+        if (typeof cartData.total !== 'number') cartData.total = 0;
+        if (!Array.isArray(cartData.items)) cartData.items = [];
+        
+        console.log('AJAX sync: Current localStorage items:', cartData.items.length);
+        
+        // Update the specific item quantity in localStorage cart data
+        const itemIndex = cartData.items.findIndex(item => String(item.id) === String(itemId));
+        
+        if (data.removed) {
+          // Remove the item if the server confirmed removal
+          if (itemIndex > -1) {
+            console.log(`Removing item ${itemId} from localStorage items array`);
+            cartData.items.splice(itemIndex, 1);
+          }
+        } else if (itemIndex > -1) {
+          // Update existing item quantity and subtotal
+          console.log(`Updating item ${itemId} in localStorage: qty=${data.quantity}, subtotal=${data.subtotal}`);
+          cartData.items[itemIndex].quantity = data.quantity;
+          cartData.items[itemIndex].subtotal = data.subtotal;
+        } else if (!data.removed && data.quantity > 0) {
+          // Item doesn't exist in localStorage but should - add it
+          console.log(`Item ${itemId} not found in localStorage but exists in cart - adding it`);
+          // Get item details from the DOM
+          const priceEl = document.getElementById(`unit-price-${itemId}`);
+          const price = priceEl ? parseFloat(priceEl.getAttribute('data-price')) : 0;
+          
+          cartData.items.push({
+            id: itemId,
+            quantity: data.quantity,
+            price: price || 0,
+            subtotal: data.subtotal
+          });
+        }
+        
+        // Update cart totals
+        cartData.subtotal = data.cart_total || cartData.subtotal;
+        cartData.total = data.final_total || cartData.total;
+        cartData.timestamp = new Date().toISOString();
+        
+        // Save updated cart data back to localStorage
+        localStorage.setItem('kikapu-cart-data', JSON.stringify(cartData));
+        console.log('Synchronized localStorage cart data after AJAX update:', cartData);
+        
+        // Force refresh the debug display to show current state
+        updateDebugOutput(cartData);
+      } catch (e) {
+        console.error('Error synchronizing localStorage after cart update:', e);
+      }
+      
+      // Handle item removal logic (only if our optimistic update also removed it)
+      if (data.removed && newQty <= 0) {
+        const cartItem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+        if (cartItem) {
+          cartItem.style.opacity = '0';
+          setTimeout(() => {
+            cartItem.remove();
+            // Check if cart is empty
+            const cartItems = document.querySelectorAll('.cart-item');
+            if (cartItems.length === 0) {
+              const emptyMessage = document.getElementById('empty-cart-message');
+              const cartActions = document.getElementById('cart-actions');
+              if (emptyMessage) emptyMessage.classList.remove('hidden');
+              if (cartActions) cartActions.classList.add('hidden');
+            }
+          }, 300);
+        }
+        
+        // Also remove from summary if it exists
+        const summaryQtyElement = document.getElementById(`summary-qty-${itemId}`);
+        if (summaryQtyElement) {
+          const summaryItem = summaryQtyElement.closest('.flex.items-center.justify-between');
+          if (summaryItem) {
+            summaryItem.style.opacity = '0';
+            setTimeout(() => summaryItem.remove(), 300);
+          }
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error updating cart:', error);
+      // We don't revert the UI here since it's just a network error
+      // The user's changes will be saved later when connectivity is restored
+    });
+    
+    // For quantity zero, handle item removal in the UI immediately
+    if (newQty <= 0) {
+      const cartItem = buttonElement.closest('.cart-item');
+      if (cartItem) {
+        cartItem.style.opacity = '0.5'; // Show as pending removal
+      }
+    }
+  }
+
+  // Clear cart functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const clearCartBtn = document.getElementById('clear-cart-btn');
+    if (clearCartBtn) {
+      clearCartBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to remove all items from your cart?')) {
+          // Show loading state
+          clearCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin clear-cart-spinner"></i> <span>Clearing...</span>';
+          clearCartBtn.disabled = true;
+          
+          // Create form data with CSRF token
+          const formData = new FormData();
+          formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+          
+          // Send request to clear cart using fetch with proper headers
+          fetch('{% url "marketplace:clear_cart" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin' // Include cookies
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            // Handle both JSON and non-JSON responses
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+              return response.json();
+            } else {
+              return { success: response.ok };
+            }
+          })
+          .then(data => {
+            // Update the cart icon count to zero
+            if (typeof updateCartCount === 'function') {
+              updateCartCount(0);
+            }
+            
+            // Show empty cart message
+            document.getElementById('empty-cart-message').classList.remove('hidden');
+            
+            // Hide the cart table and clear cart button
+            const cartTable = document.getElementById('cart-table');
+            if (cartTable) cartTable.classList.add('hidden');
+            clearCartBtn.parentElement.classList.add('hidden');
+            
+            // Clear the cart items and update totals
+            document.querySelectorAll('.cart-item').forEach(item => {
+              item.remove();
+            });
+            
+            // Update the totals
+            const subtotalElement = document.getElementById('cart-subtotal');
+            const finalTotalElement = document.getElementById('cart-final-total');
+            
+            if (subtotalElement) subtotalElement.innerText = 'TSh 0';
+            if (finalTotalElement) finalTotalElement.innerText = 'TSh 5,000';
+            
+            // Reload the page after a short delay to ensure everything is in sync
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          })
+          .catch(error => {
+            console.error('Error clearing cart:', error);
+            alert('An error occurred while clearing your cart. Please try again.');
+            
+            // Reset button state
+            clearCartBtn.innerHTML = '<i class="fas fa-trash-alt"></i><span>Clear Cart</span>';
+            clearCartBtn.disabled = false;
+          });
+        }
+      });
+    }
+  });
+
+  // Toggle summary content on mobile
+  const toggleSummary = document.getElementById('toggle-summary');
+  const summaryContent = document.getElementById('summary-content');
+  const summaryIcon = document.getElementById('summary-icon');
+  
+  if (toggleSummary) {
+    toggleSummary.addEventListener('click', function() {
+      summaryContent.classList.toggle('hidden-mobile');
+      summaryIcon.classList.toggle('fa-chevron-down');
+      summaryIcon.classList.toggle('fa-chevron-up');
+    });
+    
+    // Check screen size and set initial state
+    function checkMobileView() {
+      if (window.innerWidth < 640) { // sm breakpoint in Tailwind
+        summaryContent.classList.add('hidden-mobile');
+        summaryIcon.classList.remove('fa-chevron-up');
+        summaryIcon.classList.add('fa-chevron-down');
+      } else {
+        summaryContent.classList.remove('hidden-mobile');
+      }
+    }
+    
+    // Initialize
+    checkMobileView();
+    
+    // Check on resize
+    window.addEventListener('resize', checkMobileView);
+  }
+</script>
+
+<!-- CSS Animations & Mobile Layout Adjustments -->
+<style>
+  /* Smooth scroll for the page */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+  }
+  
+  /* Mobile summary toggle styles */
+  @media (max-width: 639px) {
+    .hidden-mobile {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      padding-top: 0;
+      margin-top: 0;
+    }
+    
+    .summary-content {
+      max-height: 1000px; /* Arbitrary large value */
+      overflow: hidden;
+      transition: max-height 0.3s ease-in;
+    }
+    
+    #order-summary {
+      position: sticky;
+      bottom: 0;
+      top: auto;
+      z-index: 10;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  /* Custom animation for the HTMX indicator */
+  .htmx-request .htmx-indicator {
+    opacity: 1 !important;
+  }
+  
+  .htmx-request button {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+</style>

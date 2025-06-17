@@ -1,0 +1,80 @@
+{% load static %}
+
+{% comment %}
+Kikapu Cart Icon Component
+
+Parameters:
+- cart_count: The current cart count to display (required)
+- id_suffix: Optional suffix for the ID to allow multiple instances (e.g., "mobile", "desktop")
+- is_checkout: Boolean flag to apply special styling for checkout pages
+- custom_class: Additional CSS classes to apply to the wrapper
+
+Example usage:
+{% include 'marketplace/partials/cart_icon.html' with cart_count=user.cart.item_count id_suffix="desktop" %}
+{% endcomment %}
+
+{% with badge_id=id_suffix|default_if_none:"main"|add:"_cart_badge" %}
+<div class="cart-icon-wrapper relative{% if custom_class %} {{ custom_class }}{% endif %}">
+    <a href="{% if user.is_authenticated %}{% url 'marketplace:view_cart' %}{% else %}{% url 'marketplace:marketplace' %}{% endif %}" 
+       class="text-gray-700 hover:text-primary transition-colors relative"
+       title="Shopping Cart">
+        <i class="fas fa-shopping-cart {% if is_checkout %}text-primary{% else %}text-xl{% endif %}"></i>
+        <span id="{{ badge_id }}" class="cart-badge{% if is_checkout %} checkout-cart-badge{% endif %}" data-cart-count="{{ cart_count }}">{{ cart_count }}</span>
+    </a>
+</div>
+
+<script>
+    // Immediately invoked function to avoid polluting global namespace
+    (function() {
+        // Register this cart badge for global cart system
+        const badgeId = '{{ badge_id }}';
+        const badgeElement = document.getElementById(badgeId);
+        
+        if (badgeElement) {
+            // Initialize from data attribute
+            const initialCount = badgeElement.dataset.cartCount || '0';
+            console.log(`[Cart ${badgeId}] Initialized with count:`, initialCount);
+            
+            // Local update function for this specific badge
+            function updateBadge(count) {
+                // Parse count as integer
+                const parsedCount = parseInt(count);
+                if (!isNaN(parsedCount)) {
+                    // Update the text content
+                    badgeElement.textContent = parsedCount;
+                    // Update data attribute for future reference
+                    badgeElement.dataset.cartCount = parsedCount;
+                    
+                    // Add animation
+                    badgeElement.classList.add('cart-animation');
+                    setTimeout(() => {
+                        badgeElement.classList.remove('cart-animation');
+                    }, 500);
+                }
+            }
+            
+            // Listen for global cart update events
+            document.addEventListener('cart:updated', function(event) {
+                if (event.detail && event.detail.count !== undefined) {
+                    updateBadge(event.detail.count);
+                }
+            });
+            
+            // Make badge available to global cart registry
+            if (!window.kikapuCartBadges) {
+                window.kikapuCartBadges = [];
+            }
+            window.kikapuCartBadges.push({
+                id: badgeId,
+                element: badgeElement,
+                update: updateBadge
+            });
+            
+            // If global updateCartCount exists, register with it
+            if (typeof window.registerCartBadge === 'function') {
+                window.registerCartBadge(badgeId, badgeElement, updateBadge);
+            }
+        }
+    })();
+</script>
+{% endwith %}

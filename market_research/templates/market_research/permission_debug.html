@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Permission Debug Information</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">User Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for key, value in permission_data.user_info.items %}
+            <div class="flex">
+                <span class="font-medium w-1/2">{{ key|title }}</span>
+                <span class="{% if key == 'is_agent' and value %}text-green-600 font-bold{% elif key == 'is_agent' %}text-red-600 font-bold{% endif %}">
+                    {{ value|default:"None" }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if permission_data.agent_info %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Delivery Agent Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for key, value in permission_data.agent_info.items %}
+            <div class="flex">
+                <span class="font-medium w-1/2">{{ key|title }}</span>
+                <span class="{% if key == 'is_active' or key == 'is_verified' %}{% if value %}text-green-600 font-bold{% else %}text-red-600 font-bold{% endif %}{% endif %}">
+                    {{ value|default:"None" }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4 text-red-600">No Delivery Agent Record Found</h2>
+        <p>This user doesn't have an associated delivery_agent record.</p>
+    </div>
+    {% endif %}
+    
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Permission Status</h2>
+        <div class="mb-4">
+            <span class="font-medium">Can Submit Market Price Data:</span>
+            <span class="{% if permission_data.permission_status.can_submit_market_price %}text-green-600 font-bold{% else %}text-red-600 font-bold{% endif %}">
+                {{ permission_data.permission_status.can_submit_market_price|yesno:"Yes,No" }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">Troubleshooting Steps</h2>
+        <ul class="list-disc pl-5 space-y-2">
+            {% for step in permission_data.next_steps %}
+            <li>{{ step }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

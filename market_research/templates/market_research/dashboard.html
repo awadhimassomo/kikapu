@@ -1,0 +1,2067 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Market Research Dashboard{% endblock %}
+
+{% block extra_css %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+<style>
+  /* Card styling */
+  .stats-card {
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(229, 231, 235, 0.7);
+    height: 100%;
+  }
+  .stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Alert styling */
+  .price-alert {
+    border-left: 4px solid;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.25rem;
+  }
+  .price-spike {
+    border-color: #f87171;
+    background-color: #fee2e2;
+  }
+  .price-drop {
+    border-color: #34d399;
+    background-color: #d1fae5;
+  }
+  
+  /* Tab styling */
+  .tab {
+    padding: 0.75rem 1.5rem;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+  }
+  .tab:hover {
+    background-color: rgba(240, 235, 206, 0.3);
+  }
+  .tab.active {
+    color: #4E6C50;
+    border-bottom-color: #AA8B56;
+    background-color: rgba(240, 235, 206, 0.5);
+  }
+  
+  /* Table styling */
+  .data-table th {
+    position: relative;
+    cursor: pointer;
+  }
+  .data-table th:hover {
+    background-color: rgba(240, 235, 206, 0.3);
+  }
+  .data-table th::after {
+    content: '⇅';
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.3;
+  }
+  
+  /* Dashboard section styling */
+  .dashboard-section {
+    margin-bottom: 2rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  }
+  .section-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.7);
+    background-color: white;
+  }
+  .section-body {
+    padding: 1.25rem;
+    background-color: white;
+  }
+  
+  /* Use Kikapu brand colors */
+  .bg-primary {
+    background-color: #395144;
+  }
+  .bg-secondary {
+    background-color: #4E6C50;
+  }
+  .bg-accent {
+    background-color: #AA8B56;
+  }
+  .bg-light {
+    background-color: #F0EBCE;
+  }
+  .text-primary {
+    color: #395144;
+  }
+  .text-secondary {
+    color: #4E6C50;
+  }
+  .text-accent {
+    color: #AA8B56;
+  }
+  .border-accent {
+    border-color: #AA8B56;
+  }
+  
+  /* Button styling */
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .btn-primary {
+    background-color: #4E6C50;
+    color: white;
+  }
+  .btn-primary:hover {
+    background-color: #395144;
+  }
+  .btn-accent {
+    background-color: #AA8B56;
+    color: white;
+  }
+  .btn-accent:hover {
+    background-color: #95784b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Global function to toggle commodity modal -->
+<script>
+  // Function to delete commodity via AJAX
+  function deleteCommodity(commodityId, commodityName) {
+    if (!confirm(`Are you sure you want to delete the commodity '${commodityName}'?`)) {
+      return; // User canceled the deletion
+    }
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Make AJAX request to delete the commodity
+    fetch(`/api/market_research/api/delete-commodity/${commodityId}/`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        // Show success message
+        const alertsContainer = document.getElementById('alerts-container');
+        if (alertsContainer) {
+          const alert = document.createElement('div');
+          alert.className = 'price-alert price-drop flex justify-between items-center';
+          alert.innerHTML = `
+            <div class="flex items-center">
+              <i class="fas fa-check-circle mr-3 text-lg"></i>
+              <p class="font-medium">Commodity '${commodityName}' has been deleted successfully.</p>
+            </div>
+            <button class="text-gray-400 hover:text-gray-500" onclick="this.parentElement.remove()" title="Close notification">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6L6 6l12 12" />
+              </svg>
+            </button>
+          `;
+          alertsContainer.prepend(alert);
+          
+          // Remove row from table or refresh page
+          const row = document.querySelector(`tr[data-commodity-id="${commodityId}"]`);
+          if (row) {
+            row.remove();
+          } else {
+            // If row can't be found by ID, just reload the page
+            location.reload();
+          }
+          
+          // Auto-remove alert after 5 seconds
+          setTimeout(() => {
+            alert.remove();
+          }, 5000);
+        }
+      } else {
+        // Show error message
+        alert('There was an error deleting the commodity. Please try again.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('There was an error deleting the commodity. Please try again.');
+    });
+  }
+  
+  // AJAX form submission function to avoid redirect problems
+  function submitCommodityForm(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('commodity-form');
+    const formData = new FormData(form);
+    
+    // Fix field names to match API expectations
+    const commodityName = formData.get('commodity_name');
+    formData.append('name', commodityName); // API expects 'name' not 'commodity_name'
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Show loading state
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.innerHTML;
+    submitButton.innerHTML = 'Saving...';
+    submitButton.disabled = true;
+    
+    // Make the AJAX request
+    fetch('/api/market_research/api/add-commodity/', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRFToken': csrfToken
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        // Success! Close modal and show success message
+        toggleCommodityModal(false);
+        
+        // Show success message
+        const alertsContainer = document.getElementById('alerts-container');
+        if (alertsContainer) {
+          const commodityName = formData.get('commodity_name');
+          const action = formData.get('commodity_id') ? 'updated' : 'added';
+          
+          const alert = document.createElement('div');
+          alert.className = 'price-alert price-drop flex justify-between items-center';
+          alert.innerHTML = `
+            <div class="flex items-center">
+              <i class="fas fa-check-circle mr-3 text-lg"></i>
+              <p class="font-medium">Commodity '${commodityName}' has been ${action} successfully.</p>
+            </div>
+            <button class="text-gray-400 hover:text-gray-500" onclick="this.parentElement.remove()" title="Close notification">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6L6 6l12 12" />
+              </svg>
+            </button>
+          `;
+          alertsContainer.prepend(alert);
+          
+          // Auto-remove alert after 5 seconds
+          setTimeout(() => {
+            alert.remove();
+          }, 5000);
+          
+          // Reload the commodity list if it exists
+          const commodityList = document.getElementById('commodity-list');
+          if (commodityList) {
+            // Simple reload of the page to refresh the commodity list
+            location.reload();
+          }
+        }
+      } else {
+        // Error handling
+        alert('There was an error saving the commodity. Please try again.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('There was an error saving the commodity. Please try again.');
+    })
+    .finally(() => {
+      // Reset button state
+      submitButton.innerHTML = originalButtonText;
+      submitButton.disabled = false;
+    });
+  }
+  
+  function toggleCommodityModal(show) {
+    console.log("Toggle commodity modal called:", show);
+    const modal = document.getElementById('commodity-modal');
+    if (modal) {
+      if (show) {
+        modal.style.display = 'flex';
+        // Reset the form when opening for add
+        const modalTitle = document.getElementById('modal-title');
+        if (modalTitle) modalTitle.textContent = 'Add New Commodity';
+        
+        const commodityForm = document.getElementById('commodity-form');
+        if (commodityForm) commodityForm.reset();
+        
+        const commodityId = document.getElementById('commodity-id');
+        if (commodityId) commodityId.value = '';
+      } else {
+        modal.style.display = 'none';
+      }
+    } else {
+      console.error('Commodity modal not found in the DOM');
+    }
+  }
+</script>
+
+<div class="max-w-screen-xl mx-auto px-4 py-6">
+  <!-- Page header with action buttons -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-primary">Market Research Dashboard</h1>
+    <div class="flex space-x-3">
+      <a href="{% url 'market_research:market_map_view' %}" class="btn btn-primary flex items-center space-x-2" title="View Markets on Map">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+        <span>Map View</span>
+      </a>
+      <button type="button" class="btn btn-primary flex items-center space-x-2" onclick="toggleCommodityModal(true)" title="Add New Commodity">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        <span>Add Commodity</span>
+      </button>
+      <button type="button" class="btn btn-accent flex items-center space-x-2" id="price-submission-toggle" title="Submit Price Data">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Submit Price</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Commodity Management Modal -->
+  <div id="commodity-modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 items-center justify-center z-50" style="display: none;">
+    <!-- Note: We use flex or hidden classes dynamically via JavaScript -->
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-primary" id="modal-title">Add New Commodity</h3>
+        <button type="button" class="text-gray-400 hover:text-gray-500" onclick="toggleCommodityModal(false)" title="Close modal" aria-label="Close modal">
+          <span class="sr-only">Close</span>
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="commodity-form" method="post" onsubmit="submitCommodityForm(event)">
+        {% csrf_token %}
+        <input type="hidden" id="commodity-id" name="commodity_id">
+        
+        <div class="mb-4">
+          <label for="commodity-name" class="block text-sm font-medium text-gray-700 mb-1">Commodity Name</label>
+          <input type="text" id="commodity-name" name="commodity_name" class="w-full rounded-md border-gray-300 shadow-sm" required>
+        </div>
+        
+        <div class="mb-4">
+          <label for="commodity-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select id="commodity-category" name="category" class="w-full rounded-md border-gray-300 shadow-sm" title="Select category" aria-label="Select category">
+            <option value="grains">Grains</option>
+            <option value="vegetables">Vegetables</option>
+            <option value="fruits">Fruits</option>
+            <option value="meat">Meat</option>
+            <option value="dairy">Dairy</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <label for="commodity-unit" class="block text-sm font-medium text-gray-700 mb-1">Default Unit</label>
+          <select id="commodity-unit" name="default_unit" class="w-full rounded-md border-gray-300 shadow-sm" title="Select unit" aria-label="Select unit">
+            <option value="kg">Kilogram (kg)</option>
+            <option value="g">Gram (g)</option>
+            <option value="piece">Piece</option>
+            <option value="bunch">Bunch</option>
+            <option value="liter">Liter</option>
+            <option value="ml">Milliliter</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <label for="commodity-description" class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+          <textarea id="commodity-description" name="description" rows="3" class="w-full rounded-md border-gray-300 shadow-sm"></textarea>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button type="button" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" onclick="toggleCommodityModal(false)">Cancel</button>
+          <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-accent hover:bg-opacity-90">Save Commodity</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Page Header with Navigation and Filters -->
+  <div class="flex flex-col space-y-4 mb-6">
+    <div class="flex flex-wrap items-center justify-between">
+      <!-- Remove duplicate button section and keep only the filters -->
+      <div class="flex space-x-2 items-center">
+        <div class="relative">
+          <select id="quick-commodity-filter" class="rounded-md border-gray-300 shadow-sm appearance-none pl-3 pr-8 py-1.5 text-sm" title="Quick filter by commodity" aria-label="Quick filter by commodity">
+            <option value="all">All Commodities</option>
+            {% for commodity in commodity_list %}
+              <option value="{{ commodity.id }}">{{ commodity.name }}</option>
+            {% endfor %}
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        
+        <div class="relative">
+          <select id="quick-region-filter" class="rounded-md border-gray-300 shadow-sm appearance-none pl-3 pr-8 py-1.5 text-sm" title="Quick filter by region" aria-label="Quick filter by region">
+            <option value="all">All Regions</option>
+            {% for region in regions %}
+              <option value="{{ region.id }}">{{ region.name }}</option>
+            {% endfor %}
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+            <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
+        
+        <button id="advanced-filter-toggle" class="flex items-center text-sm text-gray-600 hover:text-primary px-2 py-1.5 rounded-md hover:bg-gray-100" title="Show advanced filters">
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>More Filters</span>
+        </button>
+        
+        <button type="button" id="quick-search-button" class="bg-accent text-white px-3 py-1.5 rounded-md text-sm flex items-center hover:bg-opacity-90" title="Apply quick filters">
+          <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span>Search</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Tabbed Navigation -->
+    <div class="border-b border-gray-200">
+      <div class="flex overflow-x-auto hide-scrollbar">
+        <button class="tab active" data-tab="overview" title="Show overview dashboard">Overview</button>
+        <button class="tab" data-tab="price-data" title="Show price data table">Price Data</button>
+        <button class="tab" data-tab="analytics" title="Show analysis and trends">Analysis & Trends</button>
+        <button class="tab" data-tab="commodities" title="Show commodity management">Commodity Management</button>
+      </div>
+    </div>
+    
+    <!-- Advanced Filters (Hidden by default) -->
+    <div id="advanced-filters" class="hidden bg-gray-50 p-3 rounded-md border border-gray-200">
+      <form id="advanced-filter-form" class="flex flex-wrap items-end gap-3">
+        <div class="flex-1 min-w-[140px]">
+          <div class="text-xs font-medium text-gray-700 mb-1">Time Period</div>
+          <div class="relative">
+            <select id="time-filter" class="w-full rounded-md border-gray-300 shadow-sm appearance-none pl-3 pr-8 py-1.5 text-sm" title="Filter by time period" aria-label="Filter by time period">
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 3 months</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div id="custom-date-container" class="hidden flex flex-wrap gap-3 flex-1">
+          <div class="flex-1 min-w-[140px]">
+            <div class="text-xs font-medium text-gray-700 mb-1">From</div>
+            <input type="date" id="date-from" class="w-full rounded-md border-gray-300 shadow-sm pl-3 py-1.5 text-sm" title="Start date" aria-label="Start date" placeholder="Start date">
+          </div>
+          <div class="flex-1 min-w-[140px]">
+            <div class="text-xs font-medium text-gray-700 mb-1">To</div>
+            <input type="date" id="date-to" class="w-full rounded-md border-gray-300 shadow-sm pl-3 py-1.5 text-sm" title="End date" aria-label="End date" placeholder="End date">
+          </div>
+        </div>
+        
+        <div class="flex-1 min-w-[140px]">
+          <div class="text-xs font-medium text-gray-700 mb-1">Price Range</div>
+          <div class="flex items-center space-x-2">
+            <input type="number" id="min-price" placeholder="Min" class="w-full rounded-md border-gray-300 shadow-sm pl-3 py-1.5 text-sm" title="Minimum price" aria-label="Minimum price">
+            <span class="text-gray-500">-</span>
+            <input type="number" id="max-price" placeholder="Max" class="w-full rounded-md border-gray-300 shadow-sm pl-3 py-1.5 text-sm" title="Maximum price" aria-label="Maximum price">
+          </div>
+        </div>
+        
+        <div>
+          <button type="submit" class="bg-accent text-white px-4 py-1.5 rounded-md text-sm flex items-center hover:bg-opacity-90 h-[34px]" title="Apply advanced filters">
+            <span>Apply Filters</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <style>
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .hide-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+  </style>
+
+  <!-- Alerts and Notifications -->
+  <div id="alerts-container" class="mb-6">
+    {% if price_alerts %}
+      {% for alert in price_alerts %}
+        <div class="price-alert {{ alert.type }} flex justify-between items-center">
+          <div class="flex items-center">
+            <i class="fas {{ alert.icon }} mr-3 text-lg"></i>
+            <p class="font-medium">{{ alert.message }}</p>
+          </div>
+          <span class="text-lg font-bold">{{ alert.change }}</span>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Overview Section (Tab Content) -->
+  <div id="overview-tab" class="tab-content active">
+    <!-- Data Summary Section -->
+    <div class="dashboard-section mb-6">
+      <div class="section-header flex justify-between items-center">
+        <h2 class="text-lg font-semibold text-primary">Market Overview</h2>
+        <a href="{% url 'market_research:market_map_view' %}" class="flex items-center text-accent hover:text-accent-dark text-sm">
+          <svg class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+          <span>View Price Map</span>
+        </a>
+      </div>
+      <div class="section-body">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div class="stats-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-secondary">Total Commodities</h3>
+                <p class="text-3xl font-bold mt-2">{{ total_commodities }}</p>
+                <p class="text-sm text-gray-500 mt-1">Tracked in system</p>
+              </div>
+              <div class="bg-light p-2 rounded-full">
+                <svg class="h-8 w-8 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="stats-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-secondary">Average Price</h3>
+                <p class="text-3xl font-bold mt-2">TSh {{ average_price }}</p>
+                <p class="text-sm text-gray-500 mt-1">Per kg across markets</p>
+              </div>
+              <div class="bg-light p-2 rounded-full">
+                <svg class="h-8 w-8 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="stats-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-secondary">Price Range</h3>
+                <p class="text-3xl font-bold mt-2">TSh {{ price_range_min }} - {{ price_range_max }}</p>
+                <p class="text-sm text-gray-500 mt-1">Min-Max price</p>
+              </div>
+              <div class="bg-light p-2 rounded-full">
+                <svg class="h-8 w-8 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="stats-card">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-secondary">Recent Updates</h3>
+                <p class="text-3xl font-bold mt-2>{{ recent_updates }}</p>
+                <p class="text-sm text-gray-500 mt-1">Last 24 hours</p>
+              </div>
+              <div class="bg-light p-2 rounded-full">
+                <svg class="h-8 w-8 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <select id="commodity-filter" class="w-full rounded-md border-gray-300 shadow-sm appearance-none pl-3 pr-8 py-1.5 text-sm" title="Filter by commodity" aria-label="Filter by commodity">
+              <option value="all">All Commodities</option>
+              {% for commodity in commodity_list %}
+                <option value="{{ commodity.id }}">{{ commodity.name }}</option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        <div class="w-full md:w-auto flex-1 min-w-0 md:min-w-[140px]">
+          <div class="flex items-center mb-1 text-xs font-medium text-gray-700">
+            <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>Region</span>
+          </div>
+          <div class="relative">
+            <select id="region-filter" class="w-full rounded-md border-gray-300 shadow-sm appearance-none pl-3 pr-8 py-1.5 text-sm" title="Filter by region" aria-label="Filter by region">
+              <option value="all">All Regions</option>
+              {% for region in regions %}
+                <option value="{{ region.id }}">{{ region.name }}</option>
+              {% endfor %}
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full md:w-auto flex-1 min-w-0 md:min-w-[140px]">
+          <div class="flex items-center mb-1 text-xs font-medium text-gray-700">
+            <svg class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span>Time Period</span>
+          </div>
+          <div class="relative">
+            <select id="time-filter" class="w-full rounded-md border-gray-300 shadow-sm appearance-none pl-3 pr-8 py-1.5 text-sm" title="Filter by time period" aria-label="Filter by time period">
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 3 months</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+              <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section-body">
+        <p class="text-center text-gray-500 py-4">Price data has been moved to a separate section.</p>
+      </div>
+    </div>
+
+    <!-- Charts Section Removed -->
+  
+    <!-- Price Submission Form -->
+    <div class="dashboard-section mb-6" id="price-submission-section">
+      <div class="section-header">
+        <h2 class="text-lg font-semibold text-primary">Submit New Price Data</h2>
+      </div>
+      <div class="section-body p-4">
+      <form id="price-form" method="post" action="{% url 'market_research:submit_price_data' %}">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="product-select" class="block text-sm font-medium text-gray-700 mb-1">Commodity</label>
+            <select id="product-select" name="product_name" class="w-full rounded-md border-gray-300 shadow-sm" required title="Select commodity" aria-label="Select commodity">
+              <option value="">Select a commodity</option>
+              {% for commodity in commodity_list %}
+                <option value="{{ commodity.name }}" data-unit="{{ commodity.default_unit }}">{{ commodity.name }}</option>
+              {% endfor %}
+              <option value="other">Other (specify)</option>
+            </select>
+            <input type="text" id="other-product" name="other_product" class="w-full rounded-md border-gray-300 shadow-sm mt-2 hidden" placeholder="Enter commodity name">
+          </div>
+          <div>
+            <label for="source-type" class="block text-sm font-medium text-gray-700 mb-1">Source Type</label>
+            <select id="source-type" name="source_type" class="w-full rounded-md border-gray-300 shadow-sm" required title="Select source type" aria-label="Select source type">
+              {% for value, label in source_types %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label for="source-name" class="block text-sm font-medium text-gray-700 mb-1">Source Name</label>
+            <select id="source-name" name="source_name" class="w-full rounded-md border-gray-300 shadow-sm" required title="Select source name" aria-label="Select source name">
+              <option value="">Select a source</option>
+              {% for source in source_list %}
+                <option value="{{ source.name }}" data-id="{{ source.id }}" data-type="{{ source.source_type }}" class="source-option">{{ source.name }} ({{ source.get_source_type_display }})</option>
+              {% endfor %}
+              <option value="other" data-type="all">Other (specify)</option>
+            </select>
+            <input type="text" id="other-source" name="other_source" class="w-full rounded-md border-gray-300 shadow-sm mt-2 hidden" placeholder="Enter source name">
+            <input type="hidden" id="source-id" name="source_id" value="">
+          </div>
+          <div>
+            <label for="total-price" class="block text-sm font-medium text-gray-700 mb-1">Total Price (TSh)</label>
+            <input type="number" id="total-price" name="price" min="0" step="1" class="w-full rounded-md border-gray-300 shadow-sm" required placeholder="Enter total price in TSh">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+            <input type="number" id="quantity" name="quantity" min="0.1" step="0.1" value="1" class="w-full rounded-md border-gray-300 shadow-sm" required>
+          </div>
+          <div>
+            <label for="unit" class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+            <select id="unit" name="unit" class="w-full rounded-md border-gray-300 shadow-sm" required title="Select unit" aria-label="Select unit">
+              <option value="kg">Kilogram (kg)</option>
+              <option value="g">Gram (g)</option>
+              <option value="piece">Piece</option>
+              <option value="bunch">Bunch</option>
+              <option value="liter">Liter</option>
+              <option value="ml">Milliliter</option>
+            </select>
+          </div>
+          <div>
+            <label for="quality-rating" class="block text-sm font-medium text-gray-700 mb-1">Quality Rating</label>
+            <select id="quality-rating" name="quality_rating" class="w-full rounded-md border-gray-300 shadow-sm" title="Select quality rating" aria-label="Select quality rating">
+              <option value="">-- Optional --</option>
+              <option value="1">Poor</option>
+              <option value="2">Fair</option>
+              <option value="3">Good</option>
+              <option value="4">Excellent</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+          <textarea id="notes" name="notes" rows="2" class="w-full rounded-md border-gray-300 shadow-sm" placeholder="Any additional observations"></textarea>
+        </div>
+        
+        <div class="p-4 bg-gray-50 rounded-md mb-4">
+          <div class="flex items-center">
+            <div id="unit-price-display" class="text-2xl font-bold text-primary">TSh 0</div>
+            <div class="ml-2 text-gray-500">per unit</div>
+          </div>
+          <p class="text-sm text-gray-500">Unit price is calculated automatically based on total price and quantity.</p>
+        </div>
+        
+        <div class="flex justify-end">
+          <button type="submit" class="bg-accent hover:bg-opacity-90 text-white px-4 py-2 rounded-md">
+            Submit Price Data
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Product Analysis Section -->
+  <div class="w-full mb-8">
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+        <h3 id="product-analysis-header" class="text-xl font-semibold text-primary">Product Analysis</h3>
+        <div class="flex items-center space-x-2">
+          <span class="text-sm text-gray-500">Data based on <span id="sample-count" class="font-medium">0</span> price samples</span>
+        </div>
+      </div>
+      <div class="p-6">
+        <!-- Price Statistics Summary -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Average Price</h4>
+            <p id="product-avg-price" class="text-2xl font-bold text-primary">TSh 0</p>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Price Range</h4>
+            <p id="product-price-range" class="text-2xl font-bold text-primary">TSh 0</p>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-gray-500">Min: <span id="product-min-price">TSh 0</span></span>
+              <span class="text-gray-500">Max: <span id="product-max-price">TSh 0</span></span>
+            </div>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Price Volatility</h4>
+            <p id="product-price-volatility" class="text-2xl font-bold text-primary">0%</p>
+            <p class="text-xs text-gray-500 mt-1">Standard deviation as % of mean</p>
+          </div>
+          <div class="stats-card">
+            <h4 class="text-sm font-medium text-gray-500 mb-1">Price Trend</h4>
+            <p id="product-price-trend" class="text-2xl font-bold">Unknown</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="bg-gray-50 p-5 rounded-lg shadow-sm">
+            <h4 class="text-lg font-medium text-secondary mb-3">Price Stability</h4>
+            <p class="text-sm text-gray-600 mb-4">Analysis of price fluctuations over time</p>
+            <div class="h-64 bg-white p-4 rounded-lg border border-gray-200 shadow-inner">
+              <canvas id="stability-chart"></canvas>
+            </div>
+          </div>
+          
+          <div class="bg-gray-50 p-5 rounded-lg shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="text-lg font-medium text-secondary">Regional Price Comparison</h4>
+              <div class="relative">
+                <select id="comparison-commodity-select" class="text-sm rounded-md border-gray-300 py-1 pl-2 pr-8 appearance-none bg-white" aria-label="Select commodity for comparison">
+                  <option value="maize">Maize</option>
+                  <option value="rice">Rice</option>
+                  <option value="beans">Beans</option>
+                  <option value="tomatoes">Tomatoes</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Current market prices across different regions</p>
+            <div class="h-64 bg-white p-4 rounded-lg border border-gray-200 shadow-inner">
+              <canvas id="region-comparison-chart"></canvas>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs text-gray-500 flex items-center">
+                <span class="inline-block w-3 h-3 bg-red-500 rounded-full mr-1"></span> Highest Price: <span id="highest-price-region" class="font-medium text-gray-700 ml-1">{{ highest_price.region }} (TSh {{ highest_price.price|floatformat:0 }}/kg)</span>
+              </div>
+              <div class="text-xs text-gray-500 flex items-center mt-1">
+                <span class="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span> Lowest Price: <span id="lowest-price-region" class="font-medium text-gray-700 ml-1">{{ lowest_price.region }} (TSh {{ lowest_price.price|floatformat:0 }}/kg)</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bg-gray-50 p-5 rounded-lg shadow-sm">
+            <h4 class="text-lg font-medium text-secondary mb-3">Seasonal Trends</h4>
+            <p class="text-sm text-gray-600 mb-4">Impact of seasons on commodity prices</p>
+            <div class="h-64 bg-white p-4 rounded-lg border border-gray-200 shadow-inner">
+              <canvas id="seasonal-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Commodities Management Section -->
+  <div class="bg-white rounded-lg shadow mb-8">
+    <div class="px-4 py-5 border-b border-gray-200 sm:px-6 flex justify-between items-center">
+      <h3 class="text-lg font-medium leading-6 text-gray-900">Commodities Management</h3>
+      <button onclick="toggleCommodityModal(true)" class="bg-accent hover:bg-opacity-90 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center">
+        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Add Commodity
+      </button>
+    </div>
+    <div class="p-4 overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-secondary text-white">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Name</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Category</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Default Unit</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for commodity in commodity_list %}
+          <tr>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ commodity.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ commodity.category|title }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ commodity.default_unit }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <button onclick="editCommodity('{{ commodity.id }}', '{{ commodity.name }}', '{{ commodity.category }}', '{{ commodity.default_unit }}', '{{ commodity.description }}')" class="text-primary hover:text-opacity-75 mr-3" title="Edit {{ commodity.name }}" aria-label="Edit {{ commodity.name }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </button>
+              <button type="button" class="text-red-500 hover:text-opacity-75" onclick="deleteCommodity({{ commodity.id }}, '{{ commodity.name }}')" title="Delete {{ commodity.name }}" aria-label="Delete {{ commodity.name }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+              No commodities added yet. Click "Add Commodity" to get started.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Regional Price Comparison - Enhanced Section -->
+  <div class="bg-white rounded-lg shadow mb-8">
+    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+      <h3 class="text-lg font-medium leading-6 text-gray-900">Regional Price Comparison</h3>
+      <p class="mt-1 text-sm text-gray-500">Compare prices across regions with transportation costs to maximize your profit</p>
+    </div>
+    <div class="p-4">
+      <div class="flex flex-col md:flex-row gap-4">
+        <!-- Control Panel - Takes less space -->
+        <div class="w-full md:w-1/3 space-y-4">
+          <!-- Product Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+            <select id="regional-product-select" class="w-full rounded-md border-gray-300 shadow-sm" title="Select product for comparison" aria-label="Select product for comparison">
+              {% for commodity in commodity_list %}
+                <option value="{{ commodity.id }}">{{ commodity.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <!-- Farm Location with Coordinates -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Your Farm Location Coordinates</label>
+            <div class="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <label for="farm-latitude" class="block text-xs text-gray-500 mb-1">Latitude</label>
+                <input type="number" id="farm-latitude" step="0.000001" class="w-full rounded-md border-gray-300 shadow-sm text-sm" placeholder="-6.8235" title="Latitude coordinate" aria-label="Farm latitude coordinate">
+              </div>
+              <div>
+                <label for="farm-longitude" class="block text-xs text-gray-500 mb-1">Longitude</label>
+                <input type="number" id="farm-longitude" step="0.000001" class="w-full rounded-md border-gray-300 shadow-sm text-sm" placeholder="39.2695" title="Longitude coordinate" aria-label="Farm longitude coordinate">
+              </div>
+            </div>
+            <div class="text-xs text-gray-500 mb-2">
+              <i class="fas fa-info-circle mr-1"></i> Enter coordinates or use current location
+            </div>
+            <button type="button" id="get-current-location" class="w-full text-sm text-accent border border-accent rounded-md py-1 px-2 hover:bg-accent hover:text-white transition-colors" title="Get current location">
+              <i class="fas fa-map-marker-alt mr-1"></i> Use Current Location
+            </button>
+          </div>
+          
+          <!-- Target Regions Selection -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Select Target Market</label>
+            <select id="target-market-select" class="w-full rounded-md border-gray-300 shadow-sm" title="Select target market" aria-label="Select target market">
+              <option value="" disabled selected>-- Select a region --</option>
+              <!-- Tanzania regions -->
+              <option value="arusha">Arusha</option>
+              <option value="dar_es_salaam">Dar es Salaam</option>
+              <option value="dodoma">Dodoma</option>
+              <option value="geita">Geita</option>
+              <option value="iringa">Iringa</option>
+              <option value="kagera">Kagera</option>
+              <option value="katavi">Katavi</option>
+              <option value="kigoma">Kigoma</option>
+              <option value="kilimanjaro">Kilimanjaro</option>
+              <option value="lindi">Lindi</option>
+              <option value="manyara">Manyara</option>
+              <option value="mara">Mara</option>
+              <option value="mbeya">Mbeya</option>
+              <option value="morogoro">Morogoro</option>
+              <option value="mtwara">Mtwara</option>
+              <option value="mwanza">Mwanza</option>
+              <option value="njombe">Njombe</option>
+              <option value="pemba_north">Pemba North</option>
+              <option value="pemba_south">Pemba South</option>
+              <option value="pwani">Pwani</option>
+              <option value="rukwa">Rukwa</option>
+              <option value="ruvuma">Ruvuma</option>
+              <option value="shinyanga">Shinyanga</option>
+              <option value="simiyu">Simiyu</option>
+              <option value="singida">Singida</option>
+              <option value="songwe">Songwe</option>
+              <option value="tabora">Tabora</option>
+              <option value="tanga">Tanga</option>
+              <option value="zanzibar_central">Zanzibar Central/South</option>
+              <option value="zanzibar_north">Zanzibar North</option>
+              <option value="zanzibar_urban">Zanzibar Urban/West</option>
+            </select>
+          </div>
+          
+          <!-- Transport Cost Calculator -->
+          <div class="bg-gray-50 p-3 rounded-md">
+            <h4 class="font-medium text-sm text-gray-700 mb-2">Transportation Settings</h4>
+            <div class="space-y-2">
+              <div>
+                <label for="cost-per-km" class="text-xs text-gray-600">Cost per km (TSh)</label>
+                <input type="number" id="cost-per-km" class="w-full rounded-md border-gray-300 shadow-sm text-sm" value="500">
+              </div>
+              <div class="text-xs text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i> Transportation costs will be calculated based on distance.
+              </div>
+            </div>
+          </div>
+          
+          <!-- Action Button -->
+          <button id="calculate-regional-comparison" class="w-full bg-accent hover:bg-opacity-90 text-white py-2 rounded-md text-sm font-medium">
+            Calculate Best Market
+          </button>
+        </div>
+        
+        <!-- Results Panel - Takes more space -->
+        <div class="w-full md:w-2/3">
+          <!-- Visual Chart -->
+          <div class="mb-4 bg-gray-50 p-4 rounded-md">
+            <canvas id="regional-profit-chart" height="300"></canvas>
+          </div>
+          
+          <!-- Results Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Region</th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price/Kg</th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Distance</th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Transport Cost</th>
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Net Profit</th>
+                  <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Recommendation</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200" id="regional-comparison-results">
+                <!-- Dynamic content will be inserted here by JavaScript -->
+                <tr class="text-center">
+                  <td colspan="6" class="px-4 py-8 text-gray-500">
+                    <p>Select your options and click "Calculate Best Market" to see results.</p>
+                    <p class="text-sm mt-2">Results will show price comparisons with transportation costs.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% block extra_js %}
+<script>
+  // Function to toggle the commodity modal
+  function toggleCommodityModal(show) {
+    const modal = document.getElementById('commodity-modal');
+    if (show) {
+      // Reset form when opening for a new commodity
+      document.getElementById('modal-title').textContent = 'Add New Commodity';
+      document.getElementById('commodity-form').reset();
+      document.getElementById('commodity-id').value = '';
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    } else {
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+    }
+  }
+  
+  // Function to populate the form for editing
+  function editCommodity(id, name, category, unit, description) {
+    document.getElementById('modal-title').textContent = 'Edit Commodity';
+    document.getElementById('commodity-id').value = id;
+    document.getElementById('commodity-name').value = name;
+    document.getElementById('commodity-category').value = category;
+    document.getElementById('commodity-unit').value = unit;
+    document.getElementById('commodity-description').value = description || '';
+    
+    toggleCommodityModal(true);
+  }
+  
+  // Make functions available globally
+  window.toggleCommodityModal = toggleCommodityModal;
+  window.editCommodity = editCommodity;
+  
+  // Function to calculate and display unit price
+  function calculateUnitPrice() {
+    const totalPrice = parseFloat(document.getElementById('total-price').value) || 0;
+    const quantity = parseFloat(document.getElementById('quantity').value) || 1;
+    
+    if (quantity > 0) {
+      const unitPrice = totalPrice / quantity;
+      document.getElementById('unit-price-display').textContent = `TSh ${Math.round(unitPrice)}`;
+    }
+  }
+  
+  // Function to handle commodity selection
+  function handleCommoditySelection() {
+    const select = document.getElementById('product-select');
+    const otherProductField = document.getElementById('other-product');
+    const unitSelect = document.getElementById('unit');
+    
+    if (select.value === 'other') {
+      otherProductField.classList.remove('hidden');
+      otherProductField.required = true;
+    } else {
+      otherProductField.classList.add('hidden');
+      otherProductField.required = false;
+      
+      // Set default unit based on commodity selection
+      const selectedOption = select.options[select.selectedIndex];
+      if (selectedOption && selectedOption.dataset.unit) {
+        unitSelect.value = selectedOption.dataset.unit;
+      }
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the modals
+    function toggleCommodityModal(show) {
+      const modal = document.getElementById('commodity-modal');
+      if (show) {
+        modal.style.display = 'flex';
+        // Reset the form when opening for add
+        document.getElementById('modal-title').textContent = 'Add New Commodity';
+        document.getElementById('commodity-form').reset();
+        document.getElementById('commodity-id').value = '';
+      } else {
+        modal.style.display = 'none';
+      }
+    }
+    
+    // Toggle advanced filters
+    const advancedFilterToggle = document.getElementById('advanced-filter-toggle');
+    const advancedFilters = document.getElementById('advanced-filters');
+    
+    if (advancedFilterToggle && advancedFilters) {
+      advancedFilterToggle.addEventListener('click', function() {
+        if (advancedFilters.classList.contains('hidden')) {
+          advancedFilters.classList.remove('hidden');
+          advancedFilterToggle.classList.add('bg-gray-100');
+        } else {
+          advancedFilters.classList.add('hidden');
+          advancedFilterToggle.classList.remove('bg-gray-100');
+        }
+      });
+    }
+    
+    // Quick search button functionality
+    const quickSearchButton = document.getElementById('quick-search-button');
+    if (quickSearchButton) {
+      quickSearchButton.addEventListener('click', function() {
+        const commodity = document.getElementById('quick-commodity-filter').value;
+        const region = document.getElementById('quick-region-filter').value;
+        
+        // Show loading state
+        const originalText = this.innerHTML;
+        this.innerHTML = '<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        
+        // Simulate filtering (in real implementation, this would be an AJAX call)
+        setTimeout(() => {
+          this.innerHTML = originalText;
+          
+          // Show success message
+          const alertsContainer = document.getElementById('alerts-container');
+          if (alertsContainer) {
+            const alert = document.createElement('div');
+            alert.className = 'price-alert bg-green-50 flex justify-between items-center';
+            alert.innerHTML = `
+              <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3 text-lg text-green-500"></i>
+                <p class="font-medium">Filters applied successfully</p>
+              </div>
+              <button class="text-gray-400 hover:text-gray-500" onclick="this.parentElement.remove()" title="Close notification">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            `;
+            alertsContainer.prepend(alert);
+            
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+              alert.remove();
+            }, 5000);
+          }
+        }, 800);
+      });
+    }
+    
+    window.toggleCommodityModal = toggleCommodityModal;
+    
+    // Handle tab navigation
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        const tabId = this.getAttribute('data-tab');
+        
+        // Hide all tab contents
+        tabContents.forEach(content => {
+          content.classList.remove('active');
+          content.style.display = 'none';
+        });
+        
+        // Show the selected tab content
+        const selectedTab = document.getElementById(`${tabId}-tab`);
+        if (selectedTab) {
+          selectedTab.classList.add('active');
+          selectedTab.style.display = 'block';
+        }
+        
+        // Update active tab styling
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+    
+    // Initialize all tab content sections
+    tabContents.forEach(content => {
+      if (!content.classList.contains('active')) {
+        content.style.display = 'none';
+      }
+    });
+    
+    // Toggle price submission form
+    const priceSubmissionToggle = document.getElementById('price-submission-toggle');
+    const priceSubmissionSection = document.getElementById('price-submission-section');
+    
+    if (priceSubmissionToggle && priceSubmissionSection) {
+      priceSubmissionToggle.addEventListener('click', function() {
+        // Scroll to the form section
+        priceSubmissionSection.scrollIntoView({ behavior: 'smooth' });
+        
+        // Optional: highlight the form briefly
+        priceSubmissionSection.classList.add('bg-light', 'transition-all', 'duration-500');
+        setTimeout(() => {
+          priceSubmissionSection.classList.remove('bg-light');
+        }, 1000);
+      });
+    }
+    
+    // Handle edit commodity click
+    window.editCommodity = function(id, name, category, unit) {
+      document.getElementById('modal-title').textContent = 'Edit Commodity';
+      document.getElementById('commodity-id').value = id;
+      document.getElementById('commodity-name').value = name;
+      document.getElementById('commodity-category').value = category;
+      document.getElementById('commodity-unit').value = unit;
+      toggleCommodityModal(true);
+    }
+    
+    // Handle the time period filter to show/hide custom date inputs
+    const timeFilter = document.getElementById('time-filter');
+    const customDateContainer = document.getElementById('custom-date-container');
+    
+    if (timeFilter && customDateContainer) {
+      timeFilter.addEventListener('change', function() {
+        if (this.value === 'custom') {
+          customDateContainer.classList.remove('hidden');
+          customDateContainer.classList.add('grid');
+        } else {
+          customDateContainer.classList.add('hidden');
+          customDateContainer.classList.remove('grid');
+        }
+      });
+    }
+    
+    // Initialize product analysis charts
+    function initProductAnalysisCharts() {
+      // Get chart data from server
+      const trendData = JSON.parse('{{ trend_data|escapejs }}');
+      const comparisonData = JSON.parse('{{ comparison_data|escapejs }}');
+      const productAnalysisData = JSON.parse('{{ product_analysis|escapejs }}');
+      
+      // Price stability chart (trend data)
+      const stabilityData = {
+        labels: trendData.dates,
+        datasets: trendData.datasets
+      };
+
+      // Update product analysis section if data exists
+      if (productAnalysisData && productAnalysisData.commodity) {
+        // Update product analysis header
+        const analysisHeader = document.getElementById('product-analysis-header');
+        if (analysisHeader) {
+          analysisHeader.textContent = `${productAnalysisData.commodity} Analysis`;
+        }
+
+        // Update price statistics
+        const priceStats = productAnalysisData.price_stats;
+        if (priceStats) {
+          // Average price
+          const avgPriceEl = document.getElementById('product-avg-price');
+          if (avgPriceEl) avgPriceEl.textContent = `TSh ${priceStats.average.toLocaleString()}`;
+          
+          // Price range
+          const minPriceEl = document.getElementById('product-min-price');
+          const maxPriceEl = document.getElementById('product-max-price');
+          const rangePriceEl = document.getElementById('product-price-range');
+          
+          if (minPriceEl) minPriceEl.textContent = `TSh ${priceStats.minimum.toLocaleString()}`;
+          if (maxPriceEl) maxPriceEl.textContent = `TSh ${priceStats.maximum.toLocaleString()}`;
+          if (rangePriceEl) rangePriceEl.textContent = `TSh ${priceStats.range.toLocaleString()}`;
+          
+          // Volatility
+          const volatilityEl = document.getElementById('product-price-volatility');
+          if (volatilityEl) volatilityEl.textContent = `${priceStats.volatility}%`;
+          
+          // Trend
+          const trendEl = document.getElementById('product-price-trend');
+          if (trendEl) {
+            trendEl.textContent = priceStats.trend.charAt(0).toUpperCase() + priceStats.trend.slice(1);
+            
+            // Add appropriate color
+            if (priceStats.trend === 'increasing') {
+              trendEl.classList.add('text-red-600');
+            } else if (priceStats.trend === 'decreasing') {
+              trendEl.classList.add('text-green-600');
+            } else {
+              trendEl.classList.add('text-gray-600');
+            }
+          }
+        }
+
+        // Regional analysis table
+        const regionalTable = document.getElementById('regional-analysis-table');
+        if (regionalTable && productAnalysisData.regional_analysis) {
+          const tbody = regionalTable.querySelector('tbody');
+          if (tbody) {
+            // Clear existing rows
+            tbody.innerHTML = '';
+            
+            // Add data rows
+            productAnalysisData.regional_analysis.forEach((region, index) => {
+              const row = document.createElement('tr');
+              row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+              
+              row.innerHTML = `
+                <td class="px-4 py-2 border-b">${region.region}</td>
+                <td class="px-4 py-2 border-b text-right font-medium">TSh ${region.avg_price.toLocaleString()}</td>
+                <td class="px-4 py-2 border-b text-right">${region.sample_count}</td>
+              `;
+              
+              tbody.appendChild(row);
+            });
+          }
+        }
+
+        // Sample count
+        const sampleCountEl = document.getElementById('sample-count');
+        if (sampleCountEl) {
+          sampleCountEl.textContent = productAnalysisData.sample_count.toLocaleString();
+        }
+        
+        // Show the product analysis section
+        const productAnalysisSection = document.getElementById('product-analysis-section');
+        if (productAnalysisSection && productAnalysisSection.classList.contains('hidden')) {
+          productAnalysisSection.classList.remove('hidden');
+        }
+      }
+      
+      // Price data for regions
+      const regionData = {
+        labels: comparisonData.regions,
+        datasets: [{
+          label: '{{ commodities.0 }} Price (TSh/kg)',
+          data: comparisonData.prices,
+          backgroundColor: '#AA8B56',
+          borderColor: '#95784b',
+          borderWidth: 1,
+          borderRadius: 4,
+          maxBarThickness: 25
+        }]
+      };
+      
+      // Update highest and lowest price regions
+      if (comparisonData.regions && comparisonData.prices && comparisonData.regions.length > 0) {
+        // Find highest price region
+        let highestPrice = -1;
+        let highestIndex = -1;
+        let lowestPrice = Number.MAX_VALUE;
+        let lowestIndex = -1;
+        
+        comparisonData.prices.forEach((price, index) => {
+          if (price > highestPrice) {
+            highestPrice = price;
+            highestIndex = index;
+          }
+          if (price < lowestPrice && price > 0) { // Avoid zero prices
+            lowestPrice = price;
+            lowestIndex = index;
+          }
+        });
+        
+        // Update the HTML elements
+        const highestRegionEl = document.getElementById('highest-price-region');
+        const lowestRegionEl = document.getElementById('lowest-price-region');
+        
+        if (highestIndex >= 0 && highestRegionEl) {
+          const unit = '{{ commodities.0 }}'.toLowerCase().includes('rice') || '{{ commodities.0 }}'.toLowerCase().includes('maize') ? 'kg' : 'unit';
+          highestRegionEl.textContent = `${comparisonData.regions[highestIndex]} (TSh ${highestPrice.toLocaleString()}/${unit})`;
+        }
+        
+        if (lowestIndex >= 0 && lowestRegionEl) {
+          const unit = '{{ commodities.0 }}'.toLowerCase().includes('rice') || '{{ commodities.0 }}'.toLowerCase().includes('maize') ? 'kg' : 'unit';
+          lowestRegionEl.textContent = `${comparisonData.regions[lowestIndex]} (TSh ${lowestPrice.toLocaleString()}/${unit})`;
+        }
+      }
+      
+      // Seasonal trends - currently placeholder data
+      // In a real implementation, you would fetch seasonal data from API
+      const seasonalData = {
+        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+        datasets: [{
+          label: 'Tomatoes',
+          data: [1200, 900, 1500, 1700],
+          borderColor: '#AA8B56',
+          backgroundColor: 'rgba(170, 139, 86, 0.2)',
+          borderWidth: 2,
+          fill: true
+        }, {
+          label: 'Onions',
+          data: [800, 1200, 1600, 1100],
+          borderColor: '#4E6C50',
+          backgroundColor: 'rgba(78, 108, 80, 0.2)',
+          borderWidth: 2,
+          fill: true
+        }]
+      };
+      
+      // Chart options
+      const lineOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              font: {
+                size: 10
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#4E6C50',
+            titleFont: {
+              size: 12
+            },
+            bodyFont: {
+              size: 11
+            },
+            padding: 8,
+            cornerRadius: 4
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              font: {
+                size: 10
+              },
+              callback: function(value) {
+                return 'TSh ' + value;
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          }
+        }
+      };
+      
+      const barOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              font: {
+                size: 10
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#4E6C50',
+            titleFont: {
+              size: 12
+            },
+            bodyFont: {
+              size: 11
+            },
+            padding: 8,
+            cornerRadius: 4
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              font: {
+                size: 10
+              },
+              callback: function(value) {
+                return 'TSh ' + value;
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          }
+        }
+      };
+      
+      // Initialize charts
+      const stabilityCtx = document.getElementById('stability-chart');
+      if (stabilityCtx) {
+        new Chart(stabilityCtx.getContext('2d'), {
+          type: 'line',
+          data: stabilityData,
+          options: lineOptions
+        });
+      }
+      
+      // Initialize region comparison chart with ability to update
+      let regionChart;
+      const regionCtx = document.getElementById('region-comparison-chart');
+      if (regionCtx) {
+        regionChart = new Chart(regionCtx.getContext('2d'), {
+          type: 'bar',
+          data: regionData,
+          options: barOptions
+        });
+        
+        // Handle commodity selection change
+        const commoditySelect = document.getElementById('comparison-commodity-select');
+        if (commoditySelect) {
+          commoditySelect.addEventListener('change', function() {
+            const selectedCommodity = this.value;
+            
+            // Fetch data for the selected commodity via AJAX
+            fetch(`/api/market_research/comparison_data?commodity=${selectedCommodity}`)
+              .then(response => response.json())
+              .then(data => {
+                // Update chart data
+                regionChart.data.labels = data.regions;
+                regionChart.data.datasets[0].label = `${selectedCommodity} Price (TSh/kg)`;
+                regionChart.data.datasets[0].data = data.prices;
+                regionChart.update();
+                
+                // Update highest/lowest price indicators
+                updatePriceIndicators(data);
+              })
+              .catch(error => console.error('Error fetching comparison data:', error));
+          });
+        }
+      }
+      
+      // Function to update highest/lowest price indicators
+      function updatePriceIndicators(data) {
+        if (!data.regions || !data.prices || data.prices.length === 0) return;
+        
+        const prices = data.prices;
+        const regions = data.regions;
+        const highestPrice = Math.max(...prices);
+        const lowestPrice = Math.min(...prices);
+        const highestIndex = prices.indexOf(highestPrice);
+        const lowestIndex = prices.indexOf(lowestPrice);
+        
+        document.querySelector('.bg-red-500').nextElementSibling.nextElementSibling.textContent = 
+          `${regions[highestIndex]} (TSh ${highestPrice.toLocaleString()}/kg)`;
+        
+        document.querySelector('.bg-green-500').nextElementSibling.nextElementSibling.textContent = 
+          `${regions[lowestIndex]} (TSh ${lowestPrice.toLocaleString()}/kg)`;
+      }
+      
+      const seasonalCtx = document.getElementById('seasonal-chart');
+      if (seasonalCtx) {
+        new Chart(seasonalCtx.getContext('2d'), {
+          type: 'line',
+          data: seasonalData,
+          options: lineOptions
+        });
+      }
+    }
+    
+    // Call the initialization function
+    initProductAnalysisCharts();
+    
+    // Set up table sorting
+    const tableHeaders = document.querySelectorAll('th[data-sort]');
+    tableHeaders.forEach(header => {
+      header.addEventListener('click', function() {
+        const sortField = this.getAttribute('data-sort');
+        
+        // Visual feedback when header is clicked
+        tableHeaders.forEach(h => h.classList.remove('bg-light'));
+        this.classList.add('bg-light');
+        
+        console.log(`Sorting table by ${sortField}`);
+        // This would actually sort the table in a real implementation
+      });
+    });
+    
+    // Set up filter form submission with better UX
+    const filterForm = document.getElementById('filter-form');
+    if (filterForm) {
+      filterForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get filter values
+        const filters = {
+          commodity: document.getElementById('commodity-filter').value,
+          region: document.getElementById('region-filter').value,
+          timePeriod: document.getElementById('time-filter').value
+        };
+        
+        if (filters.timePeriod === 'custom') {
+          filters.dateFrom = document.getElementById('date-from').value;
+          filters.dateTo = document.getElementById('date-to').value;
+        }
+        
+        console.log('Applying filters:', filters);
+        
+        // Show visual feedback that filters are being applied
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Applying...';
+        
+        // Simulate fetching data (in a real app, this would be an actual API call)
+        setTimeout(() => {
+          submitBtn.innerHTML = originalText;
+          // Provide feedback that filters were applied
+          const alertsContainer = document.getElementById('alerts-container');
+          if (alertsContainer) {
+            const alert = document.createElement('div');
+            alert.className = 'price-alert bg-green-50 flex justify-between items-center';
+            alert.innerHTML = `
+              <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3 text-lg text-green-500"></i>
+                <p class="font-medium">Filters applied successfully</p>
+              </div>
+              <button class="text-gray-400 hover:text-gray-500" onclick="this.parentElement.remove()">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            `;
+            alertsContainer.prepend(alert);
+            
+            // Automatically remove the alert after 5 seconds
+            setTimeout(() => {
+              alert.remove();
+            }, 5000);
+          }
+        }, 800);
+      });
+    }
+    
+    // Geolocation handling for farm location
+    const getCurrentLocationBtn = document.getElementById('get-current-location');
+    const farmLatitudeInput = document.getElementById('farm-latitude');
+    const farmLongitudeInput = document.getElementById('farm-longitude');
+    const targetMarketSelect = document.getElementById('target-market-select');
+    
+    // Validate coordinates
+    function validateCoordinates() {
+      const lat = parseFloat(farmLatitudeInput.value);
+      const lng = parseFloat(farmLongitudeInput.value);
+      
+      // Basic validation for Tanzania coordinates range
+      if (isNaN(lat) || lat < -11.7 || lat > -1.0) {
+        farmLatitudeInput.classList.add('border-red-500');
+        return false;
+      } else {
+        farmLatitudeInput.classList.remove('border-red-500');
+      }
+      
+      if (isNaN(lng) || lng < 29.3 || lng > 40.4) {
+        farmLongitudeInput.classList.add('border-red-500');
+        return false;
+      } else {
+        farmLongitudeInput.classList.remove('border-red-500');
+      }
+      
+      return true;
+    }
+    
+    // Get current location
+    if (getCurrentLocationBtn) {
+      getCurrentLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+          getCurrentLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Getting location...';
+          getCurrentLocationBtn.disabled = true;
+          
+          navigator.geolocation.getCurrentPosition(
+            function(position) {
+              // Success
+              farmLatitudeInput.value = position.coords.latitude.toFixed(6);
+              farmLongitudeInput.value = position.coords.longitude.toFixed(6);
+              
+              // Reset button
+              getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt mr-1"></i> Location Acquired';
+              getCurrentLocationBtn.classList.remove('border-accent', 'text-accent');
+              getCurrentLocationBtn.classList.add('border-green-500', 'text-green-500');
+              
+              setTimeout(function() {
+                getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt mr-1"></i> Use Current Location';
+                getCurrentLocationBtn.classList.remove('border-green-500', 'text-green-500');
+                getCurrentLocationBtn.classList.add('border-accent', 'text-accent');
+                getCurrentLocationBtn.disabled = false;
+              }, 2000);
+              
+              validateCoordinates();
+            },
+            function(error) {
+              // Error
+              let errorMessage = '';
+              switch(error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMessage = 'Location permission denied';
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMessage = 'Location information unavailable';
+                  break;
+                case error.TIMEOUT:
+                  errorMessage = 'Location request timed out';
+                  break;
+                default:
+                  errorMessage = 'Unknown error occurred';
+              }
+              
+              // Show error
+              getCurrentLocationBtn.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> ' + errorMessage;
+              getCurrentLocationBtn.classList.remove('border-accent', 'text-accent');
+              getCurrentLocationBtn.classList.add('border-red-500', 'text-red-500');
+              
+              setTimeout(function() {
+                getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt mr-1"></i> Use Current Location';
+                getCurrentLocationBtn.classList.remove('border-red-500', 'text-red-500');
+                getCurrentLocationBtn.classList.add('border-accent', 'text-accent');
+                getCurrentLocationBtn.disabled = false;
+              }, 2000);
+            },
+            {enableHighAccuracy: true, timeout: 10000, maximumAge: 0}
+          );
+        } else {
+          alert('Geolocation is not supported by this browser.');
+        }
+      });
+    }
+    
+    // Add coordinate validation to inputs
+    if (farmLatitudeInput && farmLongitudeInput) {
+      farmLatitudeInput.addEventListener('change', validateCoordinates);
+      farmLongitudeInput.addEventListener('change', validateCoordinates);
+    }
+    
+    // Unit price calculator functionality
+    const totalPriceInput = document.getElementById('total-price');
+    const quantityInput = document.getElementById('quantity');
+    const unitPriceDisplay = document.getElementById('unit-price-display');
+    
+    function calculateUnitPrice() {
+      const totalPrice = parseFloat(totalPriceInput.value) || 0;
+      const quantity = parseFloat(quantityInput.value) || 1;
+      
+      if (totalPrice > 0 && quantity > 0) {
+        const unitPrice = totalPrice / quantity;
+        unitPriceDisplay.textContent = 'TSh ' + unitPrice.toLocaleString(undefined, {maximumFractionDigits: 2});
+      } else {
+        unitPriceDisplay.textContent = 'TSh 0';
+      }
+    }
+    
+    // Add event listeners for price calculator
+    if (totalPriceInput && quantityInput) {
+      totalPriceInput.addEventListener('input', calculateUnitPrice);
+      quantityInput.addEventListener('input', calculateUnitPrice);
+    }
+    
+    // Initialize Regional Market Comparison
+    const regionalProfitChart = document.getElementById('regional-profit-chart');
+    let profitChart;
+    
+    if (regionalProfitChart) {
+      const ctx = regionalProfitChart.getContext('2d');
+      profitChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Dar es Salaam', 'Mwanza', 'Arusha'],
+          datasets: [
+            {
+              label: 'Market Price (TSh/kg)',
+              backgroundColor: '#4E6C50',
+              data: [1600, 1550, 1500],
+              borderWidth: 0,
+              borderRadius: 4,
+              maxBarThickness: 35
+            },
+            {
+              label: 'Transport Cost (TSh/kg)',
+              backgroundColor: '#AA8B56',
+              data: [150, 350, 250],
+              borderWidth: 0,
+              borderRadius: 4,
+              maxBarThickness: 35
+            },
+            {
+              label: 'Net Profit (TSh/kg)',
+              backgroundColor: '#395144',
+              data: [250, -100, 50],
+              borderWidth: 0,
+              borderRadius: 4,
+              maxBarThickness: 35
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return 'TSh ' + value;
+                }
+             
+            }
+ }
+          },
+          plugins: {
+                                             legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  if (context.parsed.y !== null) {
+                    label += 'TSh ' + context.parsed.y;
+                  }
+                  return label;
+                }
+              }
+            }
+          }
+        });
+    }
+    
+    // Regional comparison calculation function
+    const calculateButton = document.getElementById('calculate-regional-comparison');
+    if (calculateButton) {
+      calculateButton.addEventListener('click', function() {
+        // Validate coordinates first
+        if (!validateCoordinates()) {
+          alert('Please enter valid coordinates for your farm location. Latitude should be between -11.7 and -1.0, and longitude between 29.3 and 40.4 for Tanzania.');
+          return;
+        }
+        
+        // Validate target market selection
+        if (!targetMarketSelect.value) {
+          alert('Please select a target market region.');
+          return;
+        }
+        
+        // Show loading state
+        this.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Calculating...';
+        this.disabled = true;
+        
+        // Get selected values
+        const productId = document.getElementById('regional-product-select').value;
+        const farmLocation =
+          this.innerHTML = 'Calculate Best Market';
+          this.disabled = false;
+          
+          // In a real app, you would calculate this data from API responses
+          const selectedRegions = [];
+          document.querySelectorAll('.target-region-checkbox:checked').forEach(checkbox => {
+            selectedRegions.push(checkbox.value);
+          });
+          
+          // Update chart with new data (example only)
+          if (profitChart) {
+            // This would use real data in production
+            profitChart.data.labels = ['Dar es Salaam', 'Mwanza', 'Arusha'];
+            profitChart.data.datasets[0].data = [1600, 1550, 1500]; // Prices
+            profitChart.data.datasets[1].data = [150, 350, 250];    // Transport costs
+            profitChart.data.datasets[2].data = [250, -100, 50];    // Net profits
+            profitChart.update();
+          }
+          
+          // Show a success alert
+          const alertsContainer = document.getElementById('alerts-container');
+          if (alertsContainer) {
+            const alert = document.createElement('div');
+            alert.className = 'price-alert price-drop flex justify-between items-center';
+            alert.innerHTML = `
+              <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3 text-lg"></i>
+                <p class="font-medium">Market comparison calculated! Dar es Salaam offers the best profit margin.</p>
+              </div>
+              <button class="text-gray-400 hover:text-gray-500" onclick="this.parentElement.remove()" title="Close notification">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6L6 6l12 12" />
+                </svg>
+              </button>
+            `;
+            alertsContainer.prepend(alert);
+            
+            // Auto-remove alert after 5 seconds
+            setTimeout(() => {
+              alert.remove();
+            }, 5000);
+          }
+        }, 1200);
+      });
+    }
+    
+    // Handle product selection
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize product analysis charts with dynamic data
+      initProductAnalysisCharts();
+      
+      const productSelect = document.getElementById('product-select');
+      const otherProductInput = document.getElementById('other-product');
+      
+      if (productSelect && otherProductInput) {
+        productSelect.addEventListener('change', function() {
+          if (this.value === 'other') {
+            otherProductInput.classList.remove('hidden');
+            otherProductInput.setAttribute('required', 'required');
+          } else {
+            otherProductInput.classList.add('hidden');
+            otherProductInput.removeAttribute('required');
+          }
+        });
+      }
+      
+      // Handle source filtering based on source type
+      const sourceTypeSelect = document.getElementById('source-type');
+      const sourceNameSelect = document.getElementById('source-name');
+      const otherSourceInput = document.getElementById('other-source');
+      
+      if (sourceTypeSelect && sourceNameSelect && otherSourceInput) {
+        // Filter sources based on selected type
+        sourceTypeSelect.addEventListener('change', function() {
+          const selectedType = this.value;
+          const sourceOptions = sourceNameSelect.querySelectorAll('option.source-option');
+          console.log('Selected source type:', selectedType);
+          
+          // Reset source selection
+          sourceNameSelect.value = '';
+          otherSourceInput.classList.add('hidden');
+          otherSourceInput.removeAttribute('required');
+          
+          // Count of visible options
+          let visibleCount = 0;
+          
+          // Show/hide options based on type
+          sourceOptions.forEach(option => {
+            const optionType = option.getAttribute('data-type');
+            console.log('Option:', option.value, 'Type:', optionType);
+            
+            if (optionType === selectedType) {
+              option.style.display = '';
+              visibleCount++;
+              // Make the first matching option the default selection
+              if (visibleCount === 1) {
+                // Don't auto-select, just make it visible
+              }
+            } else {
+              option.style.display = 'none';
+            }
+          });
+          
+          // Always show the "other" option
+          const otherOption = sourceNameSelect.querySelector('option[value="other"]');
+          if (otherOption) {
+            otherOption.style.display = '';
+          }
+          
+          console.log('Visible options count:', visibleCount);
+        });
+        
+        // Trigger initial filtering
+        sourceTypeSelect.dispatchEvent(new Event('change'));
+        
+        // Handle source selection and 'other' option
+        const sourceIdInput = document.getElementById('source-id');
+        
+        sourceNameSelect.addEventListener('change', function() {
+          if (this.value === 'other') {
+            // Handle 'other' source option
+            otherSourceInput.classList.remove('hidden');
+            otherSourceInput.setAttribute('required', 'required');
+            sourceIdInput.value = '';
+          } else {
+            // Normal source selection
+            otherSourceInput.classList.add('hidden');
+            otherSourceInput.removeAttribute('required');
+            
+            // Get the selected option and extract the source ID
+            const selectedOption = this.options[this.selectedIndex];
+            const sourceId = selectedOption.getAttribute('data-id');
+            sourceIdInput.value = sourceId || '';
+            console.log('Selected source ID:', sourceId);
+          }
+        });
+      }
+      
+      // Calculate and display unit price
+      const totalPriceInput = document.getElementById('total-price');
+      const quantityInput = document.getElementById('quantity');
+      const unitPriceDisplay = document.getElementById('unit-price-display');
+      
+      function calculateUnitPrice() {
+        const totalPrice = parseFloat(totalPriceInput.value) || 0;
+        const quantity = parseFloat(quantityInput.value) || 1;
+        
+        if (quantity > 0) {
+          const unitPrice = totalPrice / quantity;
+          unitPriceDisplay.textContent = 'TSh ' + unitPrice.toLocaleString('en-US', {
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2
+          });
+        } else {
+          unitPriceDisplay.textContent = 'TSh 0.00';
+        }
+      }
+      
+      if (totalPriceInput && quantityInput && unitPriceDisplay) {
+        totalPriceInput.addEventListener('input', calculateUnitPrice);
+        quantityInput.addEventListener('input', calculateUnitPrice);
+      }
+    });
+  });
+</script>
+{% endblock extra_js %}
+
+{% endblock content %}

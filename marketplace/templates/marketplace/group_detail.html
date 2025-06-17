@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Group {{ group.code }} | Kikapu Group Delivery{% endblock %}
+
+{% block extra_css %}
+<style>
+    .member-card {
+        transition: all 0.3s ease;
+    }
+    .member-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .leader-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    .whatsapp-btn {
+        background-color: #25D366;
+        color: white;
+    }
+    .whatsapp-btn:hover {
+        background-color: #128C7E;
+        color: white;
+    }
+    .countdown-timer {
+        font-family: monospace;
+        font-size: 1.2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'marketplace:marketplace' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'marketplace:my_groups' %}">My Groups</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Group {{ group.code }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Group Info Card -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Group {{ group.code }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted">Group Leader</h6>
+                        <p class="lead">
+                            <i class="fas fa-crown text-warning"></i>
+                            {{ group.leader.user.get_full_name }}
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Delivery Date</h6>
+                        <p class="lead">{{ group.delivery_date|date:"D, M d, Y" }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Time Slot</h6>
+                        <p class="lead">{{ group.get_time_slot_display }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Members</h6>
+                        <p class="lead">{{ summary.total_members }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Fee Per Member</h6>
+                        <p class="lead">TSh {{ summary.delivery_fee_per_member|floatformat:0 }}</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">Group Expires</h6>
+                        {% if group.is_active %}
+                            <p class="countdown-timer" id="countdown" data-expires="{{ group.expires_at|date:'c' }}"></p>
+                        {% else %}
+                            <p class="badge bg-danger">Closed</p>
+                        {% endif %}
+                    </div>
+
+                    {% if is_leader and group.is_active %}
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#closeGroupModal">
+                            <i class="fas fa-lock"></i> Close Group
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Share This Group</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead mb-4">Invite friends, family, or neighbors to join your group delivery and split the delivery fee!</p>
+                    
+                    <div class="mb-4">
+                        <label for="groupLink" class="form-label">Share Link</label>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="groupLink" value="{{ group.shared_link }}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyLink()">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Group Delivery Benefits</h5>
+                        <ul class="mb-0">
+                            <li>Split delivery fee among all members</li>
+                            <li>10% discount for you as the group leader</li>
+                            <li>All orders delivered together</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ whatsapp_share_link }}" class="btn btn-lg whatsapp-btn" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Share via WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Cards -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3>Group Members</h3>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        {% if is_leader and group.is_active %}
+        <!-- Add Member Card -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-dashed border-primary member-card">
+                <div class="card-body text-center d-flex flex-column justify-content-center align-items-center">
+                    <div class="my-3">
+                        <i class="fas fa-user-plus fa-4x text-primary opacity-50"></i>
+                    </div>
+                    <h5>Add a Member</h5>
+                    <p class="text-muted">Add orders for friends or family without smartphones</p>
+                    <div class="mt-auto">
+                        <a href="{% url 'marketplace:add_member_to_group' code=group.code %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Member
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% for member in summary.members %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm member-card">
+                {% if member.is_leader %}
+                <span class="badge bg-warning leader-badge">Leader</span>
+                {% endif %}
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar bg-light rounded-circle p-2 me-3">
+                            <i class="fas fa-user fa-lg text-primary"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">{{ member.name }}</h5>
+                            {% if member.added_by_leader %}
+                            <span class="badge bg-secondary">Added by Leader</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Order #</small>
+                        <p>{{ member.order_number }}</p>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Subtotal</small>
+                        <p>TSh {{ member.subtotal|floatformat:0 }}</p>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <small class="text-muted">Delivery Fee</small>
+                        <p>TSh {{ member.delivery_fee|floatformat:0 }}</p>
+                    </div>
+                    
+                    {% if member.discount > 0 %}
+                    <div class="mb-2">
+                        <small class="text-success">Leader Discount</small>
+                        <p class="text-success">-TSh {{ member.discount|floatformat:0 }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <strong>Total</strong>
+                        <h5>TSh {{ member.total|floatformat:0 }}</h5>
+                    </div>
+                    
+                    {% if is_leader or member.is_leader %}
+                    <div class="mt-3">
+                        <form method="post" action="{% url 'marketplace:remove_group_order' group_code=group.code order_id=member.order_id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this order from the group?')">
+                                <i class="fas fa-trash-alt"></i> Remove
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> No members in this group yet.
+                {% if group.is_active %}
+                <a href="{{ group.shared_link }}" class="alert-link">Share the group link</a> to invite others.
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Close Group Modal -->
+{% if is_leader and group.is_active %}
+<div class="modal fade" id="closeGroupModal" tabindex="-1" aria-labelledby="closeGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="closeGroupModalLabel">Close Group?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to close this group? Once closed, no new members can join.</p>
+                <p><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'marketplace:close_group' code=group.code %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">Close Group</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Copy link to clipboard
+    function copyLink() {
+        const linkInput = document.getElementById('groupLink');
+        linkInput.select();
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+    }
+    
+    // Countdown timer
+    function updateCountdown() {
+        const countdownElement = document.getElementById('countdown');
+        if (!countdownElement) return;
+        
+        const expiresAt = new Date(countdownElement.dataset.expires);
+        const now = new Date();
+        
+        // Time difference in milliseconds
+        let diff = expiresAt - now;
+        
+        if (diff <= 0) {
+            countdownElement.innerHTML = '<span class="badge bg-danger">Expired</span>';
+            return;
+        }
+        
+        // Calculate hours, minutes, seconds
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        diff -= hours * (1000 * 60 * 60);
+        
+        const mins = Math.floor(diff / (1000 * 60));
+        diff -= mins * (1000 * 60);
+        
+        const secs = Math.floor(diff / 1000);
+        
+        // Display countdown
+        countdownElement.textContent = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Update countdown every second
+    if (document.getElementById('countdown')) {
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+</script>
+{% endblock %}

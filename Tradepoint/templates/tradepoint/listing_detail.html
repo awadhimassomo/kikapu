@@ -1,0 +1,339 @@
+{% extends 'tradepoint/base.html' %}
+{% load static %}
+
+{% block tradepoint_content %}
+<div class="bg-gray-50 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumbs -->
+        <nav class="mb-6">
+            <ol class="flex text-sm">
+                <li>
+                    <a href="{% url 'tradepoint:index' %}" class="text-gray-500 hover:text-gray-700">TradePoint</a>
+                </li>
+                <li class="mx-2 text-gray-500">/</li>
+                <li>
+                    <a href="{% url 'tradepoint:index' %}?category={{ listing.category.id }}" class="text-gray-500 hover:text-gray-700">{{ listing.category.name }}</a>
+                </li>
+                <li class="mx-2 text-gray-500">/</li>
+                <li class="text-gray-900 font-medium truncate">{{ listing.title }}</li>
+            </ol>
+        </nav>
+        
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Left Column - Images -->
+                    <div class="md:col-span-2">
+                        <div class="listing-gallery mb-4">
+                            {% if listing_images %}
+                            <img id="mainImage" src="{{ listing_images.0.image.url }}" alt="{{ listing.title }}" class="listing-gallery-main">
+                            {% else %}
+                            <img src="{% static 'tradepoint/images/placeholder.jpg' %}" alt="{{ listing.title }}" class="listing-gallery-main">
+                            {% endif %}
+                        </div>
+                        
+                        {% if listing_images|length > 1 %}
+                        <div class="listing-thumbnails">
+                            {% for image in listing_images %}
+                            <div class="listing-thumbnail {% if forloop.first %}active{% endif %}" data-src="{{ image.image.url }}">
+                                <img src="{{ image.image.url }}" alt="{{ listing.title }} image {{ forloop.counter }}">
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Listing Details -->
+                        <div class="mt-8">
+                            <h1 class="listing-detail-title">{{ listing.title }}</h1>
+                            
+                            <div class="listing-detail-price">
+                                {% if listing.price %}
+                                TSh {{ listing.price|floatformat:0 }}
+                                {% if listing.unit %}
+                                <span class="text-gray-600 text-lg">per {{ listing.unit.name }}</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="text-gray-600">Price Negotiable</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 
+                                {% if listing.listing_type == 'sell' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {% if listing.listing_type == 'sell' %}For Sale{% else %}Wanted{% endif %}
+                            </div>
+                            
+                            <div class="listing-detail-meta">
+                                <div class="listing-detail-meta-item">
+                                    <i class="fas fa-tag"></i>
+                                    <span>{{ listing.category.name }}</span>
+                                </div>
+                                <div class="listing-detail-meta-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>{{ listing.region.name }}</span>
+                                </div>
+                                <div class="listing-detail-meta-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>Posted on {{ listing.created_at|date:"F j, Y" }}</span>
+                                </div>
+                                {% if listing.quantity %}
+                                <div class="listing-detail-meta-item">
+                                    <i class="fas fa-weight-hanging"></i>
+                                    <span>{{ listing.quantity }} {{ listing.unit.name }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mt-6">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-3">Description</h2>
+                                <div class="listing-detail-description">
+                                    {{ listing.description|linebreaks }}
+                                </div>
+                            </div>
+                            
+                            <!-- Additional Details -->
+                            {% if listing.additional_details %}
+                            <div class="mt-6">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-3">Additional Details</h2>
+                                <div class="bg-gray-50 p-4 rounded-lg">
+                                    {{ listing.additional_details|linebreaks }}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Share Section -->
+                            <div class="mt-8 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Share this listing</h3>
+                                <div class="flex space-x-3">
+                                    <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank" rel="noopener noreferrer" title="Share via WhatsApp" class="text-[#395144] hover:text-[#4E6C50] transition-colors w-10 h-10 bg-[#F0EBCE] rounded-full flex items-center justify-center">
+                                        <i class="fab fa-whatsapp text-xl"></i>
+                                    </a>
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" rel="noopener noreferrer" title="Share on Facebook" class="text-[#395144] hover:text-[#4E6C50] transition-colors w-10 h-10 bg-[#F0EBCE] rounded-full flex items-center justify-center">
+                                        <i class="fab fa-facebook-f"></i>
+                                    </a>
+                                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text=Check out this listing on KIKAPU TradePoint: {{ listing.title }}" target="_blank" rel="noopener noreferrer" title="Share on Twitter" class="text-[#395144] hover:text-[#4E6C50] transition-colors w-10 h-10 bg-[#F0EBCE] rounded-full flex items-center justify-center">
+                                        <i class="fab fa-twitter"></i>
+                                    </a>
+                                    <a href="mailto:?subject=Check out this listing on KIKAPU TradePoint&body=I found this listing on KIKAPU TradePoint that might interest you: {{ request.build_absolute_uri }}" title="Share via Email" class="text-[#395144] hover:text-[#4E6C50] transition-colors w-10 h-10 bg-[#F0EBCE] rounded-full flex items-center justify-center">
+                                        <i class="far fa-envelope"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Report Section -->
+                            <div class="mt-6">
+                                <button class="text-gray-500 hover:text-red-600 transition-colors text-sm inline-flex items-center" onclick="toggleReportForm()">
+                                    <i class="fas fa-flag mr-1"></i> Report this listing
+                                </button>
+                                
+                                <div id="reportForm" class="hidden mt-4 bg-gray-50 p-4 rounded-lg">
+                                    <form method="post" action="{% url 'tradepoint:report_listing' listing.id %}">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="report_reason" class="form-label">Reason for reporting</label>
+                                            <select id="report_reason" name="reason" class="form-control" required>
+                                                <option value="">Select a reason</option>
+                                                <option value="inappropriate">Inappropriate content</option>
+                                                <option value="scam">Potential scam</option>
+                                                <option value="duplicate">Duplicate listing</option>
+                                                <option value="wrong_category">Wrong category</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="report_details" class="form-label">Additional details</label>
+                                            <textarea id="report_details" name="details" class="form-control" rows="3"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn-primary">Submit Report</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column - Seller Info & Contact -->
+                    <div class="md:col-span-1">
+                        <div class="contact-seller-card">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                                {% if listing.listing_type == 'sell' %}Seller Information{% else %}Buyer Information{% endif %}
+                            </h2>
+                            
+                            <div class="seller-info">
+                                <div class="seller-avatar">
+                                    {% if listing.user.profile_image %}
+                                    <img src="{{ listing.user.profile_image.url }}" alt="{{ listing.user.get_full_name }}">
+                                    {% else %}
+                                    <div class="w-full h-full bg-[#395144] flex items-center justify-center text-white text-xl font-bold">
+                                        {{ listing.user.firstName|first|upper }}{{ listing.user.lastName|first|upper }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="seller-name">{{ listing.user.firstName }} {{ listing.user.lastName }}</div>
+                                    <div class="seller-type">{{ listing.user.user_type|default:"User" }}</div>
+                                </div>
+                            </div>
+                            
+                            {% if user.is_authenticated %}
+                            <div class="contact-methods">
+                                {% if listing.contact_phone %}
+                                <div class="contact-method">
+                                    <i class="fas fa-phone"></i>
+                                    <span>{{ listing.contact_phone }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if listing.contact_email %}
+                                <div class="contact-method">
+                                    <i class="fas fa-envelope"></i>
+                                    <span>{{ listing.contact_email }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if listing.contact_whatsapp %}
+                                <div class="contact-method">
+                                    <i class="fab fa-whatsapp"></i>
+                                    <span>{{ listing.contact_whatsapp }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="mt-6">
+                                    <button id="showInterestBtn" class="btn-primary w-full" {% if user_has_shown_interest %}disabled{% endif %}>
+                                        {% if user_has_shown_interest %}
+                                        <i class="fas fa-check mr-2"></i>Interest Sent
+                                        {% else %}
+                                        <i class="far fa-star mr-2"></i>Show Interest
+                                        {% endif %}
+                                    </button>
+                                </div>
+                                
+                                <div id="interestForm" class="hidden mt-4">
+                                    <form method="post" action="{% url 'tradepoint:show_interest' listing.id %}">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="interest_message" class="form-label">Message (optional)</label>
+                                            <textarea id="interest_message" name="message" class="form-control" rows="3" placeholder="I'm interested in this listing..."></textarea>
+                                        </div>
+                                        <button type="submit" class="btn-primary w-full">Send Interest</button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="mt-4 p-4 bg-yellow-50 rounded-lg text-center">
+                                <p class="text-yellow-800 mb-3">You need to log in to view contact information and interact with this listing.</p>
+                                <a href="{% url 'registration:login' %}?next={{ request.path }}" class="btn-primary block w-full">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>Login to Continue
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mt-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Safety Tips</h3>
+                                <ul class="text-sm text-gray-600 space-y-2">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-[#395144] mt-1 mr-2"></i>
+                                        <span>Meet in a public place for transactions</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-[#395144] mt-1 mr-2"></i>
+                                        <span>Verify the quality of products before purchasing</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-[#395144] mt-1 mr-2"></i>
+                                        <span>Never send money in advance without guarantees</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-check-circle text-[#395144] mt-1 mr-2"></i>
+                                        <span>Report suspicious listings to our team</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Similar Listings -->
+                        {% if similar_listings %}
+                        <div class="mt-6 bg-white rounded-lg shadow p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Similar Listings</h3>
+                            <div class="space-y-4">
+                                {% for similar in similar_listings %}
+                                <a href="{% url 'tradepoint:listing_detail' similar.id %}" class="block group">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden">
+                                            {% if similar.get_first_image %}
+                                            <img src="{{ similar.get_first_image.image.url }}" alt="{{ similar.title }}" class="w-full h-full object-cover">
+                                            {% else %}
+                                            <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-image"></i>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900 group-hover:text-[#395144] transition-colors line-clamp-1">{{ similar.title }}</p>
+                                            <p class="text-sm text-gray-600">
+                                                {% if similar.price %}
+                                                TSh {{ similar.price|floatformat:0 }}
+                                                {% else %}
+                                                Price Negotiable
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-4 text-center">
+                                <a href="{% url 'tradepoint:index' %}?category={{ listing.category.id }}" class="text-[#395144] hover:text-[#4E6C50] transition-colors text-sm font-medium">
+                                    View all in {{ listing.category.name }}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gallery image switcher
+    document.addEventListener('DOMContentLoaded', function() {
+        const thumbnails = document.querySelectorAll('.listing-thumbnail');
+        const mainImage = document.getElementById('mainImage');
+        
+        thumbnails.forEach(thumbnail => {
+            thumbnail.addEventListener('click', function() {
+                // Update main image
+                mainImage.src = this.dataset.src;
+                
+                // Update active state
+                thumbnails.forEach(thumb => {
+                    thumb.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Show interest form toggle
+        const showInterestBtn = document.getElementById('showInterestBtn');
+        const interestForm = document.getElementById('interestForm');
+        
+        if (showInterestBtn && interestForm && !showInterestBtn.hasAttribute('disabled')) {
+            showInterestBtn.addEventListener('click', function() {
+                interestForm.classList.toggle('hidden');
+                
+                if (!interestForm.classList.contains('hidden')) {
+                    showInterestBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Cancel';
+                } else {
+                    showInterestBtn.innerHTML = '<i class="far fa-star mr-2"></i>Show Interest';
+                }
+            });
+        }
+    });
+    
+    // Report form toggle
+    function toggleReportForm() {
+        const reportForm = document.getElementById('reportForm');
+        reportForm.classList.toggle('hidden');
+    }
+</script>
+{% endblock %}

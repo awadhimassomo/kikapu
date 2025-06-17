@@ -1,0 +1,802 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add New Product | Kikapu Marketplace{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary-color: #395144;
+        --primary-dark: #2A3C33;
+        --secondary-color: #4E6C50;
+        --accent-color: #AA8B56;
+        --light-color: #F0EBCE;
+        --border-light: #E9E3D5;
+        --text-dark: #1F2937;
+        --text-medium: #4B5563;
+        --text-light: #6B7280;
+        --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.1);
+        --transition-base: all 0.3s ease;
+        --border-radius-sm: 8px;
+        --border-radius-md: 12px;
+        --border-radius-lg: 16px;
+    }
+    
+    /* Clean minimal layout */
+    .content-container {
+        max-width: 100%;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    
+    .container-fluid {
+        padding: 0 2rem;
+        max-width: 100%;
+    }
+    
+    /* Compact header */
+    .page-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        padding: 1rem 0;
+        margin-bottom: 1rem;
+        box-shadow: var(--shadow-sm);
+    }
+    
+    /* Card styling to maximize width */
+    .card {
+        border: none;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-sm);
+        width: 100%;
+    }
+    
+    .card-header {
+        background-color: rgba(240, 235, 206, 0.2);
+        border-bottom: 1px solid var(--border-light);
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    /* Form grid layout */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-gap: 1rem;
+    }
+    
+    .col-span-12 { grid-column: span 12; }
+    .col-span-6 { grid-column: span 6; }
+    .col-span-4 { grid-column: span 4; }
+    .col-span-3 { grid-column: span 3; }
+    
+    /* Form styling */
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+        display: block;
+        font-size: 0.875rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.5rem 0.75rem;
+        min-height: 38px;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid #D1D5DB;
+        font-size: 0.9rem;
+    }
+    
+    .form-text {
+        color: var(--text-medium);
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Section styling */
+    .form-section {
+        background-color: white;
+        border-radius: var(--border-radius-sm);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-light);
+    }
+    
+    .section-title {
+        font-size: 1rem;
+        color: var(--primary-color);
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-light);
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.5rem;
+        color: var(--accent-color);
+    }
+    
+    /* Image upload area */
+    .drag-drop-area {
+        border: 2px dashed #D1D5DB;
+        padding: 1rem;
+        text-align: center;
+        border-radius: var(--border-radius-sm);
+        background-color: #f9fafb;
+        cursor: pointer;
+    }
+    
+    .drag-drop-area:hover {
+        border-color: var(--accent-color);
+    }
+    
+    .image-preview {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: var(--border-radius-sm);
+        margin: 0.25rem;
+        display: inline-block;
+    }
+    
+    /* Processing method cards */
+    .processing-methods-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .processing-method-card {
+        border: 1px solid #D1D5DB;
+        border-radius: var(--border-radius-sm);
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        transition: var(--transition-base);
+        background-color: #f9fafb;
+    }
+    
+    .processing-method-card:hover,
+    .processing-method-card.selected {
+        border-color: var(--accent-color);
+        background-color: rgba(170, 139, 86, 0.1);
+    }
+    
+    .processing-method-card.selected {
+        box-shadow: 0 0 0 1px var(--accent-color);
+    }
+    
+    /* Action buttons */
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-light);
+    }
+    
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .col-span-6, .col-span-4, .col-span-3 {
+            grid-column: span 12;
+        }
+    }
+
+    /* Fix for modal initially showing at bottom */
+    .modal.fade {
+        display: none; /* Ensure modal is hidden by default */
+    }
+    
+    .modal.show {
+        display: block; /* Show the modal when it has the 'show' class */
+    }
+    
+    /* Category Modal Styling */
+    .modal-backdrop {
+        opacity: 0.5;
+    }
+    
+    .modal-content {
+        border: none;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-md);
+        animation: modalFadeIn 0.3s ease-out;
+    }
+    
+    .modal-header {
+        border-top-left-radius: var(--border-radius-md);
+        border-top-right-radius: var(--border-radius-md);
+    }
+    
+    .modal {
+        z-index: 1050;
+    }
+    
+    .modal-dialog-centered {
+        display: flex;
+        align-items: center;
+        min-height: calc(100% - 1rem);
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Improve the appearance of the category button */
+    #createCategoryBtn {
+        transition: all 0.2s ease;
+        height: 38px;
+        width: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #createCategoryBtn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+</style>
+
+<!-- Include Bootstrap CSS if not in base template -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Ensure Bootstrap JS is loaded -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container-fluid">
+        <h1 class="h4 mb-0">Add New Product</h1>
+    </div>
+</div>
+
+<div class="container-fluid content-container">
+    <!-- Alerts and notifications -->
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-leaf"></i> New Product Details</h5>
+            <button type="button" id="backToDashboard" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Dashboard
+            </button>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="needs-validation" id="productForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+                    <div class="form-grid">
+                        <div class="col-span-4">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                    placeholder="E.g., Organic Avocados" required>
+                                <div class="form-text">Use a descriptive name</div>
+                            </div>
+                        </div>
+                        <div class="col-span-4">
+                            <div class="form-group">
+                                <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="">Select a category</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category.id }}">
+                                                {% if category.parent %}{{ category.parent.name }} &raquo; {% endif %}{{ category.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="button" class="btn btn-primary" id="createCategoryBtn" style="border: 2px solid #AA8B56; background-color: #395144;">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Choose a category for your product</div>
+                            </div>
+                        </div>
+                        <div class="col-span-12">
+                            <div class="form-group">
+                                <label for="description" class="form-label">Product Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="4" 
+                                        style="width: 100%;"
+                                        placeholder="Describe quality, origin, benefits..." required></textarea>
+                                <div class="form-text">Include key product details</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pricing and Inventory -->
+                <div class="form-section">
+                    <h3 class="section-title"><i class="fas fa-tags"></i> Pricing & Inventory</h3>
+                    <div class="form-grid">
+                        <div class="col-span-4">
+                            <div class="form-group">
+                                <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
+                                <div class="position-relative">
+                                    <input type="number" class="form-control" id="price" name="price" 
+                                        min="0" step="1" placeholder="0" required>
+                                    <span class="tsh-indicator">TSh</span>
+                                </div>
+                                <div class="form-text">Set price in Tanzanian Shillings</div>
+                            </div>
+                        </div>
+                        <div class="col-span-4">
+                            <div class="form-group">
+                                <label for="unit" class="form-label">Selling Unit <span class="text-danger">*</span></label>
+                                <select class="form-select" id="unit" name="unit" required>
+                                    <option value="" selected disabled>Select unit</option>
+                                    {% for unit_code, unit_name in unit_choices %}
+                                        <option value="{{ unit_code }}">{{ unit_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="form-text">How you sell this product</div>
+                            </div>
+                        </div>
+                        <div class="col-span-4">
+                            <div class="form-group">
+                                <label for="stock_quantity" class="form-label">Available Stock <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="stock_quantity" 
+                                    name="stock_quantity" min="0" placeholder="0" required>
+                                <div class="form-text">Current quantity available</div>
+                            </div>
+                        </div>
+                        <div class="col-span-12">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="is_available" name="is_available" checked>
+                                <label class="form-check-label" for="is_available">
+                                    Make available for sale immediately
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product Images and Processing Options -->
+                <div class="form-grid">
+                    <!-- Product Images -->
+                    <div class="col-span-6">
+                        <div class="form-section">
+                            <h3 class="section-title"><i class="fas fa-images"></i> Product Images</h3>
+                            <div class="drag-drop-area" id="dropArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h6 class="my-1">Drag & drop images here</h6>
+                                <button type="button" class="btn btn-sm btn-outline-secondary mt-1" id="browseButton">Browse Files</button>
+                                <input type="file" class="d-none" name="images" id="images" multiple accept="image/*">
+                            </div>
+                            <div class="image-preview-container mt-2" id="previewContainer"></div>
+                            <div class="form-text mt-1">
+                                <i class="fas fa-info-circle me-1"></i> First image will be the main product image
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Processing Options -->
+                    <div class="col-span-6">
+                        <div class="form-section">
+                            <h3 class="section-title"><i class="fas fa-cogs"></i> Processing Options</h3>
+                            <div class="form-group">
+                                <label class="form-label mb-2">Available Processing Methods</label>
+                                <div class="processing-methods-container">
+                                    {% for method_code, method_name in processing_choices %}
+                                        <div class="processing-method-card" id="method_card_{{ method_code }}">
+                                            <div class="form-check">
+                                                <input class="form-check-input processing-method" type="checkbox" 
+                                                      name="processing_methods" value="{{ method_code }}" 
+                                                      id="method_{{ method_code }}">
+                                                <label class="form-check-label" for="method_{{ method_code }}">
+                                                    {{ method_name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="form-group default-method-container d-none mt-3">
+                                <label class="form-label">Default Processing Method</label>
+                                <select class="form-select" name="default_processing_method" id="default_processing_method">
+                                    <option value="" selected disabled>Select default method</option>
+                                </select>
+                                <div class="form-text">
+                                    <i class="fas fa-lightbulb me-1 text-accent"></i> This is what customers see first
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-1"></i> Add Product
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Category Creation Modal - Position fixed to prevent it showing at bottom -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: var(--light-color);">
+                <h5 class="modal-title" id="categoryModalLabel"><i class="fas fa-folder-plus text-accent"></i> Create New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modalCategoryForm">
+                    <div class="form-group mb-3">
+                        <label for="categoryName" class="form-label">Category Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="categoryName" name="name" required>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="categoryDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="categoryDescription" name="description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="categoryParent" class="form-label">Parent Category</label>
+                        <select class="form-select" id="categoryParent" name="parent">
+                            <option value="">No Parent (Top-Level Category)</option>
+                            {% for category in categories %}
+                                {% if not category.parent %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+                <div id="categoryModalFeedback" class="mt-3" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCategory" style="background-color: var(--primary-color); border-color: var(--primary-dark);">Save Category</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Category Modal Form Handling
+    const saveCategory = document.getElementById('saveCategory');
+    const modalCategoryForm = document.getElementById('modalCategoryForm');
+    const categoryDropdown = document.getElementById('category');
+    const categoryModalFeedback = document.getElementById('categoryModalFeedback');
+    const categoryModal = document.getElementById('categoryModal');
+    const createCategoryBtn = document.getElementById('createCategoryBtn');
+    
+    // Global modal reference
+    let bsModal = null;
+    
+    // Open modal only when the Add icon button is clicked
+    createCategoryBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Reset the form before showing
+        modalCategoryForm.reset();
+        categoryModalFeedback.style.display = 'none';
+        categoryModalFeedback.innerHTML = '';
+        
+        // Create a new modal instance
+        bsModal = new bootstrap.Modal(categoryModal);
+        
+        // Show the modal as a popup
+        bsModal.show();
+        
+        // Focus on the category name field
+        setTimeout(() => {
+            document.getElementById('categoryName').focus();
+        }, 300);
+    });
+    
+    saveCategory.addEventListener('click', function() {
+        // Clear previous feedback
+        categoryModalFeedback.style.display = 'none';
+        categoryModalFeedback.innerHTML = '';
+        
+        // Validate form
+        const categoryName = document.getElementById('categoryName').value.trim();
+        if (!categoryName) {
+            showModalFeedback('Please enter a category name', 'danger');
+            return;
+        }
+        
+        // Create FormData object
+        const formData = new FormData(modalCategoryForm);
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Send AJAX request
+        saveCategory.disabled = true;
+        saveCategory.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
+        fetch('{% url "marketplace:category_add" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Add new category to dropdown and select it
+                const option = document.createElement('option');
+                option.value = data.category_id;
+                option.text = data.category_name;
+                categoryDropdown.add(option);
+                categoryDropdown.value = data.category_id;
+                
+                // Clear form
+                modalCategoryForm.reset();
+                
+                // Close modal
+                if (bsModal) {
+                    bsModal.hide();
+                }
+                
+                // Show success notification
+                showToast('Category created successfully!', 'success');
+            } else {
+                showModalFeedback(data.error || 'An error occurred while creating the category', 'danger');
+            }
+        })
+        .catch(error => {
+            showModalFeedback('An error occurred: ' + error, 'danger');
+        })
+        .finally(() => {
+            saveCategory.disabled = false;
+            saveCategory.innerHTML = 'Save Category';
+        });
+    });
+    
+    function showModalFeedback(message, type) {
+        categoryModalFeedback.innerHTML = `
+            <div class="alert alert-${type}">
+                ${message}
+            </div>
+        `;
+        categoryModalFeedback.style.display = 'block';
+    }
+    
+    function showToast(message, type) {
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '5';
+        
+        toastContainer.innerHTML = `
+            <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'}" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(toastContainer);
+        const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+        toast.show();
+        
+        // Remove toast after it's hidden
+        toastContainer.querySelector('.toast').addEventListener('hidden.bs.toast', function() {
+            document.body.removeChild(toastContainer);
+        });
+    }
+    
+    // Reset modal form when modal is closed
+    categoryModal.addEventListener('hidden.bs.modal', function() {
+        modalCategoryForm.reset();
+        categoryModalFeedback.style.display = 'none';
+        categoryModalFeedback.innerHTML = '';
+    });
+    
+    // Handle "Back to Dashboard" button
+    document.getElementById('backToDashboard').addEventListener('click', function() {
+        window.location.href = "{% url 'registration:business_dashboard' %}";
+    });
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add('was-validated');
+        }
+    }, false);
+    
+    // Image Upload & Preview
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('images');
+    const previewContainer = document.getElementById('previewContainer');
+    const browseButton = document.getElementById('browseButton');
+    
+    // Open file dialog when clicking browse button
+    browseButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    // Handle drag-and-drop events
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    // Add visual feedback when dragging files over the drop area
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+            dropArea.classList.add('dragover');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => {
+            dropArea.classList.remove('dragover');
+        }, false);
+    });
+    
+    // Handle dropped files
+    dropArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }, false);
+    
+    // Handle files selected through the file input
+    fileInput.addEventListener('change', () => {
+        handleFiles(fileInput.files);
+    });
+    
+    function handleFiles(files) {
+        previewContainer.innerHTML = ''; // Clear previous previews
+        
+        if (files.length > 0) {
+            Array.from(files).forEach((file, index) => {
+                // Only handle image files
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const preview = document.createElement('div');
+                        preview.className = 'position-relative d-inline-block';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'image-preview';
+                        img.title = file.name;
+                        
+                        const badge = document.createElement('span');
+                        badge.className = 'position-absolute badge rounded-pill';
+                        badge.style.backgroundColor = index === 0 ? 'var(--accent-color)' : 'var(--secondary-color)';
+                        badge.style.top = '5px';
+                        badge.style.right = '5px';
+                        badge.style.fontSize = '0.6rem';
+                        badge.textContent = index === 0 ? 'Main' : `#${index + 1}`;
+                        
+                        preview.appendChild(img);
+                        preview.appendChild(badge);
+                        previewContainer.appendChild(preview);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    }
+    
+    // Processing Methods Selection
+    const processingMethods = document.querySelectorAll('.processing-method');
+    const methodCards = document.querySelectorAll('.processing-method-card');
+    const defaultMethodContainer = document.querySelector('.default-method-container');
+    const defaultMethodSelect = document.querySelector('#default_processing_method');
+    
+    // Make entire method card clickable
+    methodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const checkbox = this.querySelector('.processing-method');
+            checkbox.checked = !checkbox.checked;
+            
+            // Update card appearance
+            if (checkbox.checked) {
+                this.classList.add('selected');
+            } else {
+                this.classList.remove('selected');
+            }
+            
+            // Update default method options
+            updateDefaultMethodOptions();
+        });
+    });
+    
+    // Prevent checkbox click from triggering the card click event twice
+    processingMethods.forEach(method => {
+        method.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Update card appearance
+            const card = this.closest('.processing-method-card');
+            if (this.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+            
+            // Update default method options
+            updateDefaultMethodOptions();
+        });
+    });
+    
+    function updateDefaultMethodOptions() {
+        // Clear existing options except the first one
+        while (defaultMethodSelect.options.length > 1) {
+            defaultMethodSelect.remove(1);
+        }
+        
+        // Add options for checked methods
+        let checkedCount = 0;
+        processingMethods.forEach(method => {
+            if (method.checked) {
+                checkedCount++;
+                const methodCode = method.value;
+                const methodName = method.nextElementSibling.textContent.trim();
+                const option = new Option(methodName, methodCode);
+                defaultMethodSelect.add(option);
+            }
+        });
+        
+        // Show/hide the default method container
+        if (checkedCount > 0) {
+            defaultMethodContainer.classList.remove('d-none');
+        } else {
+            defaultMethodContainer.classList.add('d-none');
+        }
+    }
+});
+</script>
+{% endblock %}

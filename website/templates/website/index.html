@@ -1,0 +1,1069 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}KIKAPU - The Digital Basket for Agriculture, Climate & Circular Solutions{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="pt-24 md:pt-32 pb-16 md:pb-24 bg-gradient-to-br from-white via-[#F0EBCE] to-[#F0EBCE]/30">
+    <div class="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-12">
+            <div class="w-full md:w-1/2 max-w-xl">
+                <div class="animate-fade-in-up">
+                    <span class="inline-block px-4 py-1.5 bg-green-100 text-[#395144] rounded-full text-sm font-medium mb-4">🧺 Agricultural Operating System</span>
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight mb-6">The Digital Basket for Agriculture, Climate & Circular Solutions</h1>
+                    <p class="text-lg text-gray-600 mb-8 leading-relaxed">Inspired by the traditional kikapu, we bring together everything needed to power the future of sustainable agriculture. From smart farming tools to waste-to-value innovations, from food distribution to farmer financing—we put it all in one place.</p>
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#products" class="bg-[#395144] text-white px-6 py-3 rounded-full font-medium hover:bg-[#4E6C50] transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg">
+                            <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                                <i class="fa-brands fa-wpexplorer text-sm"></i>
+                            </div>
+                            <span>Explore Products</span>
+                        </a>
+                        <a href="#download" class="bg-[#395144] text-white px-6 py-3 rounded-full font-medium hover:bg-[#4E6C50] transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg">
+                            <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                                <i class="fas fa-mobile-alt text-sm"></i>
+                            </div>
+                            <span>Get Started</span>
+                        </a>
+                        <a href="{% url 'website:about' %}" class="bg-[#AA8B56]/20 text-[#395144] border border-[#AA8B56]/30 px-6 py-3 rounded-full font-medium hover:bg-[#AA8B56]/30 transition-all inline-flex items-center shadow-sm">
+                            <span>Our Story</span>
+                            <i class="fas fa-arrow-right ml-2 text-[#AA8B56]"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="mt-8 p-4 bg-white/60 rounded-lg border border-[#F0EBCE]">
+                        <p class="text-sm text-[#395144] italic">"Kikapu si tu kapu la soko — ni mfumo wa maisha bora ya kilimo na chakula."</p>
+                        <p class="text-xs text-gray-500 mt-1">Kikapu is not just a market basket — it's a system for better agricultural and food life.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-1/2 flex justify-center md:justify-end">
+                <img src="{% static 'images/screen.png' %}" alt="KIKAPU platform showcase" class="rounded-2xl shadow-2xl max-w-sm w-full object-cover animate-fade-in-up duration-700 hover:shadow-emerald-200/50 transition-all">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Products Section -->
+<section id="products" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1.5 bg-[#F0EBCE] bg-opacity-50 text-[#395144] rounded-full text-sm font-semibold mb-3 shadow-sm">Our Ecosystem</span>
+            <h2 class="text-3xl font-bold mb-4 text-[#395144]">What We Offer</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">A comprehensive suite of tools and services designed to transform agriculture, from farm to table and waste to value.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Mkulima Smart -->
+            <div class="bg-[#F0EBCE]/10 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-1 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#395144] bg-opacity-20 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-tractor text-[#395144] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Mkulima Smart</h3>
+                <p class="text-gray-600 mb-4">Mkulima Smart is app for agriculture—track farm activities, access data, connect to inputs, markets & finance. Built for developers, cooperatives & agribusinesses.</p>
+                <a href="#" class="text-[#395144] font-semibold hover:text-[#4E6C50] transition-colors inline-flex items-center">
+                    <span>Explore Mkulima Smart</span>
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <!-- Kikapu Mobile App -->
+            <div class="bg-[#F0EBCE]/10 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-2 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#AA8B56] bg-opacity-20 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-mobile-alt text-[#AA8B56] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Kikapu Mobile App</h3>
+                <p class="text-gray-600 mb-4">Shop fresh produce, order meal kits, track nutrition, and pay with Kikapu Credits. Integrated with Google Health to support better food utilization.</p>
+                <a href="{% url 'marketplace:marketplace' %}" class="text-[#395144] font-semibold hover:text-[#4E6C50] transition-colors inline-flex items-center">
+                    <span>Shop Marketplace</span>
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <!-- ReUp by Kikapu -->
+            <div class="bg-[#F0EBCE]/10 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-3 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#4E6C50] bg-opacity-20 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-recycle text-[#4E6C50] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">ReUp by Kikapu</h3>
+                <p class="text-gray-600 mb-4">A circular waste platform turning agricultural and urban waste into fertilizers, fabrics, and fuel—making green living accessible.</p>
+                <a href="#" class="text-[#395144] font-semibold hover:text-[#4E6C50] transition-colors inline-flex items-center">
+                    <span>Learn About ReUp</span>
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+            
+            <!-- Kikapu Credits -->
+            <div class="bg-[#F0EBCE]/10 p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-4 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#AA8B56] bg-opacity-30 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-coins text-[#AA8B56] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Kikapu Credits</h3>
+                <p class="text-gray-600 mb-4">A cashless food credit system where users earn or top up credits to buy food or supplies—especially supporting low-income families and waste collectors.</p>
+                <a href="{% url 'credits:apply_prepaid_card' %}" class="text-[#395144] font-semibold hover:text-[#4E6C50] transition-colors inline-flex items-center">
+                    <span>Get Credits</span>
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Kikapu Section -->
+<section class="py-20 bg-gradient-to-r from-white to-[#F0EBCE]/30">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1.5 bg-[#F0EBCE] bg-opacity-50 text-[#395144] rounded-full text-sm font-semibold mb-3 shadow-sm">Why Choose Us</span>
+            <h2 class="text-3xl font-bold mb-4 text-[#395144]">Why Kikapu?</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Built from African soil, values & needs, designed for global impact.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Built from African Soil -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-1 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#F0EBCE] bg-opacity-50 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-map-marker-alt text-[#395144] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Built from African soil, values & needs</h3>
+                <p class="text-gray-600">Rooted in East African traditions and understanding of local agricultural challenges and opportunities.</p>
+            </div>
+            
+            <!-- Circular & Climate-Resilient -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-2 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#F0EBCE] bg-opacity-50 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-leaf text-[#395144] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Circular & climate-resilient by design</h3>
+                <p class="text-gray-600">Every solution is designed with sustainability and climate adaptation at its core, creating regenerative systems.</p>
+            </div>
+            
+            <!-- Open APIs -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-3 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#F0EBCE] bg-opacity-50 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-code text-[#395144] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Open APIs & infrastructure for innovators</h3>
+                <p class="text-gray-600">Build on top of our platform with open APIs and white-labeled tools for developers and organizations.</p>
+            </div>
+            
+            <!-- Empowering Communities -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-4 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#F0EBCE] bg-opacity-50 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-users text-[#395144] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Empowering smallholders & urban youth</h3>
+                <p class="text-gray-600">Focused on empowering small-scale farmers and urban communities with tools, markets, and financial access.</p>
+            </div>
+            
+            <!-- Ready to Scale -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl hover:shadow-2xl transition-shadow animate-in stagger-delay-5 border border-[#F0EBCE]/30">
+                <div class="w-16 h-16 bg-[#F0EBCE] bg-opacity-50 rounded-full flex items-center justify-center mb-6">
+                    <i class="fas fa-globe-africa text-[#395144] text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-[#395144]">Ready to scale across the Global South</h3>
+                <p class="text-gray-600">Designed for scalability and adaptability to diverse agricultural contexts across emerging markets.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Investment & Partnership Opportunity Section -->
+<section class="py-20 bg-gradient-to-r from-[#395144] to-[#4E6C50]">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1 bg-white text-[#395144] rounded-full text-sm font-semibold mb-3">Investment Opportunity</span>
+            <h2 class="text-3xl font-bold mb-4 text-white">Scaling Agricultural Innovation Across Africa</h2>
+            <p class="text-lg text-green-100 max-w-3xl mx-auto">Join us in building the digital infrastructure that will transform agriculture for 600 million smallholder farmers across the Global South.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <!-- Market Opportunity -->
+            <div class="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/20 text-center animate-in stagger-delay-1">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-chart-line text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-white">$2.5T Market</h3>
+                <p class="text-green-100 mb-4">African agriculture market size by 2030, with digital solutions capturing 15-20% share</p>
+                <div class="text-3xl font-bold text-white">600M+</div>
+                <p class="text-sm text-green-200">Smallholder farmers to serve</p>
+            </div>
+            
+            <!-- Scalability -->
+            <div class="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/20 text-center animate-in stagger-delay-2">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-globe-africa text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-white">54 Countries</h3>
+                <p class="text-green-100 mb-4">Ready for expansion across Africa with adaptable, modular platform architecture</p>
+                <div class="text-3xl font-bold text-white">Early Stage</div>
+                <p class="text-sm text-green-200">Pre-revenue with strong potential</p>
+            </div>
+            
+            <!-- Impact Potential -->
+            <div class="bg-white/10 backdrop-blur-sm p-8 rounded-3xl border border-white/20 text-center animate-in stagger-delay-3">
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-seedling text-white text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-bold mb-3 text-white">Proven Models</h3>
+                <p class="text-green-100 mb-4">Based on successful comparable platforms across emerging markets</p>
+                <div class="text-3xl font-bold text-white">25-40%</div>
+                <p class="text-sm text-green-200">Typical yield increases</p>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <a href="#" class="bg-white text-[#395144] px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg mr-4">
+                <div class="mr-2 bg-[#395144]/20 p-1.5 rounded-full">
+                    <i class="fas fa-chart-bar text-sm"></i>
+                </div>
+                <span>View Business Plan</span>
+            </a>
+            <a href="{% url 'call_to_action:schedule_pitch' %}" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-[#395144] transition-all transform hover:-translate-y-0.5 inline-flex items-center">
+                <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                    <i class="fas fa-handshake text-sm"></i>
+                </div>
+                <span>Schedule Pitch Meeting</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Market Research & Projections Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1 bg-[#F0EBCE] text-[#395144] rounded-full text-sm font-semibold mb-3">Market Research</span>
+            <h2 class="text-3xl font-bold mb-4 text-[#395144]">Data-Driven Market Opportunity</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Our projections are based on extensive market research, industry benchmarks, and proven success of comparable platforms in emerging markets.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Market Analysis -->
+            <div class="bg-gray-50 p-8 rounded-3xl animate-in">
+                <h3 class="text-2xl font-bold mb-6 text-[#395144]">Tanzania Agricultural Market</h3>
+                
+                <div class="space-y-6">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Agricultural GDP</span>
+                            <span class="text-2xl font-bold text-[#395144]">$14.2B</span>
+                        </div>
+                        <div class="text-sm text-gray-600">27% of Tanzania's total GDP (2023)</div>
+                        <div class="text-xs text-blue-600 mt-1">📊 Source: Bank of Tanzania</div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Smallholder Farmers</span>
+                            <span class="text-2xl font-bold text-[#395144]">12.8M</span>
+                        </div>
+                        <div class="text-sm text-gray-600">80% of agricultural population</div>
+                        <div class="text-xs text-blue-600 mt-1">📊 Source: FAO Country Profile</div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Post-Harvest Losses</span>
+                            <span class="text-2xl font-bold text-[#395144]">30-40%</span>
+                        </div>
+                        <div class="text-sm text-gray-600">Annual crop value lost</div>
+                        <div class="text-xs text-blue-600 mt-1">📊 Source: Tanzania Ministry of Agriculture</div>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold">Mobile Penetration</span>
+                            <span class="text-2xl font-bold text-[#395144]">84%</span>
+                        </div>
+                        <div class="text-sm text-gray-600">Smartphone adoption growing at 15% annually</div>
+                        <div class="text-xs text-blue-600 mt-1">📊 Source: TCRA 2024</div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-[#395144]/10 rounded-lg">
+                    <h4 class="font-bold text-[#395144] mb-2">Key Market Insights</h4>
+                    <ul class="text-sm space-y-1">
+                        <li>• 90% of farmers lack access to formal credit</li>
+                        <li>• Average farm size: 0.5-3 hectares</li>
+                        <li>• Digital literacy growing 20% annually</li>
+                        <li>• $2.8B annual food import bill</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Comparable Platform Benchmarks -->
+            <div class="space-y-8 animate-in stagger-delay-2">
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-4 text-[#395144]">Comparable Platform Success</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold">iCow (Kenya)</span>
+                                <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">2M+ users</span>
+                            </div>
+                            <div class="text-sm text-gray-600">SMS-based agricultural advice platform</div>
+                            <div class="text-xs text-blue-600 mt-1">30% increase in dairy productivity</div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold">AgroStar (India)</span>
+                                <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">1M+ farmers</span>
+                            </div>
+                            <div class="text-sm text-gray-600">Input supply and advisory platform</div>
+                            <div class="text-xs text-blue-600 mt-1">25% increase in crop yields</div>
+                        </div>
+                        
+                        <div class="bg-white p-4 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-semibold">Farmer.NG (Nigeria)</span>
+                                <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">500K+ users</span>
+                            </div>
+                            <div class="text-sm text-gray-600">Farm-to-market digital platform</div>
+                            <div class="text-xs text-blue-600 mt-1">40% reduction in post-harvest losses</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-4 text-[#395144]">Realistic Projections (Year 5)</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span>Target users (Tanzania)</span>
+                            <span class="font-semibold">25K farmers</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Market penetration</span>
+                            <span class="font-semibold">0.2% of total</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Average revenue per user</span>
+                            <span class="font-semibold">$18/year</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between font-bold">
+                            <span>Annual revenue projection</span>
+                            <span>$450K</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">Accounting for digital literacy and infrastructure challenges</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-4 text-[#395144]">Implementation Challenges</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span>Digital literacy rate (rural)</span>
+                            <span class="font-semibold">15-25%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Reliable internet access</span>
+                            <span class="font-semibold">30% rural areas</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Smartphone ownership (farmers)</span>
+                            <span class="font-semibold">40%</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between font-bold">
+                            <span>Realistic addressable market</span>
+                            <span>~50K farmers</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">Conservative estimates factoring real constraints</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-bold mb-4 text-[#395144]">Gradual Impact Potential</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span>Expected yield increase</span>
+                            <span class="font-semibold">15-25%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Post-harvest loss reduction</span>
+                            <span class="font-semibold">20-30%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Farmer income increase</span>
+                            <span class="font-semibold">10-20%</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between font-bold">
+                            <span>Economic value created</span>
+                            <span>$2.8M</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">Realistic impact with focused user base</p>
+                </div>
+                
+                <div class="bg-[#395144]/10 p-4 rounded-lg">
+                    <h4 class="font-bold text-[#395144] mb-2">🎯 Go-to-Market Strategy</h4>
+                    <ul class="text-sm space-y-1">
+                        <li>• Phase 1: Dodoma , Bagamoyo and Arusha  pilot (6 months)</li>
+                        <li>• Phase 2: Zone expansion (36 months)</li>
+                        <li>• Phase 3: National scaling ( 36 months)</li>
+                        <li>• Partnership with cooperatives and NGOs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-12">
+            <div class="bg-[#F0EBCE]/30 p-6 rounded-xl inline-block">
+                <h4 class="font-bold text-[#395144] mb-2">📋 Detailed Financial Model</h4>
+                <p class="text-sm text-gray-600 mb-4">Get comprehensive market analysis, financial projections, and competitive benchmarks</p>
+                <a href="{% url 'call_to_action:request_investor_pack' %}" class="bg-[#395144] text-white px-6 py-2 rounded-full font-semibold hover:bg-[#4E6C50] transition-colors inline-flex items-center">
+                    <span>Request Investor Pack</span>
+                    <i class="fas fa-download ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Government Partnership Section -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1 bg-[#395144] text-white rounded-full text-sm font-semibold mb-3">Government Partnerships</span>
+            <h2 class="text-3xl font-bold mb-4 text-[#395144]">Digital Agriculture Infrastructure for National Development</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Partner with Kikapu to implement scalable digital agriculture solutions that drive food security, economic growth, and climate resilience at a national level.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Left: Government Benefits -->
+            <div class="animate-in">
+                <h3 class="text-2xl font-bold mb-6 text-[#395144]">Transform Your Agricultural Sector</h3>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-[#395144] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-chart-pie text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-2">Real-Time Agricultural Data</h4>
+                            <p class="text-gray-600">Comprehensive data collection and analytics for evidence-based policy making, crop forecasting, and resource allocation.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-[#395144] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-shield-alt text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-2">Food Security Monitoring</h4>
+                            <p class="text-gray-600">Early warning systems for food shortages, market price tracking, and supply chain optimization to ensure national food security.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-[#395144] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-users text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-2">Farmer Registration & Support</h4>
+                            <p class="text-gray-600">Digital farmer ID systems, subsidy distribution, extension services delivery, and direct communication channels.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="w-12 h-12 bg-[#395144] rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-leaf text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-2">Climate Adaptation</h4>
+                            <p class="text-gray-600">Support national climate goals with data-driven sustainable agriculture practices and carbon credit programs.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8">
+                    <a href="{% url 'call_to_action:request_partnership' %}" class="bg-[#395144] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#4E6C50] transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg">
+                        <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                            <i class="fas fa-file-contract text-sm"></i>
+                        </div>
+                        <span>Request Partnership Proposal</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right: Success Metrics -->
+            <div class="bg-white p-8 rounded-3xl shadow-xl animate-in stagger-delay-2">
+                <h3 class="text-xl font-bold mb-6 text-[#395144]">Projected National Impact</h3>
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="text-center p-4 bg-[#F0EBCE]/30 rounded-lg">
+                        <div class="text-2xl font-bold text-[#395144] mb-1">25%</div>
+                        <p class="text-sm text-gray-600">Increase in Agricultural GDP</p>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-[#F0EBCE]/30 rounded-lg">
+                        <div class="text-2xl font-bold text-[#395144] mb-1">500K+</div>
+                        <p class="text-sm text-gray-600">Farmers Digitized Annually</p>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-[#F0EBCE]/30 rounded-lg">
+                        <div class="text-2xl font-bold text-[#395144] mb-1">40%</div>
+                        <p class="text-sm text-gray-600">Reduction in Food Waste</p>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-[#F0EBCE]/30 rounded-lg">
+                        <div class="text-2xl font-bold text-[#395144] mb-1">$2B+</div>
+                        <p class="text-sm text-gray-600">Economic Value Created</p>
+                    </div>
+                    
+                    <div class="text-center p-4 bg-[#F0EBCE]/30 rounded-lg col-span-2">
+                        <div class="text-2xl font-bold text-[#395144] mb-1">1M Tons</div>
+                        <p class="text-sm text-gray-600">CO2 Reduced Through Platform</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-[#395144]/10 rounded-lg">
+                    <h4 class="font-bold text-[#395144] mb-2">Implementation Timeline</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Phase 1: Pilot Program</span>
+                            <span class="text-[#395144] font-semibold">6 months</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Phase 2: Regional Rollout</span>
+                            <span class="text-[#395144] font-semibold">18 months</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Phase 3: National Scale</span>
+                            <span class="text-[#395144] font-semibold">36 months</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Development Partners Section -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1 bg-[#F0EBCE] text-[#395144] rounded-full text-sm font-semibold mb-3">Development Partners</span>
+            <h2 class="text-3xl font-bold mb-4 text-[#395144]">Aligned with Global Development Goals</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Kikapu directly contributes to multiple UN Sustainable Development Goals and international development initiatives.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- SDG 1: No Poverty -->
+            <div class="text-center p-6 bg-gray-50 rounded-lg hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white font-bold text-lg">1</span>
+                </div>
+                <h4 class="font-bold mb-2">No Poverty</h4>
+                <p class="text-sm text-gray-600">Increase farmer incomes through market access and fair pricing</p>
+            </div>
+            
+            <!-- SDG 2: Zero Hunger -->
+            <div class="text-center p-6 bg-gray-50 rounded-lg hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white font-bold text-lg">2</span>
+                </div>
+                <h4 class="font-bold mb-2">Zero Hunger</h4>
+                <p class="text-sm text-gray-600">Improve food security through optimized production and distribution</p>
+            </div>
+            
+            <!-- SDG 8: Decent Work -->
+            <div class="text-center p-6 bg-gray-50 rounded-lg hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white font-bold text-lg">8</span>
+                </div>
+                <h4 class="font-bold mb-2">Decent Work</h4>
+                <p class="text-sm text-gray-600">Create digital economy jobs and formalize agricultural sector</p>
+            </div>
+            
+            <!-- SDG 13: Climate Action -->
+            <div class="text-center p-6 bg-gray-50 rounded-lg hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-white font-bold text-lg">13</span>
+                </div>
+                <h4 class="font-bold mb-2">Climate Action</h4>
+                <p class="text-sm text-gray-600">Promote climate-smart agriculture and circular economy</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-12">
+            <p class="text-gray-600 mb-6">Partner with us to implement solutions that deliver measurable progress on development goals</p>
+            <a href="{% url 'call_to_action:explore_development' %}" class="bg-[#395144] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#4E6C50] transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg">
+                <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                    <i class="fas fa-globe text-sm"></i>
+                </div>
+                <span>Explore Development Partnerships</span>
+            </a>
+        </div>
+    </div>
+</section>
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center mb-16 animate-in">
+            <span class="inline-block px-4 py-1.5 bg-[#F0EBCE] bg-opacity-50 text-[#395144] rounded-full text-sm font-semibold mb-3 shadow-sm">Our Community</span>
+            <h2 class="text-3xl font-bold mb-4 text-[#395144]">Who We Serve</h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">Building tools for every actor in the agricultural ecosystem.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Farmers & Cooperatives -->
+            <div class="text-center p-6 animate-in stagger-delay-1">
+                <div class="w-20 h-20 bg-[#395144] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-tractor text-[#395144] text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-[#395144]">Smallholder farmers & cooperatives</h3>
+                <p class="text-gray-600">Access to markets, finance, data, and climate-smart farming tools.</p>
+            </div>
+            
+            <!-- Urban Consumers -->
+            <div class="text-center p-6 animate-in stagger-delay-2">
+                <div class="w-20 h-20 bg-[#395144] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shopping-basket text-[#395144] text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-[#395144]">Urban consumers & recyclers</h3>
+                <p class="text-gray-600">Fresh produce, meal kits, nutrition tracking, and circular economy participation.</p>
+            </div>
+            
+            <!-- Agribusinesses -->
+            <div class="text-center p-6 animate-in stagger-delay-3">
+                <div class="w-20 h-20 bg-[#395144] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-industry text-[#395144] text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-[#395144]">Agribusinesses & supply chain actors</h3>
+                <p class="text-gray-600">Digital infrastructure, data analytics, and supply chain optimization tools.</p>
+            </div>
+            
+            <!-- Governments -->
+            <div class="text-center p-6 animate-in stagger-delay-4">
+                <div class="w-20 h-20 bg-[#395144] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-landmark text-[#395144] text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-[#395144]">Governments & development partners</h3>
+                <p class="text-gray-600">Policy insights, program implementation tools, and impact measurement systems.</p>
+            </div>
+            
+            <!-- Tech Innovators -->
+            <div class="text-center p-6 animate-in stagger-delay-5">
+                <div class="w-20 h-20 bg-[#395144] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-code text-[#395144] text-3xl"></i>
+                </div>
+                <h3 class="text-lg font-bold mb-2 text-[#395144]">Tech innovators & local startups</h3>
+                <p class="text-gray-600">Open APIs, white-labeled solutions, and partnership opportunities.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-20 bg-[#395144]">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center max-w-3xl mx-auto animate-in">
+            <span class="inline-block px-4 py-1 bg-white text-[#395144] rounded-full text-sm font-semibold mb-3">Join the Movement</span>
+            <h2 class="text-3xl font-bold mb-4 text-white">Ready to Transform Agriculture?</h2>
+            <p class="text-lg text-green-100 mb-8">Whether you're a farmer, food buyer, recycler, developer, or policymaker — Kikapu is here to connect, empower, and grow together.</p>
+            
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#download" class="bg-white text-[#395144] px-8 py-3 rounded-full font-semibold hover:bg-gray-100 transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg">
+                    <div class="mr-2 bg-[#395144]/20 p-1.5 rounded-full">
+                        <i class="fas fa-mobile-alt text-sm"></i>
+                    </div>
+                    <span>Download App</span>
+                </a>
+                <a href="#" class="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-[#395144] transition-all transform hover:-translate-y-0.5 inline-flex items-center">
+                    <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                        <i class="fas fa-flask text-sm"></i>
+                    </div>
+                    <span>Explore Mkulima Smart</span>
+                </a>
+                <a href="{% url 'website:become_supplier' %}" class="bg-[#AA8B56] text-white px-8 py-3 rounded-full font-semibold hover:bg-[#AA8B56]/80 transition-all transform hover:-translate-y-0.5 inline-flex items-center shadow-lg">
+                    <div class="mr-2 bg-white/20 p-1.5 rounded-full">
+                        <i class="fas fa-handshake text-sm"></i>
+                    </div>
+                    <span>Partner With Us</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Download Section -->
+<section id="download" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-12">
+            <img src="{% static 'images/screen.png' %}" alt="KIKAPU platform screenshots" class="rounded-lg shadow-xl max-w-xs animate-in">
+            
+            <div class="max-w-lg animate-in stagger-delay-2">
+                <span class="inline-block px-4 py-1 bg-green-100 text-[#395144] rounded-full text-sm font-semibold mb-3">Get Started</span>
+                <h2 class="text-3xl font-bold mb-4">Access the Kikapu Ecosystem</h2>
+                <p class="text-lg text-gray-600 mb-8">Join thousands of farmers, consumers, and innovators building a sustainable agricultural future together.</p>
+                
+                <div class="flex flex-wrap gap-4 mb-8">
+                    <a href="#" class="bg-black text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-colors inline-flex items-center">
+                        <i class="fab fa-apple text-2xl mr-3"></i>
+                        <div>
+                            <span class="text-xs">Download on the</span>
+                            <p class="text-lg font-bold">App Store</p>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="bg-black text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-800 transition-colors inline-flex items-center">
+                        <i class="fab fa-google-play text-2xl mr-3"></i>
+                        <div>
+                            <span class="text-xs">GET IT ON</span>
+                            <p class="text-lg font-bold">Google Play</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h3 class="font-bold text-md mb-2">For Developers</h3>
+                        <p class="text-gray-600 text-sm mb-3">Build on Kikapu OS with our open APIs and tools.</p>
+                        <a href="#" class="text-[#395144] font-semibold hover:text-green-700 transition-colors inline-flex items-center text-sm">
+                            <span>Explore APIs</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h3 class="font-bold text-md mb-2">For Organizations</h3>
+                        <p class="text-gray-600 text-sm mb-3">White-labeled solutions and strategic partnerships.</p>
+                        <a href="{% url 'website:become_supplier' %}" class="text-[#395144] font-semibold hover:text-green-700 transition-colors inline-flex items-center text-sm">
+                            <span>Partner with us</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-20 bg-[#395144]">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="text-center max-w-2xl mx-auto animate-in">
+            <span class="inline-block px-4 py-1 bg-white text-[#395144] rounded-full text-sm font-semibold mb-3">Stay Connected</span>
+            <h2 class="text-3xl font-bold mb-4 text-white">Join Our Newsletter</h2>
+            <p class="text-lg text-green-100 mb-8">Subscribe to receive updates about new features, success stories, and how we're transforming agriculture across Africa.</p>
+            
+            <form class="flex flex-col md:flex-row gap-4">
+                <input type="email" placeholder="Your email address" class="flex-grow px-4 py-3 rounded-full focus:outline-none">
+                <button type="submit" class="bg-[#AA8B56] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#AA8B56]/80 transition-all transform hover:-translate-y-0.5">
+                    Subscribe Now
+                </button>
+            </form>
+            <p class="text-green-200 text-sm mt-4">We respect your privacy and will never share your information.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Waitlist Modal (keeping your existing modal structure) -->
+<div class="modal fade" id="waitlistModal" tabindex="-1" aria-labelledby="waitlistModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-lg border-0 shadow-lg">
+      <div class="modal-header bg-[#395144] text-white rounded-top p-4">
+        <h5 class="modal-title text-xl" id="waitlistModalLabel">Join the KIKAPU Ecosystem</h5>
+        <button type="button" class="btn-close btn-close-white" data-dismiss="waitlist-modal" aria-label="Close"></button>
+      </div>
+      <!-- Countdown Banner -->
+      <div class="bg-[#AA8B56] text-white p-3 text-center">
+        <p class="text-sm font-medium mb-1">🚀 Launch Countdown</p>
+        <div class="flex justify-center items-center space-x-3 countdown-timer">
+          <div class="flex flex-col items-center">
+            <span id="countdown-days" class="text-2xl font-bold">40</span>
+            <span class="text-xs">Days</span>
+          </div>
+          <div class="text-xl font-bold">:</div>
+          <div class="flex flex-col items-center">
+            <span id="countdown-hours" class="text-2xl font-bold">00</span>
+            <span class="text-xs">Hours</span>
+          </div>
+          <div class="text-xl font-bold">:</div>
+          <div class="flex flex-col items-center">
+            <span id="countdown-minutes" class="text-2xl font-bold">00</span>
+            <span class="text-xs">Minutes</span>
+          </div>
+          <div class="text-xl font-bold">:</div>
+          <div class="flex flex-col items-center">
+            <span id="countdown-seconds" class="text-2xl font-bold">00</span>
+            <span class="text-xs">Seconds</span>
+          </div>
+        </div>
+        <p class="text-xs mt-1">Join now to secure early access to our full ecosystem!</p>
+      </div>
+      <div class="modal-body p-0">
+        <div class="flex flex-col md:flex-row">
+          <!-- Left side - Form -->
+          <div class="p-6 md:w-1/2">
+            <!-- Waitlist Form -->
+            <div class="text-center mb-6">
+              <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-16 mx-auto mb-4">
+              <h3 class="text-lg font-bold text-[#395144] mb-2">Be Among the First</h3>
+              <p class="text-gray-600 text-sm">Join our exclusive waitlist and get early access to:</p>
+            </div>
+            <!-- This is the main form that will be visible and used by JS -->
+            <form id="waitlistForm" class="space-y-4">
+              <div class="mb-3">
+                <label for="waitlistName" class="form-label text-gray-700 font-medium">Full Name</label>
+                <input type="text" class="form-control border border-gray-300 rounded-lg p-2 w-full focus:border-[#4E6C50] focus:ring focus:ring-[#F0EBCE] transition" id="waitlistName" placeholder="Enter your name" required>
+              </div>
+              <div class="mb-3">
+                <label for="waitlistEmail" class="form-label text-gray-700 font-medium">Email Address</label>
+                <input type="email" class="form-control border border-gray-300 rounded-lg p-2 w-full focus:border-[#4E6C50] focus:ring focus:ring-[#F0EBCE] transition" id="waitlistEmail" placeholder="Enter your email" required>
+              </div>
+              <div class="mb-3">
+                <label for="waitlistPhone" class="form-label text-gray-700 font-medium">Phone Number</label>
+                <input type="tel" class="form-control border border-gray-300 rounded-lg p-2 w-full focus:border-[#4E6C50] focus:ring focus:ring-[#F0EBCE] transition" id="waitlistPhone" placeholder="Enter your phone number" required>
+              </div>
+              <div class="mb-3">
+                <label for="waitlistRole" class="form-label text-gray-700 font-medium">I am interested in</label>
+                <select class="form-control border border-gray-300 rounded-lg p-2 w-full focus:border-[#4E6C50] focus:ring focus:ring-[#F0EBCE] transition" id="waitlistRole" required>
+                  <option value="">Select your primary interest</option>
+                  <option value="farmer">Mkulima OS (Farmer/Agribusiness)</option>
+                  <option value="consumer">Kikapu Mobile App (Consumer)</option>
+                  <option value="recycler">ReUp Platform (Waste/Recycling)</option>
+                  <option value="developer">API/Developer Tools</option>
+                  <option value="partner">Partnership Opportunities</option>
+                  <option value="all">All Products</option>
+                </select>
+              </div>
+              <button type="submit" class="w-full bg-[#395144] text-white py-3 rounded-lg font-medium hover:bg-[#4E6C50] text-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
+                Join the Kikapu Ecosystem
+              </button>
+            </form>
+          </div>
+          
+          <!-- Right side - Benefits -->
+          <div class="bg-[#F0EBCE] p-6 md:w-1/2 rounded-r-lg flex flex-col justify-center">
+            <h3 class="text-xl font-bold text-[#395144] mb-4">Early Access Benefits</h3>
+            
+            <div class="mb-4 bg-white p-4 rounded-lg shadow-sm">
+              <div class="flex items-start">
+                <div class="w-10 h-10 bg-[#395144] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <i class="fas fa-shopping-basket text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-[#395144]">Kikapu </h4>
+                  <p class="text-gray-600 text-sm">Early access to our online markplace for glocieries , food and receipts .</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-4 bg-white p-4 rounded-lg shadow-sm">
+              <div class="flex items-start">
+                <div class="w-10 h-10 bg-[#AA8B56] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <i class="fas fa-coins text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-[#395144]">TSh 500 Credits</h4>
+                  <p class="text-gray-600 text-sm">Get TSh 500 worth of Kikapu credits for the marketplace.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-4 bg-white p-4 rounded-lg shadow-sm">
+              <div class="flex items-start">
+                <div class="w-10 h-10 bg-[#4E6C50] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <i class="fas fa-code text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-[#395144]">Developer Benefits</h4>
+                  <p class="text-gray-600 text-sm">Early API access and white-labeled solution opportunities.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg shadow-sm">
+              <div class="flex items-start">
+                <div class="w-10 h-10 bg-[#395144] rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <i class="fas fa-bell text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-bold text-[#395144]">Priority Updates</h4>
+                  <p class="text-gray-600 text-sm">Be first to know about new features and ecosystem updates.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        
+        <!-- Success Message (Hidden by default) -->
+        <div id="waitlistSuccess" class="text-center py-4 hidden">
+          <div class="mb-4">
+            <i class="fas fa-check-circle text-green-500 text-5xl"></i>
+          </div>
+          <h4 class="text-xl font-bold text-gray-800 mb-2">Welcome to the Kikapu Ecosystem!</h4>
+          <p class="text-gray-600 mb-4">Thanks for joining our waitlist. We'll notify you as soon as your selected products are available.</p>
+          <button id="successCloseBtn" class="bg-[#395144] text-white px-6 py-2 rounded-lg font-medium hover:bg-[#4E6C50] transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Waitlist Modal JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Countdown Timer Functionality
+    function initCountdown() {
+        // Set launch date to 1 month and 10 days from now (40 days total)
+        const now = new Date();
+        const launchDate = new Date(now);
+        launchDate.setDate(now.getDate() + 40); // 1 month and 10 days
+        
+        // Update countdown every second
+        const countdownTimer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = launchDate - now;
+            
+            // Time calculations
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // Update HTML elements
+            document.getElementById('countdown-days').textContent = days;
+            document.getElementById('countdown-hours').textContent = hours < 10 ? '0' + hours : hours;
+            document.getElementById('countdown-minutes').textContent = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('countdown-seconds').textContent = seconds < 10 ? '0' + seconds : seconds;
+            
+            // If countdown is finished
+            if (distance < 0) {
+                clearInterval(countdownTimer);
+                document.getElementById('countdown-days').textContent = '00';
+                document.getElementById('countdown-hours').textContent = '00';
+                document.getElementById('countdown-minutes').textContent = '00';
+                document.getElementById('countdown-seconds').textContent = '00';
+            }
+        }, 1000);
+    }
+    
+    // Get all download app buttons
+    const downloadButtons = document.querySelectorAll('[href="#download"]');
+    const waitlistModal = document.getElementById('waitlistModal');
+    
+    // Initialize countdown when modal is shown
+    if (waitlistModal) {
+        waitlistModal.addEventListener('shown.bs.modal', function() {
+            initCountdown();
+        });
+    }
+    const waitlistForm = document.getElementById('waitlistForm');
+    const waitlistSuccess = document.getElementById('waitlistSuccess');
+    const waitlistClose = document.querySelectorAll('[data-dismiss="waitlist-modal"]');
+    const successCloseBtn = document.getElementById('successCloseBtn');
+    
+    // Initialize modal instance
+    let bsWaitlistModal = new bootstrap.Modal(waitlistModal, {
+        backdrop: 'static',
+        keyboard: false
+    });
+    
+    // Show modal when download buttons are clicked
+    downloadButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            bsWaitlistModal.show();
+        });
+    });
+    
+    // Close modal when close button is clicked
+    waitlistClose.forEach(button => {
+        button.addEventListener('click', function() {
+            bsWaitlistModal.hide();
+        });
+    });
+    
+    // Handle form submission
+    waitlistForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const name = document.getElementById('waitlistName').value;
+        const email = document.getElementById('waitlistEmail').value;
+        const phone = document.getElementById('waitlistPhone').value;
+        const role = document.getElementById('waitlistRole').value;
+        
+        // Disable the submit button to prevent multiple submissions
+        const submitButton = waitlistForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+        
+        // Send data to the backend
+        fetch('{% url "website:waitlist_signup" %}', {
+            method: 'POST',
+            body: JSON.stringify({ name, email, phone, role }),
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update success message with the user's name and role-specific message
+                const successTitle = waitlistSuccess.querySelector('h4');
+                const successMessage = waitlistSuccess.querySelector('p');
+                successTitle.textContent = `Welcome to the Kikapu Ecosystem, ${name.split(' ')[0]}!`;
+                
+                // Customize message based on selected role
+                let roleMessage = "We'll notify you as soon as your selected products are available.";
+                switch(role) {
+                    case 'farmer':
+                        roleMessage = "We'll notify you when Mkulima Smart is ready for farmers and agribusinesses.";
+                        break;
+                    case 'consumer':
+                        roleMessage = "We'll notify you when the Kikapu Mobile App launches in your area.";
+                        break;
+                    case 'recycler':
+                        roleMessage = "We'll notify you when the ReUp platform is available for waste collection.";
+                        break;
+                    case 'developer':
+                        roleMessage = "We'll notify you when our APIs and developer tools are ready.";
+                        break;
+                    case 'partner':
+                        roleMessage = "Our partnership team will reach out to discuss collaboration opportunities.";
+                        break;
+                }
+                successMessage.textContent = roleMessage;
+                
+                // Show success message
+                waitlistForm.classList.add('hidden');
+                waitlistSuccess.classList.remove('hidden');
+            } else {
+                // Show error message
+                throw new Error(data.message || 'An error occurred. Please try again.');
+            }
+        })
+        .catch(error => {
+            // Re-enable the submit button
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Join the Kikapu Ecosystem';
+            
+            // Show error message
+            alert(error.message || 'An error occurred. Please try again.');
+        });
+    });
+    
+    // Close modal when success close button is clicked
+    successCloseBtn.addEventListener('click', function() {
+        bsWaitlistModal.hide();
+        // Reset form after closing
+        setTimeout(() => {
+            waitlistForm.classList.remove('hidden');
+            waitlistSuccess.classList.add('hidden');
+            waitlistForm.reset();
+        }, 300);
+    });
+});
+</script>
+{% endblock %}

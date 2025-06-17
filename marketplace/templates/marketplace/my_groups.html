@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Delivery Groups | KIKAPU Marketplace{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <h1>My Delivery Groups</h1>
+        <a href="{% url 'marketplace:create_group' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New Group
+        </a>
+    </div>
+    
+    <!-- Tabs for led/joined groups -->
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="led-groups-tab" data-bs-toggle="tab" data-bs-target="#led-groups" type="button" role="tab" aria-controls="led-groups" aria-selected="true">
+                <i class="fas fa-crown text-warning me-1"></i> Groups I Lead
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="joined-groups-tab" data-bs-toggle="tab" data-bs-target="#joined-groups" type="button" role="tab" aria-controls="joined-groups" aria-selected="false">
+                <i class="fas fa-users me-1"></i> Groups I've Joined
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="myTabContent">
+        <!-- Groups where user is leader -->
+        <div class="tab-pane fade show active" id="led-groups" role="tabpanel" aria-labelledby="led-groups-tab">
+            {% if led_groups %}
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for group in led_groups %}
+                        <div class="col">
+                            <div class="card h-100 {% if not group.is_active %}border-danger{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center {% if not group.is_active %}bg-danger text-white{% else %}bg-success text-white{% endif %}">
+                                    <h5 class="mb-0">Group: {{ group.code }}</h5>
+                                    <span class="badge bg-light text-dark">Leader</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6 class="card-subtitle mb-2 text-muted">Delivery Details</h6>
+                                        <p class="mb-1"><strong>Date:</strong> {{ group.delivery_date|date:"M d, Y" }}</p>
+                                        <p class="mb-1"><strong>Time:</strong> {{ group.get_time_slot_display }}</p>
+                                        <p class="mb-3"><strong>Status:</strong> 
+                                            {% if group.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Closed</span>
+                                            {% endif %}
+                                        </p>
+                                        <p class="mb-1"><strong>Members:</strong> {{ group.get_member_count }}</p>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'marketplace:group_detail' code=group.code %}" class="btn btn-primary">
+                                            <i class="fas fa-eye"></i> View Details
+                                        </a>
+                                        {% if group.is_active %}
+                                            <button type="button" class="btn btn-outline-success share-btn" data-bs-toggle="modal" data-bs-target="#shareModal" data-group-code="{{ group.code }}" data-whatsapp-link="{{ group.get_whatsapp_share_link }}">
+                                                <i class="fab fa-whatsapp"></i> Share Group
+                                            </button>
+                                            <a href="{% url 'marketplace:add_member_to_group' code=group.code %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-user-plus"></i> Add Member
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <small>Created on {{ group.created_at|date:"M d, Y" }}</small>
+                                    {% if group.is_active %}
+                                        <small class="d-block">Expires on {{ group.expires_at|date:"M d, Y H:i" }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You haven't created any delivery groups yet. Create a group to become a leader and get a 10% discount!
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Groups where user is a member -->
+        <div class="tab-pane fade" id="joined-groups" role="tabpanel" aria-labelledby="joined-groups-tab">
+            {% if joined_group_orders %}
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for group_order in joined_group_orders %}
+                        <div class="col">
+                            <div class="card h-100 {% if not group_order.group.is_active %}border-danger{% endif %}">
+                                <div class="card-header d-flex justify-content-between align-items-center {% if not group_order.group.is_active %}bg-danger text-white{% else %}bg-primary text-white{% endif %}">
+                                    <h5 class="mb-0">Group: {{ group_order.group.code }}</h5>
+                                    <span class="badge bg-light text-dark">Member</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6 class="card-subtitle mb-2 text-muted">Delivery Details</h6>
+                                        <p class="mb-1"><strong>Date:</strong> {{ group_order.group.delivery_date|date:"M d, Y" }}</p>
+                                        <p class="mb-1"><strong>Time:</strong> {{ group_order.group.get_time_slot_display }}</p>
+                                        <p class="mb-3"><strong>Status:</strong> 
+                                            {% if group_order.group.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Closed</span>
+                                            {% endif %}
+                                        </p>
+                                        <p class="mb-1"><strong>Group Leader:</strong> {{ group_order.group.leader.user.get_full_name }}</p>
+                                        <p class="mb-1"><strong>Order #:</strong> {{ group_order.order.order_number }}</p>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'marketplace:group_detail' code=group_order.group.code %}" class="btn btn-primary">
+                                            <i class="fas fa-eye"></i> View Group Details
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="card-footer text-muted">
+                                    <small>Joined on {{ group_order.created_at|date:"M d, Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> You haven't joined any delivery groups yet. Join a group to split the delivery fee with others!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="shareModalLabel">Share Your Group</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Share your group with others to split delivery costs!</p>
+                
+                <div class="mb-3">
+                    <label for="groupCodeInput" class="form-label">Group Code</label>
+                    <div class="input-group">
+                        <input type="text" id="groupCodeInput" class="form-control" readonly>
+                        <button class="btn btn-outline-secondary copy-btn" type="button" data-clipboard="groupCodeInput">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Share Via</label>
+                    <div class="d-grid gap-2">
+                        <a href="#" id="whatsappShareLink" class="btn btn-success" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Handle share button clicks
+    document.querySelectorAll('.share-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const groupCode = this.dataset.groupCode;
+            const whatsappLink = this.dataset.whatsappLink;
+            
+            // Update modal content
+            document.getElementById('groupCodeInput').value = groupCode;
+            document.getElementById('whatsappShareLink').href = whatsappLink;
+        });
+    });
+    
+    // Handle copy buttons
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const inputId = this.dataset.clipboard;
+            const input = document.getElementById(inputId);
+            
+            input.select();
+            input.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            
+            setTimeout(() => {
+                this.innerHTML = originalText;
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}
+``` 

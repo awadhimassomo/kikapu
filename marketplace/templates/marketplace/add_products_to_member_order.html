@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Products for {{ group_order.name }} | Kikapu{% endblock %}
+
+{% block extra_css %}
+<style>
+    .product-card {
+        transition: all 0.3s ease;
+    }
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .quantity-control {
+        display: flex;
+        align-items: center;
+    }
+    .quantity-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+    .product-card.selected {
+        border: 2px solid #28a745;
+    }
+    .selected-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: none;
+    }
+    .product-card.selected .selected-badge {
+        display: block;
+    }
+    .sticky-order-summary {
+        position: sticky;
+        top: 20px;
+    }
+    #selected-products {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'marketplace:marketplace' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'marketplace:my_groups' %}">My Groups</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'marketplace:group_detail' code=group.code %}">Group {{ group.code }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add Products</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Add Products for {{ group_order.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p><i class="fas fa-info-circle"></i> Select products for {{ group_order.name }}'s order. You can adjust quantities and processing options for each product.</p>
+                    </div>
+                    
+                    <!-- Category Filter -->
+                    <div class="mb-4">
+                        <label for="category-filter" class="form-label">Filter by Category:</label>
+                        <select id="category-filter" class="form-select">
+                            <option value="all">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Products Grid -->
+                    <div class="row" id="products-grid">
+                        {% for product in products %}
+                        <div class="col-lg-6 mb-4 product-item" data-category="{{ product.category.id }}">
+                            <div class="card product-card h-100" data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price }}">
+                                <span class="badge bg-success selected-badge"><i class="fas fa-check"></i> Selected</span>
+                                <div class="row g-0">
+                                    <div class="col-4">
+                                        {% if product.images.exists %}
+                                        <img src="{{ product.images.first.image.url }}" class="img-fluid rounded-start" alt="{{ product.name }}">
+                                        {% else %}
+                                        <div class="bg-light h-100 d-flex align-items-center justify-content-center rounded-start">
+                                            <i class="fas fa-image text-muted fa-2x"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ product.name }}</h5>
+                                            <p class="card-text text-muted small">{{ product.category.name }}</p>
+                                            <p class="card-text"><strong>TSh {{ product.price|floatformat:0 }}</strong> / {{ product.get_unit_display }}</p>
+                                            
+                                            <div class="quantity-control d-none">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn minus-btn">-</button>
+                                                <input type="number" class="form-control mx-2 product-quantity" value="1" min="1" max="{{ product.stock_quantity }}">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary quantity-btn plus-btn">+</button>
+                                            </div>
+                                            
+                                            <div class="processing-options d-none mt-2">
+                                                <select class="form-select form-select-sm processing-method">
+                                                    {% for value, display in product.PROCESSING_CHOICES %}
+                                                    <option value="{{ value }}">{{ display }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            
+                                            <button class="btn btn-sm btn-outline-primary mt-2 select-product-btn">
+                                                <i class="fas fa-plus"></i> Add to Order
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-warning">
+                                No products available.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm sticky-order-summary">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+                <div class="card-body">
+                    <div id="selected-products">
+                        <div class="text-center py-4 empty-message">
+                            <i class="fas fa-shopping-basket fa-3x text-muted mb-3"></i>
+                            <p>No products added yet</p>
+                            <p class="text-muted small">Select products from the list</p>
+                        </div>
+                        <div class="selected-products-list"></div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span class="subtotal">TSh 0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Delivery Fee:</span>
+                        <span class="delivery-fee">Will be calculated</span>
+                    </div>
+                    
+                    <form method="post" action="{% url 'marketplace:add_products_to_member_order' group_code=group.code order_id=order.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_data" id="product-data-input">
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg" id="place-order-btn" disabled>
+                                <i class="fas fa-check"></i> Add Products to Order
+                            </button>
+                            <a href="{% url 'marketplace:group_detail' code=group.code %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectedProducts = [];
+        const productDataInput = document.getElementById('product-data-input');
+        const placeOrderBtn = document.getElementById('place-order-btn');
+        const selectedProductsList = document.querySelector('.selected-products-list');
+        const emptyMessage = document.querySelector('.empty-message');
+        const subtotalEl = document.querySelector('.subtotal');
+        const categoryFilter = document.getElementById('category-filter');
+        
+        // Category filter
+        categoryFilter.addEventListener('change', function() {
+            const selectedCategory = this.value;
+            const productItems = document.querySelectorAll('.product-item');
+            
+            productItems.forEach(item => {
+                if (selectedCategory === 'all' || item.dataset.category === selectedCategory) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+        
+        // Select product
+        document.querySelectorAll('.select-product-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.product-card');
+                const productId = card.dataset.productId;
+                const productName = card.dataset.productName;
+                const productPrice = parseFloat(card.dataset.productPrice);
+                
+                if (card.classList.contains('selected')) {
+                    // Deselect product
+                    card.classList.remove('selected');
+                    this.innerHTML = '<i class="fas fa-plus"></i> Add to Order';
+                    card.querySelector('.quantity-control').classList.add('d-none');
+                    card.querySelector('.processing-options').classList.add('d-none');
+                    
+                    // Remove from selected products
+                    const index = selectedProducts.findIndex(p => p.product_id === productId);
+                    if (index !== -1) {
+                        selectedProducts.splice(index, 1);
+                    }
+                } else {
+                    // Select product
+                    card.classList.add('selected');
+                    this.innerHTML = '<i class="fas fa-check"></i> Added';
+                    card.querySelector('.quantity-control').classList.remove('d-none');
+                    card.querySelector('.processing-options').classList.remove('d-none');
+                    
+                    // Add to selected products
+                    selectedProducts.push({
+                        product_id: productId,
+                        name: productName,
+                        price: productPrice,
+                        quantity: 1,
+                        processing_method: 'NONE'
+                    });
+                }
+                
+                updateOrderSummary();
+            });
+        });
+        
+        // Quantity buttons
+        document.querySelectorAll('.quantity-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const quantityInput = this.parentElement.querySelector('.product-quantity');
+                const card = this.closest('.product-card');
+                const productId = card.dataset.productId;
+                let currentValue = parseInt(quantityInput.value);
+                
+                if (this.classList.contains('minus-btn')) {
+                    if (currentValue > 1) {
+                        quantityInput.value = currentValue - 1;
+                    }
+                } else {
+                    quantityInput.value = currentValue + 1;
+                }
+                
+                // Update quantity in selected products
+                const product = selectedProducts.find(p => p.product_id === productId);
+                if (product) {
+                    product.quantity = parseInt(quantityInput.value);
+                }
+                
+                updateOrderSummary();
+            });
+        });
+        
+        // Processing method change
+        document.querySelectorAll('.processing-method').forEach(select => {
+            select.addEventListener('change', function() {
+                const card = this.closest('.product-card');
+                const productId = card.dataset.productId;
+                
+                // Update processing method in selected products
+                const product = selectedProducts.find(p => p.product_id === productId);
+                if (product) {
+                    product.processing_method = this.value;
+                }
+            });
+        });
+        
+        // Update order summary
+        function updateOrderSummary() {
+            productDataInput.value = JSON.stringify(selectedProducts);
+            
+            // Update selected products list
+            selectedProductsList.innerHTML = '';
+            
+            if (selectedProducts.length === 0) {
+                emptyMessage.style.display = 'block';
+                placeOrderBtn.disabled = true;
+            } else {
+                emptyMessage.style.display = 'none';
+                placeOrderBtn.disabled = false;
+                
+                let subtotal = 0;
+                
+                selectedProducts.forEach(product => {
+                    const itemTotal = product.price * product.quantity;
+                    subtotal += itemTotal;
+                    
+                    const productEl = document.createElement('div');
+                    productEl.className = 'mb-3 border-bottom pb-2';
+                    productEl.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6>${product.name}</h6>
+                                <p class="text-muted small mb-0">Qty: ${product.quantity} × TSh ${product.price.toFixed(0)}</p>
+                            </div>
+                            <span>TSh ${itemTotal.toFixed(0)}</span>
+                        </div>
+                    `;
+                    
+                    selectedProductsList.appendChild(productEl);
+                });
+                
+                subtotalEl.textContent = `TSh ${subtotal.toFixed(0)}`;
+            }
+        }
+        
+        // Initial update
+        updateOrderSummary();
+    });
+</script>
+{% endblock %}

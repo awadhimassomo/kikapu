@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ vendor.business_name }} | Products{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <a href="{% url 'credits:vendors' %}" class="text-gray-600 hover:text-primary mb-2 block">← Back to Vendors</a>
+                <h1 class="text-3xl font-bold">{{ vendor.business_name }}</h1>
+                <p class="text-gray-600">{{ vendor.location }} | {{ vendor.get_vendor_type_display }}</p>
+            </div>
+
+            <div class="text-right">
+                <p class="text-sm text-gray-600 mb-1">Your Balance</p>
+                {% if card %}
+                    <p class="font-semibold text-lg text-primary">{{ card.balance }} TSh</p>
+                {% else %}
+                    <p class="text-sm text-red-500">No card linked</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if products %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for product in products %}
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="p-6">
+                            <h2 class="text-xl font-semibold mb-2">{{ product.name }}</h2>
+                            <p class="text-2xl font-bold text-primary mb-4">{{ product.price }} TSh</p>
+                            <p class="text-gray-600 mb-3">
+                                {% if product.stock > 10 %}
+                                    <span class="text-green-500">In Stock ({{ product.stock }} available)</span>
+                                {% elif product.stock > 0 %}
+                                    <span class="text-yellow-500">Low Stock (Only {{ product.stock }} left)</span>
+                                {% else %}
+                                    <span class="text-red-500">Out of Stock</span>
+                                {% endif %}
+                            </p>
+                            
+                            <a href="{% url 'credits:buy_product' product.id %}" 
+                               class="block w-full text-center bg-primary text-white py-2 rounded-md hover:bg-opacity-90 transition-colors {% if product.stock == 0 %}opacity-50 cursor-not-allowed{% endif %}"
+                               {% if product.stock == 0 %}disabled{% endif %}>
+                                {% if product.stock > 0 %}Buy Now{% else %}Sold Out{% endif %}
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <p class="text-gray-500 text-lg mb-4">This vendor has no products available at the moment.</p>
+                <a href="{% url 'credits:vendors' %}" class="text-primary hover:underline">Browse other vendors</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

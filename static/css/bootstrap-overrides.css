@@ -1,0 +1,98 @@
+:root {
+    --bs-primary: #395144;
+    --bs-primary-rgb: 57, 81, 68;
+    --bs-secondary: #4E6C50;
+    --bs-secondary-rgb: 78, 108, 80;
+    --bs-info: #4E6C50;
+    --bs-info-rgb: 78, 108, 80;
+    --bs-success: #4E6C50;
+    --bs-success-rgb: 78, 108, 80;
+    --bs-link-color: #395144;
+    --bs-link-hover-color: #4E6C50;
+    --bs-focus-ring-color: rgba(57, 81, 68, 0.25);
+}
+
+.btn-primary {
+    --bs-btn-bg: #395144;
+    --bs-btn-border-color: #395144;
+    --bs-btn-hover-bg: #4E6C50;
+    --bs-btn-hover-border-color: #4E6C50;
+    --bs-btn-active-bg: #4E6C50;
+    --bs-btn-active-border-color: #4E6C50;
+    --bs-btn-disabled-bg: #395144;
+    --bs-btn-disabled-border-color: #395144;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #395144;
+    --bs-btn-border-color: #395144;
+    --bs-btn-hover-bg: #395144;
+    --bs-btn-hover-border-color: #395144;
+    --bs-btn-active-bg: #395144;
+    --bs-btn-active-border-color: #395144;
+    --bs-btn-disabled-color: #395144;
+    --bs-btn-disabled-border-color: #395144;
+}
+
+.btn-link {
+    --bs-btn-color: #395144;
+    --bs-btn-hover-color: #4E6C50;
+}
+
+.form-check-input:checked {
+    background-color: #395144;
+    border-color: #395144;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #8aab99;
+    box-shadow: 0 0 0 0.25rem rgba(57, 81, 68, 0.25);
+}
+
+a {
+    color: #395144;
+}
+
+a:hover {
+    color: #4E6C50;
+}
+
+.dropdown-item:active {
+    background-color: #395144;
+}
+
+.page-link {
+    color: #395144;
+}
+
+.page-link:hover {
+    color: #4E6C50;
+}
+
+.page-item.active .page-link {
+    background-color: #395144;
+    border-color: #395144;
+}
+
+.nav-pills .nav-link.active, 
+.nav-pills .show>.nav-link {
+    background-color: #395144;
+}
+
+/* Override any blue focus outlines */
+:focus {
+    outline-color: #395144 !important;
+}
+
+.btn-info,
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active {
+    background-color: #4E6C50;
+    border-color: #4E6C50;
+}
+
+.bg-info {
+    background-color: #4E6C50 !important;
+}

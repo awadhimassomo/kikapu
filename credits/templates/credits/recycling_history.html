@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Recycling History{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <div class="mb-8">
+            <a href="{% url 'credits:dashboard' %}" class="text-gray-600 hover:text-primary mb-2 block">
+                ← Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold">Recycling History</h1>
+        </div>
+        
+        {% if recycling %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600">
+                            <tr>
+                                <th class="py-3 px-4">Date</th>
+                                <th class="py-3 px-4">Material Type</th>
+                                <th class="py-3 px-4">Weight (grams)</th>
+                                <th class="py-3 px-4">Credits Earned</th>
+                                <th class="py-3 px-4">Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for deposit in recycling %}
+                                <tr class="border-b hover:bg-gray-50">
+                                    <td class="py-3 px-4">{{ deposit.created_at|date:"M d, Y - H:i" }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if deposit.material_type == 'PLASTIC' %}
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                                Plastic
+                                            </span>
+                                        {% elif deposit.material_type == 'PAPER' %}
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                                                Paper
+                                            </span>
+                                        {% elif deposit.material_type == 'METAL' %}
+                                            <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                                                Metal
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4">{{ deposit.weight_grams }} g</td>
+                                    <td class="py-3 px-4 text-green-600">{{ deposit.credits_earned }} TSh</td>
+                                    <td class="py-3 px-4">
+                                        {% if deposit.location %}
+                                            {{ deposit.location }}
+                                        {% else %}
+                                            <span class="text-gray-400">Not specified</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Summary Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-2">Total Material Recycled</h3>
+                    <p class="text-3xl font-bold text-primary">
+                        {{ recycling|length }} submissions
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-2">Total Weight</h3>
+                    <p class="text-3xl font-bold text-primary">
+                        {% with total_weight=0 %}
+                            {% for deposit in recycling %}
+                                {% with total_weight=total_weight|add:deposit.weight_grams %}{% endwith %}
+                            {% endfor %}
+                            {{ total_weight|default:0 }} g
+                        {% endwith %}
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-2">Total Credits Earned</h3>
+                    <p class="text-3xl font-bold text-primary">
+                        {% with total_credits=0 %}
+                            {% for deposit in recycling %}
+                                {% with total_credits=total_credits|add:deposit.credits_earned %}{% endwith %}
+                            {% endfor %}
+                            {{ total_credits|default:0 }} TSh
+                        {% endwith %}
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="{% url 'credits:recycle_submit' %}" class="inline-block px-6 py-3 bg-primary text-white rounded-md hover:bg-opacity-90">
+                    Submit New Recyclables
+                </a>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <p class="text-gray-500">You haven't submitted any recyclables yet.</p>
+                <div class="mt-6">
+                    <a href="{% url 'credits:recycle_submit' %}" class="inline-block px-6 py-3 bg-primary text-white rounded-md hover:bg-opacity-90">
+                        Submit Recyclables Now
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

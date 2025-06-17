@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ experience.title }} - Kikapu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-md-6">
+            {% if experience.image %}
+            <img src="{{ experience.image.url }}" class="img-fluid rounded" alt="{{ experience.title }}">
+            {% else %}
+            <div class="bg-secondary text-white d-flex align-items-center justify-content-center rounded" style="height: 300px;">
+                <i class="fas fa-image fa-5x"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1>{{ experience.title }}</h1>
+            <p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ experience.location }}</p>
+            <p class="my-3">{{ experience.description }}</p>
+            <p><strong>Experience Type:</strong> {{ experience.get_experience_type_display }}</p>
+            <h3>KSh {{ experience.price_per_day }} 
+                {% if experience.experience_type == 'FARMHOUSE' %}per night{% else %}per person{% endif %}
+            </h3>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="card-title mb-0">Make a Booking</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'marketplace:add_experience_to_cart' experience.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="start_date" class="form-label">Date{% if experience.experience_type == 'FARMHOUSE' %} of Arrival{% endif %}</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required min="{{ today }}">
+                        </div>
+                        
+                        {% if experience.experience_type == 'FARMHOUSE' %}
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">Date of Departure</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required min="{{ today }}">
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="party_size" class="form-label">Number of People</label>
+                            <input type="number" class="form-control" id="party_size" name="party_size" value="1" min="1" max="10" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg">Add to Cart</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="my-4">
+        <a href="{% url 'marketplace:tourism_experiences' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Back to Experiences
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // For farmhouse stays, ensure end_date is after start_date
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = this.value;
+                // If end date is now before start date, reset it
+                if (endDateInput.value && endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1392 @@
+{% extends 'marketplace/base.html' %}
+{% load static %}
+{% load marketplace_filters %}
+
+{% block title %}Farm Fresh Products - KIKAPU Marketplace{% endblock %}
+
+{% block content %}
+<!-- Mobile Optimizations -->
+<style>
+  /* Animation utilities */
+  .animation-delay-200 {
+    animation-delay: 0.2s;
+  }
+  .animation-delay-400 {
+    animation-delay: 0.4s;
+  }
+  
+  /* Custom animations */
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Skeleton loading */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+  
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
+  /* Add to cart animation */
+  @keyframes addToCartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+  
+  .add-to-cart-animation {
+    animation: addToCartPulse 0.5s ease-in-out;
+  }
+
+  /* Product popup animation */
+  .product-popup-enter {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  
+  .product-popup-enter-active {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  .product-popup-exit {
+    opacity: 1;
+  }
+  
+  .product-popup-exit-active {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 300ms, transform 300ms;
+  }
+  
+  @media (max-width: 640px) {
+    .mobile-category-slider {
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 1rem;
+    }
+    
+    .mobile-category-slider > a {
+      scroll-snap-align: start;
+      min-width: 120px;
+    }
+    
+    .bottom-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      z-index: 50;
+    }
+    
+    .bottom-nav a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.75rem 0;
+      color: #395144;
+      font-size: 0.75rem;
+    }
+    
+    .bottom-nav a i {
+      font-size: 1.25rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .bottom-nav a.active {
+      color: #AA8B56;
+    }
+    
+    .main-content {
+      padding-bottom: 5rem;
+    }
+  }
+</style>
+
+<!-- Marketplace Header with Logo -->
+<div class="bg-[#F0EBCE] py-6">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center gap-3 mb-4">
+            <img src="{% static 'website/images/kikapuu.png' %}" alt="Kikapu Logo" class="h-12 w-auto object-contain" />
+            <h1 class="text-3xl font-bold text-[#395144]">Browse Products</h1>
+        </div>
+        <p class="text-gray-700 mb-4">Find fresh, local groceries from trusted vendors</p>
+        
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+            <div class="flex-grow">
+                <form action="" method="get" class="flex w-full max-w-lg">
+                    <label for="product-search" class="sr-only">Search for products</label>
+                    <input type="text" id="product-search" name="search" placeholder="Search for products..." 
+                           class="px-4 py-2 w-full border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-primary">
+                    <button type="submit" class="bg-[#395144] hover:bg-[#2a3c32] text-white px-4 py-2 rounded-r-lg" title="Search">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <span class="sr-only">Search</span>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="relative">
+                <select aria-label="Sort options" title="Sort options" class="appearance-none bg-white border border-gray-300 px-4 py-2 pr-8 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
+                    <option>Most Popular</option>
+                    <option>Price: Low to High</option>
+                    <option>Price: High to Low</option>
+                    <option>Newest</option>
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Location Banner -->
+<div class="container mx-auto px-4 py-3 flex justify-between items-center border-b border-gray-200">
+  <div class="flex items-center text-xs sm:text-sm">
+    <i class="fas fa-map-marker-alt text-primary mr-2"></i>
+    <span class="text-gray-700">Your location: <span id="user-location" class="font-medium">Arusha, Tanzania</span></span>
+    <button id="detect-location" class="ml-2 text-xs text-[#AA8B56] hover:underline flex items-center">
+      <i class="fas fa-crosshairs mr-1 text-xs"></i> Detect
+    </button>
+    <button class="ml-2 text-xs text-[#AA8B56] hover:underline change-location-btn">Change</button>
+  </div>
+  <div>
+    <span class="text-green-600 text-xs sm:text-sm"><i class="fas fa-truck mr-1"></i> Available for delivery</span>
+  </div>
+</div>
+
+<!-- Market Research Dashboard has been completely removed -->
+
+<script>
+  // Set up location detection on user interaction rather than automatically
+  document.addEventListener('DOMContentLoaded', function() {
+    // Always maintain Arusha as the default location
+    const userLocationSpan = document.getElementById('user-location');
+    const defaultLocation = 'Arusha, Tanzania';
+    const detectButton = document.getElementById('detect-location');
+    
+    // Add location selector as fallback
+    const locationBanner = userLocationSpan.closest('.container');
+    const locationSelector = document.createElement('div');
+    locationSelector.className = 'location-selector hidden fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50';
+    locationSelector.innerHTML = `
+      <div class="bg-white rounded-xl p-6 max-w-md w-full">
+        <h3 class="text-xl font-bold text-[#395144] mb-4">Select Your Location</h3>
+        <p class="text-gray-600 mb-4">We couldn't determine your location automatically. Please select a region:</p>
+        <select id="region-select" class="w-full p-2 border border-gray-300 rounded mb-4">
+          <option value="Arusha, Tanzania" selected>Arusha</option>
+          <option value="Dar es Salaam, Tanzania">Dar es Salaam</option>
+          <option value="Dodoma, Tanzania">Dodoma</option>
+          <option value="Mwanza, Tanzania">Mwanza</option>
+          <option value="Zanzibar, Tanzania">Zanzibar</option>
+          <option value="Mbeya, Tanzania">Mbeya</option>
+          <option value="Tanga, Tanzania">Tanga</option>
+          <option value="Morogoro, Tanzania">Morogoro</option>
+          <option value="Kilimanjaro, Tanzania">Kilimanjaro</option>
+        </select>
+        <div class="flex justify-end">
+          <button id="cancel-location" class="px-4 py-2 text-gray-600 mr-2">Cancel</button>
+          <button id="save-location" class="px-4 py-2 bg-[#395144] text-white rounded">Save</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(locationSelector);
+    
+    // Handle location selector events
+    document.getElementById('save-location').addEventListener('click', function() {
+      const selectedRegion = document.getElementById('region-select').value;
+      userLocationSpan.textContent = selectedRegion;
+      locationSelector.classList.add('hidden');
+      // Store selection in localStorage for future visits
+      localStorage.setItem('kikapu-location', selectedRegion);
+    });
+    
+    document.getElementById('cancel-location').addEventListener('click', function() {
+      locationSelector.classList.add('hidden');
+    });
+    
+    // Check if we have a saved location
+    const savedLocation = localStorage.getItem('kikapu-location');
+    if (savedLocation) {
+      userLocationSpan.textContent = savedLocation;
+    }
+    
+    // Set up the detect location button click handler
+    detectButton.addEventListener('click', function() {
+      // Show loading indicator
+      detectButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Detecting...';
+      detectButton.disabled = true;
+      
+      if (navigator.geolocation) {
+        // Debugging log
+        console.log('Geolocation API is available');
+        
+        try {
+          // Request location only on button click (explicit user action) with specific options
+          const geoOptions = {
+            timeout: 30000,            // 30 second timeout
+            maximumAge: 0,             // Force fresh location
+            enableHighAccuracy: true    // Use high accuracy for better results
+          };
+          
+          console.log('Requesting position with options:', geoOptions);
+          navigator.geolocation.getCurrentPosition(
+            // Success callback
+            function(position) {
+              console.log('Position obtained successfully!');
+              showPosition(position);
+            },
+            // Error callback
+            function(error) {
+              console.error('Geolocation error code:', error.code);
+              console.error('Geolocation error message:', error.message);
+              handleLocationError(error);
+            },
+            // Options
+            geoOptions
+          );
+        } catch (err) {
+          console.error('Exception requesting geolocation:', err);
+          handleLocationError({code: 999, message: err.toString()});
+        }
+      } else {
+        // Browser doesn't support geolocation
+        console.error("Geolocation is not supported by this browser.");
+        handleLocationError({code: 0, message: "Browser does not support geolocation"});
+      }
+    });
+    
+    function showPosition(position) {
+      // Reset the detect button
+      detectButton.innerHTML = '<i class="fas fa-crosshairs mr-1 text-xs"></i> Detect';
+      detectButton.disabled = false;
+      
+      // Successfully got coordinates - log them
+      console.log(`Location detected: ${position.coords.latitude}, ${position.coords.longitude}`);
+      
+      // Since the location detection worked, we can directly use these coordinates
+      // For demo, let's check if the coordinates are in Tanzania (approximately)
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+      
+      // Using hard-coded regions to avoid API dependencies
+      // This is a simplified approach - in production you'd use a geocoding service
+      if (lat >= -11.7 && lat <= -1.0 && lng >= 29.3 && lng <= 40.5) {
+        // Tanzania approximate bounding box
+        // Simple distance calculation to major cities
+        const cities = [
+          { name: 'Arusha, Tanzania', lat: -3.3869, lng: 36.6830 },
+          { name: 'Dar es Salaam, Tanzania', lat: -6.7924, lng: 39.2083 },
+          { name: 'Dodoma, Tanzania', lat: -6.1630, lng: 35.7516 },
+          { name: 'Mwanza, Tanzania', lat: -2.5164, lng: 32.9175 },
+          { name: 'Zanzibar, Tanzania', lat: -6.1659, lng: 39.1888 },
+          { name: 'Mbeya, Tanzania', lat: -8.9000, lng: 33.4500 },
+          { name: 'Tanga, Tanzania', lat: -5.0667, lng: 39.1000 },
+          { name: 'Morogoro, Tanzania', lat: -6.8219, lng: 37.6614 },
+          { name: 'Kilimanjaro, Tanzania', lat: -3.0674, lng: 37.3556 }
+        ];
+        
+        // Find nearest city (simple distance calculation)
+        let nearestCity = cities[0].name;
+        let shortestDistance = 999999;
+        
+        cities.forEach(city => {
+          const distance = Math.sqrt(
+            Math.pow(lat - city.lat, 2) + 
+            Math.pow(lng - city.lng, 2)
+          );
+          
+          if (distance < shortestDistance) {
+            shortestDistance = distance;
+            nearestCity = city.name;
+          }
+        });
+        
+        // Update the displayed location
+        userLocationSpan.textContent = nearestCity;
+        
+        // Store in localStorage
+        localStorage.setItem('kikapu-location', nearestCity);
+      } else {
+        // Outside Tanzania bounding box, keep default location
+        console.log("Location detected outside Tanzania approximate boundaries");
+      }
+    }
+    
+    function handleLocationError(error) {
+      // Reset the detect button
+      detectButton.innerHTML = '<i class="fas fa-crosshairs mr-1 text-xs"></i> Detect';
+      detectButton.disabled = false;
+      
+      let errorMessage = "";
+      let errorCode = error.code || 0;
+      
+      // Handle all possible geolocation error codes
+      // https://developer.mozilla.org/en-US/docs/Web/API/GeolocationPositionError
+      switch(errorCode) {
+        case 1: // PERMISSION_DENIED
+          errorMessage = "Location permission denied. Please allow access in your browser settings.";
+          // Special handling for permission errors
+          let permissionMessage = "Please enable location services for this site:\n\n";
+          permissionMessage += "1. Click the lock/info icon in your browser's address bar\n";
+          permissionMessage += "2. Find 'Location' or 'Site settings'\n";
+          permissionMessage += "3. Change the setting to 'Allow'\n";
+          permissionMessage += "4. Refresh the page and try again";
+          
+          alert(permissionMessage);
+          break;
+          
+        case 2: // POSITION_UNAVAILABLE
+          errorMessage = "Location information is unavailable on this device or connection.";
+          // Show location selector for this error
+          locationSelector.classList.remove('hidden');
+          break;
+          
+        case 3: // TIMEOUT
+          errorMessage = "Location request timed out. Please check your connection and try again.";
+          alert("Location detection timed out. Please try again or select your location manually.");
+          break;
+          
+        case 999: // Our custom error for exceptions
+          errorMessage = "Exception occurred: " + error.message;
+          locationSelector.classList.remove('hidden');
+          break;
+          
+        default: // Any other error
+          errorMessage = "Unknown location error: " + (error.message || 'No details available');
+          // Show location selector for any unknown error
+          locationSelector.classList.remove('hidden');
+          break;
+      }
+      
+      // Log the complete error for debugging
+      console.error("Geolocation error:", errorMessage);
+    }
+    
+    // Add a manual location change option
+    const changeLocationButton = document.querySelector('.change-location-btn');
+    if (changeLocationButton) {
+        changeLocationButton.addEventListener('click', function() {
+            locationSelector.classList.remove('hidden');
+        });
+    } else {
+        console.warn('Change location button not found');
+    }
+  });
+</script>
+
+<style>
+  .location-selector.hidden {
+    display: none;
+  }
+</style>
+
+<!-- Categories Section -->
+<section class="bg-white py-6">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-[#395144]">Categories</h2>
+            <a href="#" class="text-sm text-blue-600 flex items-center">View All <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        
+        {% if categories %}
+        <div class="flex overflow-x-auto space-x-4 py-2 hide-scrollbar">
+            <a href="?category=" class="px-4 py-2 bg-[#395144] text-white rounded-full whitespace-nowrap hover:bg-opacity-90 transition">All</a>
+            {% for category in categories %}
+            <a href="?category={{ category.id }}" class="px-4 py-2 bg-gray-100 rounded-full whitespace-nowrap hover:bg-gray-200 transition flex items-center">
+                {% if category.image %}
+                <img src="{{ category.image.url }}" alt="" class="w-4 h-4 rounded-full mr-2" aria-hidden="true">
+                {% endif %}
+                {{ category.name }}
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-8">
+            <div class="bg-[#F0EBCE] p-6 rounded-2xl shadow-md max-w-md mx-auto text-center">
+                <div class="text-4xl mb-3">🧺</div>
+                <h3 class="text-xl font-bold text-primary mb-2">Categories Coming Soon</h3>
+                <p class="text-gray-600">We're organizing our marketplace into browsable categories to make shopping easier.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<style>
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    /* Using alternative for scrollbar-width for better compatibility */
+    overflow: -moz-scrollbars-none;
+  }
+</style>
+
+<!-- Featured Products Section -->
+<section class="bg-white py-8 border-b border-gray-100">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-[#395144]">Featured From Arusha</h2>
+            <a href="#" class="text-sm text-[#AA8B56] hover:underline flex items-center">View All <i class="fas fa-chevron-right ml-1"></i></a>
+        </div>
+        
+        <div class="featured-products-carousel overflow-x-auto hide-scrollbar pb-4">
+            <div class="flex space-x-4">
+                {% for product in featured_products|slice:":4" %}
+                <div class="min-w-[280px] bg-white rounded-xl shadow hover:shadow-md transition-shadow border border-gray-100">
+                    <div class="relative">
+                        <span class="absolute top-2 right-2 bg-[#AA8B56] text-white text-xs px-2 py-1 rounded-full">Featured</span>
+                        {% if product.images.exists %}
+                            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-48 object-cover rounded-t-xl" loading="lazy">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x220?text={{ product.name }}" alt="{{ product.name }}" class="w-full h-48 object-cover rounded-t-xl" loading="lazy">
+                        {% endif %}
+                    </div>
+                    <div class="p-4">
+                        <span class="text-xs font-medium text-[#4E6C50]">{{ product.category.name }}</span>
+                        <h3 class="font-medium text-lg text-gray-800 mt-1">{{ product.name }}</h3>
+                        <div class="flex items-center justify-between mt-3">
+                            <span class="font-bold text-lg text-gray-800">TSh {{ product.price|floatformat:0 }}</span>
+                            <button type="button" class="bg-[#395144] hover:bg-[#2a3c32] text-white p-2 rounded-full transition-colors show-product-popup-btn" data-product-id="{{ product.id }}" aria-label="View product details" title="View product details">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <!-- Fallback product if no featured products -->
+                <div class="min-w-[280px] bg-white rounded-xl shadow hover:shadow-md transition-shadow border border-gray-100">
+                    <div class="relative">
+                        <img src="https://via.placeholder.com/300x220?text=Product" alt="Product" class="w-full h-48 object-cover rounded-t-xl" loading="lazy">
+                        <span class="absolute top-2 right-2 bg-[#AA8B56] text-white text-xs px-2 py-1 rounded-full">Featured</span>
+                    </div>
+                    <div class="p-4">
+                        <span class="text-xs font-medium text-[#4E6C50]">Product</span>
+                        <h3 class="font-medium text-lg text-gray-800 mt-1">Sample Product</h3>
+                        <div class="flex items-center justify-between mt-3">
+                            <span class="font-bold text-lg text-gray-800">TSh 5,000</span>
+                            <a href="{% url 'marketplace:marketplace' %}" class="bg-[#395144] hover:bg-[#2a3c32] text-white p-2 rounded-full transition-colors">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fresh Picks Section -->
+<section class="bg-white py-8">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-[#395144]">Fresh Picks</h2>
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-600">Sort By</span>
+                <select aria-label="Sort products" title="Sort options" class="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-primary">
+                    <option value="popularity">Popularity</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                </select>
+            </div>
+        </div>
+        
+        {% if products %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for product in products %}
+            <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow border border-gray-100 flex flex-col">
+                <!-- Category tag -->
+                <div class="relative">
+                    {% if product.category %}
+                    <span class="absolute top-2 left-2 bg-[#395144] text-white text-xs px-2 py-1 rounded">
+                        {{ product.category.name }}
+                    </span>
+                    {% endif %}
+                    
+                    <!-- Product image -->
+                    <div class="h-48 overflow-hidden cursor-pointer product-card-image" data-product-id="{{ product.id }}">
+                        {% if product.images.exists %}
+                            {% with primary_images=product.images.filter %}
+                                {% if primary_images.exists %}
+                                    <img src="{{ primary_images.first.image.url }}" alt="{{ product.name }}" 
+                                         class="w-full h-48 object-cover" loading="lazy">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/300x220?text={{ product.name }}" alt="{{ product.name }}" 
+                                         class="w-full h-48 object-cover" loading="lazy">
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x220?text={{ product.name }}" alt="{{ product.name }}" 
+                                 class="w-full h-48 object-cover" loading="lazy">
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="p-4 flex flex-col flex-grow">
+                    <h3 class="font-medium text-lg text-gray-800 cursor-pointer product-card-title" data-product-id="{{ product.id }}">{{ product.name }}</h3>
+                    <p class="text-gray-600 text-sm my-2 line-clamp-2">{{ product.description|truncatewords:10 }}</p>
+                    
+                    <div class="flex items-center justify-between mt-auto pt-2">
+                        <span class="font-bold text-lg text-gray-800">TSh {{ product.price|floatformat:0 }}</span>
+                        <button type="button" class="bg-primary text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors font-semibold flex items-center gap-2 show-product-popup-btn" data-product-id="{{ product.id }}" title="View product details">
+                            <i class="fas fa-cart-plus" aria-hidden="true"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-10 flex flex-col items-center justify-center">
+            <div class="bg-[#F0EBCE] p-6 rounded-3xl shadow-md max-w-lg mx-auto text-center">
+                <div class="text-5xl mb-4">🌱</div>
+                <h3 class="text-2xl font-bold text-primary mb-3">Fresh Products Coming Soon</h3>
+                <p class="text-gray-600 mb-4">We're working with local farmers in Arusha, Tanzania to bring you the freshest produce. Check back soon!</p>
+                <div class="animate-pulse flex justify-center space-x-3">
+                    <div class="h-3 w-3 bg-primary rounded-full"></div>
+                    <div class="h-3 w-3 bg-secondary rounded-full animation-delay-200"></div>
+                    <div class="h-3 w-3 bg-accent rounded-full animation-delay-400"></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Product Popup Modal -->
+<div id="product-popup" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto m-4 animate-fade-in-up shadow-xl">
+        <!-- Popup Header -->
+        <div class="p-5 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white z-10">
+            <h3 class="font-bold text-xl text-[#395144] flex items-center gap-3" id="popup-product-title">
+                <div class="bg-[#F0EBCE] bg-opacity-50 p-2 rounded-full">
+                    <i class="fas fa-leaf text-[#395144] text-lg"></i>
+                </div>
+                Product Details
+            </h3>
+            <button type="button" id="close-product-popup" class="text-gray-500 hover:text-[#395144] hover:bg-[#F0EBCE] hover:bg-opacity-30 rounded-full w-8 h-8 flex items-center justify-center transition-colors" title="Close">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Popup Content -->
+        <div class="p-6" id="product-popup-content">
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Product Image -->
+                <div class="md:w-2/5">
+                    <div class="relative overflow-hidden rounded-xl shadow-md">
+                        <img id="popup-product-image" src="" alt="Product" class="w-full h-auto object-cover transition-transform duration-500 hover:scale-105">
+                    </div>
+                </div>
+                
+                <!-- Product Details -->
+                <div class="md:w-3/5">
+                    <div class="mb-4">
+                        <span id="popup-product-category" class="text-xs font-medium text-[#4E6C50] bg-[#F0EBCE] bg-opacity-50 py-1 px-2 rounded-full">Category</span>
+                    </div>
+                    
+                    <h4 id="popup-product-name" class="text-2xl font-bold text-[#395144] mb-2">Product Name</h4>
+                    
+                    <p id="popup-product-description" class="text-gray-600 mb-4">Product description loading...</p>
+                    
+                    <div class="mb-6">
+                        <span class="text-2xl font-bold text-[#395144]" id="popup-product-price">TSh 0</span>
+                    </div>
+                    
+                    <!-- Business Processing Options - Dynamically populated from database -->
+                    <div class="bg-[#F0EBCE] bg-opacity-30 rounded-xl p-4 mb-6">
+                        <h5 class="font-semibold text-[#395144] mb-3 flex items-center gap-2">
+                            <i class="fas fa-tasks text-[#AA8B56]"></i>
+                            Processing Options
+                        </h5>
+                        
+                        <div class="space-y-3" id="processing-options-container">
+                            <!-- Processing options will be populated dynamically via JavaScript -->
+                            <div class="processing-options-loading flex items-center justify-center py-3">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#395144]"></div>
+                                <span class="ml-3 text-gray-600">Loading options...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quantity Selector -->
+                    <div class="flex items-center mb-6">
+                        <span class="mr-3 text-[#395144] font-medium">Quantity:</span>
+                        <div class="quantity-control flex items-center bg-gray-100 rounded-full p-1">
+                            <button type="button" id="decrease-quantity" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-[#395144] hover:text-white transition-colors">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <input type="number" id="product-quantity" value="1" min="1" class="w-12 text-center border-none focus:ring-0 bg-transparent font-semibold text-[#395144]" readonly>
+                            <button type="button" id="increase-quantity" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-600 hover:bg-[#395144] hover:text-white transition-colors">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Add to Cart Button -->
+                    <div class="flex gap-3">
+                        <form id="product-popup-form" method="POST" action="" class="flex-grow">
+                            {% csrf_token %}
+                            <input type="hidden" name="processing_method" id="selected-processing-option" value="">
+                            <input type="hidden" name="quantity" id="selected-quantity" value="1">
+                            <button type="submit" class="w-full bg-[#395144] hover:bg-[#4E6C50] text-white py-3 px-6 rounded-xl font-medium transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 group">
+                                <i class="fas fa-cart-plus"></i>
+                                <span>Add to Cart</span>
+                                <i class="fas fa-arrow-right ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Mobile View Farm Info -->
+                    <div class="mt-6 pt-4 border-t border-gray-200 lg:hidden">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-farm-house text-[#AA8B56]"></i>
+                            <span class="text-sm font-medium text-[#395144]">From Local Farms</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-1">We partner with local farmers to ensure the freshest produce.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Desktop View Farm Info -->
+            <div class="hidden lg:block mt-6 pt-4 border-t border-gray-200">
+                <h5 class="font-semibold text-[#395144] mb-3 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-[#AA8B56]"></i>
+                    About Our Products
+                </h5>
+                <p class="text-sm text-gray-600">Our products are sourced from local farms in Tanzania. We ensure quality and freshness by working directly with farmers and processing facilities that meet our high standards.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Farm Experiences Section -->
+<section class="bg-[#F0EBCE] py-10">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-[#395144]">Farm Experiences</h2>
+            <a href="{% url 'marketplace:tourism_experiences' %}" class="text-sm text-[#AA8B56] hover:underline flex items-center">View All <i class="fas fa-chevron-right ml-1"></i></a>
+        </div>
+        
+        <p class="text-gray-700 mb-6">Discover authentic farm-to-table experiences across Tanzania's diverse regions</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% if farm_experiences %}
+                {% for experience in farm_experiences %}
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                    {% if experience.image %}
+                    <div class="relative h-56">
+                        <img src="{{ experience.image.url }}" alt="{{ experience.title }}" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                        <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">{{ experience.get_experience_type_display }}</span>
+                    </div>
+                    {% else %}
+                    <div class="relative h-56 bg-gradient-to-r from-[#F0EBCE] to-[#f8f5e7] flex items-center justify-center">
+                        <i class="fas fa-mountain text-5xl text-[#AA8B56]"></i>
+                    </div>
+                    {% endif %}
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-semibold text-[#395144] mb-1 line-clamp-1">{{ experience.title }}</h3>
+                        <div class="flex items-center mt-1 mb-3">
+                            <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                                <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                                <span class="text-sm font-medium text-[#395144]">{{ experience.location }}</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{ experience.description }}</p>
+                        <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                            {% if experience.price_per_day %}
+                            <div class="text-lg font-bold text-[#395144]">TSh {{ experience.price_per_day|floatformat:0 }}<span class="text-sm font-normal"> / day</span></div>
+                            {% endif %}
+                            {% if experience.link_to_booking %}
+                            <a href="{{ experience.link_to_booking }}" target="_blank" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                            </a>
+                            {% else %}
+                            <a href="{% url 'marketplace:tourism_experience_detail' experience.id %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Sample Farm Experiences (replace with dynamic data) -->
+                <!-- Farm Experience 1 -->
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                    <div class="relative h-56">
+                        <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                             alt="Kilimanjaro Coffee Farm" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                        <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Farmhouse Retreat</span>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-semibold text-[#395144] mb-1">Kilimanjaro Coffee Farm</h3>
+                        <div class="flex items-center mt-1 mb-3">
+                            <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                                <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                                <span class="text-sm font-medium text-[#395144]">Kilimanjaro Region</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">Experience the full coffee journey from bean to cup at our working coffee farm with stunning views of Mount Kilimanjaro.</p>
+                        <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                            <div class="text-lg font-bold text-[#395144]">TSh 150,000<span class="text-sm font-normal"> / day</span></div>
+                            <a href="{% url 'marketplace:tourism_experiences' %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Farm Experience 2 -->
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                    <div class="relative h-56">
+                        <img src="https://images.unsplash.com/photo-1589923188900-85dae523342b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                             alt="Morogoro Organic Farm" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                        <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Farm Restaurant</span>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-semibold text-[#395144] mb-1">Morogoro Organic Farm</h3>
+                        <div class="flex items-center mt-1 mb-3">
+                            <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                                <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                                <span class="text-sm font-medium text-[#395144]">Morogoro Region</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">Visit our farm-to-table restaurant featuring seasonal menus with ingredients picked fresh from our organic gardens.</p>
+                        <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                            <div class="text-lg font-bold text-[#395144]">TSh 120,000<span class="text-sm font-normal"> / day</span></div>
+                            <a href="{% url 'marketplace:tourism_experiences' %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Farm Experience 3 -->
+                <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden flex flex-col border border-gray-100">
+                    <div class="relative h-56">
+                        <img src="https://images.unsplash.com/photo-1530507629858-e3759c371e54?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" 
+                             alt="Tanzanian Spice Farm" class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105">
+                        <span class="absolute top-3 left-3 bg-[#395144] text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">Farmhouse Retreat</span>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <h3 class="text-xl font-semibold text-[#395144] mb-1">Zanzibar Spice Farm</h3>
+                        <div class="flex items-center mt-1 mb-3">
+                            <div class="flex items-center px-2.5 py-0.5 bg-[#F0EBCE] bg-opacity-60 rounded-full">
+                                <i class="fas fa-map-marker-alt text-[#AA8B56] mr-1.5"></i>
+                                <span class="text-sm font-medium text-[#395144]">Zanzibar</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">Take a guided tour through our aromatic spice plantation and learn about traditional farming techniques.</p>
+                        <div class="mt-auto flex justify-between items-center pt-3 border-t border-gray-100">
+                            <div class="text-lg font-bold text-[#395144]">TSh 120,000<span class="text-sm font-normal"> / day</span></div>
+                            <a href="{% url 'marketplace:tourism_experiences' %}" class="bg-[#AA8B56] hover:bg-[#95784b] text-white px-5 py-2 rounded-lg text-sm transition-colors font-medium flex items-center">
+                                <i class="fas fa-calendar-alt mr-2"></i> Book Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Back to Top Button -->
+<button id="back-to-top" class="fixed bottom-6 right-6 bg-primary hover:bg-green-700 text-white p-3 rounded-full shadow-lg transition-opacity duration-300 opacity-0 invisible z-50" title="Back to top">
+  <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  <span class="sr-only">Back to top</span>
+</button>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Back to top button functionality
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 300) {
+        backToTopButton.classList.remove('opacity-0', 'invisible');
+        backToTopButton.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopButton.classList.remove('opacity-100', 'visible');
+        backToTopButton.classList.add('opacity-0', 'invisible');
+      }
+    });
+    
+    backToTopButton.addEventListener('click', function() {
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+    
+    // Simulate loading state for products with skeleton
+    const productGrid = document.querySelector('.grid');
+    if (productGrid && productGrid.children.length === 0) {
+      // Create skeleton loader for empty product grid
+      for (let i = 0; i < 4; i++) {
+        const skeletonCard = document.createElement('div');
+        skeletonCard.className = 'bg-white rounded-3xl shadow overflow-hidden flex flex-col animate-pulse';
+        skeletonCard.innerHTML = `
+          <div class="h-56 bg-gray-200 rounded-t-3xl"></div>
+          <div class="p-6">
+            <div class="h-6 bg-gray-200 rounded mb-4 w-3/4"></div>
+            <div class="h-4 bg-gray-200 rounded mb-2 w-1/4"></div>
+            <div class="h-4 bg-gray-200 rounded mb-2 w-full"></div>
+            <div class="h-4 bg-gray-200 rounded mb-2 w-5/6"></div>
+            <div class="flex justify-between items-center mt-6">
+              <div class="h-6 bg-gray-200 rounded w-1/4"></div>
+              <div class="h-10 bg-gray-200 rounded-full w-1/4"></div>
+            </div>
+          </div>
+        `;
+        productGrid.appendChild(skeletonCard);
+      }
+      
+      // Remove skeletons after 1.5 seconds and show the actual content
+      setTimeout(() => {
+        const skeletons = productGrid.querySelectorAll('.animate-pulse');
+        skeletons.forEach(skeleton => skeleton.remove());
+        
+        // Show the empty state message if needed
+        const emptyState = document.querySelector('.py-10.flex.flex-col.items-center.justify-center');
+        if (emptyState) {
+          emptyState.style.display = 'flex';
+        }
+      }, 1500);
+    }
+  });
+</script>
+
+<!-- PWA Install Banner -->
+<div id="marketplace-pwa-banner" class="hidden fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200 p-4 z-50 transform translate-y-full transition-transform duration-300">
+  <div class="container max-w-6xl mx-auto">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <img src="{% static 'images/icon-192x192.png' %}" alt="Kikapu App" class="w-12 h-12 rounded-lg">
+        <div>
+          <h3 class="text-primary font-bold">Install Kikapu Marketplace</h3>
+          <p class="text-gray-600 text-sm">Shop for fresh local produce anytime, even offline</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="marketplace-dismiss-btn" class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md">
+          Not Now
+        </button>
+        <button id="marketplace-install-btn" class="bg-primary hover:bg-secondary text-white px-4 py-2 rounded-md font-medium transition-colors">
+          Install App
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PWA Install Banner JavaScript -->
+<script>
+  // PWA Install Banner for Marketplace
+  document.addEventListener('DOMContentLoaded', function() {
+    let deferredPrompt;
+    const installBanner = document.getElementById('marketplace-pwa-banner');
+    const installBtn = document.getElementById('marketplace-install-btn');
+    const dismissBtn = document.getElementById('marketplace-dismiss-btn');
+    
+    // Check if user has already dismissed the banner
+    const hasUserDismissedBanner = localStorage.getItem('marketplace-pwa-banner-dismissed');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      
+      // Only show the banner if user hasn't dismissed it in the last 7 days
+      if (!hasUserDismissedBanner) {
+        // Show the install banner with animation
+        setTimeout(() => {
+          installBanner.classList.remove('hidden');
+          setTimeout(() => {
+            installBanner.classList.remove('translate-y-full');
+          }, 100);
+        }, 3000); // Show after 3 seconds
+      }
+    });
+    
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      // Show the install prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice;
+      // Reset the deferred prompt variable
+      deferredPrompt = null;
+      // Hide the banner
+      installBanner.classList.add('translate-y-full');
+      setTimeout(() => {
+        installBanner.classList.add('hidden');
+      }, 300);
+    });
+    
+    dismissBtn.addEventListener('click', () => {
+      // Hide the banner
+      installBanner.classList.add('translate-y-full');
+      setTimeout(() => {
+        installBanner.classList.add('hidden');
+      }, 300);
+      
+      // Remember that user dismissed the banner (for 7 days)
+      const now = new Date();
+      localStorage.setItem('marketplace-pwa-banner-dismissed', now.toISOString());
+    });
+    
+    // Check if banner was dismissed more than 7 days ago
+    if (hasUserDismissedBanner) {
+      const dismissedDate = new Date(hasUserDismissedBanner);
+      const now = new Date();
+      const daysSinceDismissed = Math.floor((now - dismissedDate) / (1000 * 60 * 60 * 24));
+      
+      // If it's been more than 7 days, clear the dismissed flag
+      if (daysSinceDismissed > 7) {
+        localStorage.removeItem('marketplace-pwa-banner-dismissed');
+      }
+    }
+    
+    // Also handle installations via standalone browser mode or if already installed
+    window.addEventListener('appinstalled', (evt) => {
+      // App was installed, hide the banner
+      installBanner.classList.add('translate-y-full');
+      setTimeout(() => {
+        installBanner.classList.add('hidden');
+      }, 300);
+      
+      console.log('Marketplace application was installed successfully');
+    });
+    
+    // Hide banner if already in standalone mode (already installed)
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        window.navigator.standalone === true) {
+      installBanner.classList.add('hidden');
+    }
+  });
+</script>
+
+<!-- JS for AJAX add to cart -->
+{% block extra_js %}
+<script>
+    // Global tracker for preventing duplicate cart additions
+    window.isAddToCartInProgress = false;
+    
+    // Function to add product to cart - Defined globally to be accessible from all handlers
+    function addToCart(url, formData, submitButton) {
+        // Prevent duplicate requests
+        if (window.isAddToCartInProgress) {
+            console.log("Add to cart request already in progress, ignoring duplicate");
+            return;
+        }
+        
+        // Set processing flag
+        window.isAddToCartInProgress = true;
+        
+        // Store the original button content
+        const originalContent = submitButton.innerHTML;
+        
+        // Update button UI to show loading state
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        submitButton.disabled = true;
+        
+        // Get the current count for potential optimistic update
+        let currentCount = 0;
+        const currentCountEl = document.querySelector('#cart-badge-desktop') || 
+                              document.querySelector('#cart-count-mobile') || 
+                              document.querySelector('.cart-badge');
+        
+        if (currentCountEl) {
+            currentCount = parseInt(currentCountEl.textContent) || 0;
+            
+            // Store for potential rollback
+            window.previousCartCount = currentCount;
+            
+            // Get quantity from form
+            const quantity = parseInt(formData.get('quantity')) || 1;
+            
+            // Update the UI immediately (optimistic update)
+            if (typeof window.updateCartCount === 'function') {
+                // Use the global function from base.html to ensure consistency
+                window.updateCartCount(currentCount + quantity, true); // true flag indicates optimistic update
+            } else {
+                console.error("updateCartCount function not available globally");
+            }
+        }
+        
+        // Get CSRF token
+        const csrftoken = getCookie('csrftoken');
+        
+        // Make AJAX request
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Revert the optimistic UI update if request fails
+                if (typeof window.rollbackCartCount === 'function') {
+                    window.rollbackCartCount();
+                }
+                throw new Error('Network response was not ok');
+            }
+            
+            // Try to parse the response if it's JSON, but don't fail if it's not
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                return response.json().then(data => {
+                    // If the response contains the actual cart count, update the UI
+                    if (data && data.cart_count !== undefined) {
+                        if (typeof window.updateCartCount === 'function') {
+                            window.updateCartCount(data.cart_count);
+                        }
+                    }
+                    return data;
+                });
+            }
+            return {};
+        })
+        .then((data) => {
+            // Success handler
+            showNotification('Item added to cart!', 'success');
+            
+            // Add animation to the cart icon
+            const cartIcon = document.querySelector('.fa-shopping-cart');
+            if (cartIcon) {
+                cartIcon.classList.add('add-to-cart-animation');
+                setTimeout(() => {
+                    cartIcon.classList.remove('add-to-cart-animation');
+                }, 500);
+            }
+            
+            // Close the popup
+            closeProductPopup();
+        })
+        .catch(error => {
+            showNotification('Error adding item to cart. Please try again.', 'error');
+            console.error('Error:', error);
+        })
+        .finally(() => {
+            // Reset button
+            submitButton.innerHTML = originalContent;
+            submitButton.disabled = false;
+            
+            // Add a short timeout before allowing another request
+            setTimeout(() => {
+                window.isAddToCartInProgress = false;
+            }, 1000); // 1-second debounce
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get CSRF token from the cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Product Popup functionality
+        const productPopup = document.getElementById('product-popup');
+        const closeProductPopupBtn = document.getElementById('close-product-popup');
+        const showProductPopupBtns = document.querySelectorAll('.show-product-popup-btn');
+        const productCardImages = document.querySelectorAll('.product-card-image');
+        const productCardTitles = document.querySelectorAll('.product-card-title');
+        
+        // Popup form elements
+        const productPopupForm = document.getElementById('product-popup-form');
+        const popupProductTitle = document.getElementById('popup-product-title');
+        const popupProductImage = document.getElementById('popup-product-image');
+        const popupProductCategory = document.getElementById('popup-product-category');
+        const popupProductName = document.getElementById('popup-product-name');
+        const popupProductDescription = document.getElementById('popup-product-description');
+        const popupProductPrice = document.getElementById('popup-product-price');
+        const selectedProcessingOption = document.getElementById('selected-processing-option');
+        const selectedQuantity = document.getElementById('selected-quantity');
+        const decreaseQuantityBtn = document.getElementById('decrease-quantity');
+        const increaseQuantityBtn = document.getElementById('increase-quantity');
+        const productQuantityInput = document.getElementById('product-quantity');
+        const processingOptionsContainer = document.getElementById('processing-options-container');
+        
+        // Make getCookie globally available
+        window.getCookie = getCookie;
+        
+        // Show product popup
+        function showProductPopup(productId) {
+            // Set loading state
+            popupProductName.textContent = "Loading...";
+            popupProductDescription.textContent = "Loading product details...";
+            popupProductPrice.textContent = "TSh ...";
+            processingOptionsContainer.innerHTML = `
+                <div class="processing-options-loading flex items-center justify-center py-3">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#395144]"></div>
+                    <span class="ml-3 text-gray-600">Loading options...</span>
+                </div>
+            `;
+            
+            // Show the popup
+            productPopup.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            
+            // Fetch product details via AJAX
+            fetch(`/marketplace/api/products/${productId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update form action
+                    productPopupForm.action = `{% url 'marketplace:add_to_cart' 0 %}`.replace('0', productId);
+                    
+                    // Update popup content with product details
+                    popupProductTitle.textContent = data.name;
+                    popupProductName.textContent = data.name;
+                    popupProductDescription.textContent = data.description;
+                    popupProductPrice.textContent = `TSh ${parseFloat(data.price).toLocaleString()}`;
+                    
+                    // Update category if available
+                    if (data.category) {
+                        popupProductCategory.textContent = data.category.name;
+                        popupProductCategory.classList.remove('hidden');
+                    } else {
+                        popupProductCategory.classList.add('hidden');
+                    }
+                    
+                    // Update image if available
+                    if (data.images && data.images.length > 0) {
+                        popupProductImage.src = data.images[0].image;
+                        popupProductImage.alt = data.name;
+                    } else {
+                        popupProductImage.src = `https://via.placeholder.com/600x400?text=${encodeURIComponent(data.name)}`;
+                        popupProductImage.alt = data.name;
+                    }
+                    
+                    // Reset quantity and processing option
+                    productQuantityInput.value = "1";
+                    selectedQuantity.value = "1";
+                    selectedProcessingOption.value = "NONE";  // Default processing option
+                    
+                    // Populate processing options dynamically
+                    if (data.processing_methods && data.processing_methods.length > 0) {
+                        processingOptionsContainer.innerHTML = data.processing_methods.map(method => `
+                            <label class="flex items-start hover:bg-[#F0EBCE] hover:bg-opacity-50 p-2 rounded-lg transition-colors cursor-pointer">
+                                <input type="radio" name="processing_option" value="${method.id}" class="mt-1" ${method.default ? 'checked' : ''}>
+                                <div class="ml-3">
+                                    <span class="font-medium text-[#395144]">${method.name}</span>
+                                    <p class="text-sm text-gray-600">${method.description}</p>
+                                </div>
+                            </label>
+                        `).join('');
+                        
+                        // Set default processing option
+                        const defaultMethod = data.processing_methods.find(method => method.default);
+                        if (defaultMethod) {
+                            selectedProcessingOption.value = defaultMethod.id;
+                        }
+                        
+                        // Add event listeners to update selected processing option
+                        document.querySelectorAll('input[name="processing_option"]').forEach(radio => {
+                            radio.addEventListener('change', function() {
+                                selectedProcessingOption.value = this.value;
+                            });
+                        });
+                    } else {
+                        processingOptionsContainer.innerHTML = `
+                            <p class="text-gray-600 text-sm">Standard processing will be used for this product.</p>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching product details:', error);
+                    popupProductName.textContent = "Error loading product";
+                    popupProductDescription.textContent = "There was an error loading this product's details. Please try again later.";
+                });
+        }
+        
+        // Close product popup
+        function closeProductPopup() {
+            productPopup.classList.add('hidden');
+            document.body.style.overflow = ''; // Re-enable scrolling
+        }
+        
+        // Make closeProductPopup globally available
+        window.closeProductPopup = closeProductPopup;
+        
+        // Add event listeners to buttons that show the popup
+        showProductPopupBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const productId = this.getAttribute('data-product-id');
+                showProductPopup(productId);
+            });
+        });
+        
+        // Add event listeners to product card images
+        productCardImages.forEach(img => {
+            img.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                showProductPopup(productId);
+            });
+        });
+        
+        // Add event listeners to product card titles
+        productCardTitles.forEach(title => {
+            title.addEventListener('click', function() {
+                const productId = this.getAttribute('data-product-id');
+                showProductPopup(productId);
+            });
+        });
+        
+        // Close popup button
+        closeProductPopupBtn?.addEventListener('click', closeProductPopup);
+        
+        // Close when clicking outside the popup content
+        productPopup?.addEventListener('click', function(e) {
+            if (e.target === productPopup) {
+                closeProductPopup();
+            }
+        });
+        
+        // Close when pressing escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !productPopup.classList.contains('hidden')) {
+                closeProductPopup();
+            }
+        });
+        
+        // Quantity controls
+        decreaseQuantityBtn?.addEventListener('click', function() {
+            const currentValue = parseInt(productQuantityInput.value);
+            if (currentValue > 1) {
+                productQuantityInput.value = currentValue - 1;
+                selectedQuantity.value = currentValue - 1;
+            }
+        });
+        
+        increaseQuantityBtn?.addEventListener('click', function() {
+            const currentValue = parseInt(productQuantityInput.value);
+            productQuantityInput.value = currentValue + 1;
+            selectedQuantity.value = currentValue + 1;
+        });
+        
+        // Handle product popup form submission
+        productPopupForm?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show visual feedback that item is being added
+            const submitButton = productPopupForm.querySelector('button[type="submit"]');
+            const formData = new FormData(productPopupForm);
+            const url = productPopupForm.action;
+
+            addToCart(url, formData, submitButton);
+        });
+
+        // Function to update cart count
+        function updateCartCount(newCount, isOptimistic = false) {
+            const currentCountEl = document.querySelector('#cart-badge-desktop') || 
+                                  document.querySelector('#cart-count-mobile') || 
+                                  document.querySelector('.cart-badge');
+            if (currentCountEl) {
+                currentCountEl.textContent = newCount;
+                if (isOptimistic) {
+                    currentCountEl.dataset.optimisticCount = newCount;
+                } else {
+                    delete currentCountEl.dataset.optimisticCount;
+                }
+            }
+        }
+        
+        // Make updateCartCount globally available
+        window.updateCartCount = updateCartCount;
+
+        // Function to rollback cart count in case of error
+        function rollbackCartCount() {
+            const currentCountEl = document.querySelector('#cart-badge-desktop') || 
+                                  document.querySelector('#cart-count-mobile') || 
+                                  document.querySelector('.cart-badge');
+            if (currentCountEl && currentCountEl.dataset.optimisticCount) {
+                currentCountEl.textContent = currentCountEl.dataset.optimisticCount - 1;
+                delete currentCountEl.dataset.optimisticCount;
+            }
+        }
+        
+        // Make rollbackCartCount globally available
+        window.rollbackCartCount = rollbackCartCount;
+        
+        // Market research functionality has been removed
+
+        // Function to show notification
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg max-w-xs transform transition-transform duration-300 translate-x-full';
+            setTimeout(() => notification.classList.remove('translate-x-full'), 10);
+            
+            // Set color based on type
+            if (type === 'success') {
+                notification.className += ' bg-green-500 text-white';
+            } else {
+                notification.className += ' bg-red-500 text-white';
+            }
+            
+            // Set content
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} mr-2"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            // Add to DOM
+            document.body.appendChild(notification);
+            
+            // Remove after a short time
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 2000);
+        }
+        
+        // Make showNotification globally available
+        window.showNotification = showNotification;
+    });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Login - KIKAPU</title>
+    {% load static %}
+    <!-- Tailwind CSS -->
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #395144;
+            --secondary-color: #4E6C50;
+            --accent-color: #AA8B56;
+            --light-color: #F0EBCE;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6 bg-primary text-white text-center">
+                <div class="flex justify-center mb-4">
+                    <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-12">
+                </div>
+                <h1 class="text-2xl font-bold">KIKAPU Operations</h1>
+                <p class="text-sm opacity-80 mt-1">Staff access only</p>
+            </div>
+            
+            <div class="p-6">
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div class="p-4 mb-3 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <form method="post" action="{% url 'operations:login' %}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="username" class="block text-gray-700 text-sm font-medium mb-2">Username</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <input type="text" id="username" name="username" required
+                                   class="appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 pl-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="Enter your username">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <input type="password" id="password" name="password" required
+                                   class="appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 pl-10 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                                   placeholder="Enter your password">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <button type="submit" class="btn-primary w-full py-3 px-4 rounded-lg font-medium">
+                            Sign in to Operations
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-6 text-center">
+                    <a href="{% url 'website:index' %}" class="text-primary hover:text-secondary text-sm flex items-center justify-center">
+                        <i class="fas fa-arrow-left mr-2"></i> Return to Main Site
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center text-gray-600 text-sm">
+            <p>&copy; 2025 KIKAPU. Authorized access only.</p>
+        </div>
+    </div>
+</body>
+</html>

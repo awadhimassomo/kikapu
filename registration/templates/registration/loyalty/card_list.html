@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Loyalty Cards | Kikapu Marketplace{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/business.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3">Loyalty Cards</h1>
+            <p class="text-muted">Manage customer loyalty cards and rewards</p>
+        </div>
+        {% if user.user_type == 'ADMIN' or user.user_type == 'BUSINESS' %}
+        <div class="col-md-4 text-end">
+            <!-- No direct creation button here since we need a customer ID -->
+            <a href="{% url 'marketplace:customer_list' %}" class="btn btn-primary">
+                <i class="fas fa-users"></i> Select Customer
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if cards %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header business-header">
+            <h5 class="mb-0">All Loyalty Cards</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Card Number</th>
+                            <th>Customer</th>
+                            <th>NFC Tag ID</th>
+                            <th>Status</th>
+                            <th>Tier</th>
+                            <th>Points</th>
+                            <th>Expiry Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for card in cards %}
+                        <tr>
+                            <td>{{ card.card_number }}</td>
+                            <td>{{ card.customer.user.email }}</td>
+                            <td>{{ card.nfc_tag_id|truncatechars:15 }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if card.status == 'ACTIVE' %}bg-success
+                                    {% elif card.status == 'INACTIVE' %}bg-secondary
+                                    {% elif card.status == 'LOST' %}bg-danger
+                                    {% else %}bg-warning{% endif %}">
+                                    {{ card.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if card.tier == 'PLATINUM' %}bg-dark
+                                    {% elif card.tier == 'GOLD' %}bg-warning
+                                    {% elif card.tier == 'SILVER' %}bg-secondary
+                                    {% else %}bg-info{% endif %}">
+                                    {{ card.get_tier_display }}
+                                </span>
+                            </td>
+                            <td>{{ card.customer.loyalty_points }}</td>
+                            <td>{{ card.expiry_date }}</td>
+                            <td>
+                                <a href="{% url 'registration:loyalty_card_detail' card.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                                {% if user.user_type == 'ADMIN' or user.user_type == 'BUSINESS' %}
+                                <a href="{% url 'registration:loyalty_card_update' card.id %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="d-flex justify-content-center">
+        <ul class="pagination">
+            <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                <a class="page-link" href="?page=1">&laquo; First</a>
+            </li>
+            <li class="page-item {% if not page_obj.has_previous %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number|default:1 }}">Previous</a>
+            </li>
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ page_obj.next_page_number|default:page_obj.paginator.num_pages }}">Next</a>
+            </li>
+            <li class="page-item {% if not page_obj.has_next %}disabled{% endif %}">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+            </li>
+        </ul>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="alert alert-info">
+        {% if user.user_type == 'CUSTOMER' %}
+        <p class="mb-0">You don't have a loyalty card yet. Please visit any Kikapu store to get a loyalty card or contact customer support.</p>
+        {% else %}
+        <p class="mb-0">No loyalty cards found. Select a customer to create a new loyalty card.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

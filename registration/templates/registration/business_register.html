@@ -1,0 +1,901 @@
+{% extends 'auth_base.html' %}
+{% load static %}
+
+{% block title %}Create Business Account | Kikapu{% endblock %}
+
+{% block extra_css %}
+<!-- FontAwesome for icons is already included in auth_base.html -->
+<style>
+    :root {
+        --primary: #395144;
+        --secondary: #4E6C50;
+        --accent: #AA8B56;
+        --light: #F0EBCE;
+    }
+    
+    /* Progress tracker styles */
+    .progress-tracker {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .progress-tracker::before {
+        content: "";
+        position: absolute;
+        top: 20px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #e9ecef;
+        z-index: 0;
+    }
+    
+    .progress-step {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+    }
+    
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        border: 2px solid #e9ecef;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .progress-step.active .step-circle {
+        background-color: var(--accent);
+        border-color: var(--accent);
+        color: white;
+    }
+    
+    .progress-step.completed .step-circle {
+        background-color: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+    
+    .step-title {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #6c757d;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .progress-step.active .step-title,
+    .progress-step.completed .step-title {
+        color: var(--primary);
+        font-weight: 600;
+    }
+    
+    /* Form step styles */
+    .form-step {
+        display: none;
+    }
+    
+    .form-step.active {
+        display: block;
+        animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Business type cards */
+    .business-type-card {
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 100%;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        background-color: white;
+    }
+    
+    .business-type-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .business-type-card.selected {
+        border-color: var(--primary);
+        background-color: rgba(57, 81, 68, 0.05);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .business-type-card i {
+        color: var(--accent);
+        margin-bottom: 1rem;
+    }
+    
+    .business-type-card h5 {
+        color: var(--primary);
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Form styling */
+    .form-label {
+        font-weight: 500;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 0.25rem rgba(170, 139, 86, 0.25);
+    }
+    
+    .form-text {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Custom form-check styling */
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    /* Button Styles */
+    .btn-kikapu {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-kikapu:hover, .btn-kikapu:focus {
+        background-color: var(--secondary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-kikapu-outline {
+        background-color: transparent;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-kikapu-outline:hover, .btn-kikapu-outline:focus {
+        background-color: var(--primary);
+        color: white;
+    }
+    
+    /* Section title styling */
+    .section-title {
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .header-icon {
+        color: var(--accent);
+        margin-right: 0.75rem;
+    }
+    
+    /* Card styling */
+    .auth-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .auth-card .card-header {
+        background-color: var(--light);
+        border-bottom: none;
+        padding: 2rem;
+    }
+    
+    .auth-card .card-body {
+        padding: 2rem;
+    }
+    
+    /* Alert styling */
+    .alert-info-light {
+        background-color: rgba(240, 235, 206, 0.5);
+        border-left: 4px solid var(--accent);
+        border-radius: 8px;
+        padding: 1.25rem;
+    }
+    
+    /* Location button */
+    .location-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .location-btn i {
+        color: var(--accent);
+    }
+    
+    /* Form validation styles */
+    .was-validated .form-control:invalid,
+    .form-control.is-invalid {
+        border-color: #dc3545;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the form steps
+        let currentStep = 0;
+        const steps = document.querySelectorAll('.form-step');
+        const progressSteps = document.querySelectorAll('.progress-step');
+        const nextButtons = document.querySelectorAll('.next-step');
+        const prevButtons = document.querySelectorAll('.prev-step');
+        const businessTypeCards = document.querySelectorAll('.business-type-card');
+        const registrationForm = document.getElementById('business-registration-form');
+        const submitButton = document.getElementById('submit-btn');
+        
+        // Function to show the current step and update progress
+        function showStep(stepIndex) {
+            steps.forEach((step, index) => {
+                if (index === stepIndex) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+            
+            // Update progress steps
+            progressSteps.forEach((progressStep, index) => {
+                if (index < stepIndex) {
+                    progressStep.classList.add('completed');
+                    progressStep.classList.remove('active');
+                } else if (index === stepIndex) {
+                    progressStep.classList.add('active');
+                    progressStep.classList.remove('completed');
+                } else {
+                    progressStep.classList.remove('active', 'completed');
+                }
+            });
+            
+            // Show/hide navigation buttons based on step
+            if (stepIndex === 0) {
+                document.querySelector('.prev-step-container').style.visibility = 'hidden';
+            } else {
+                document.querySelector('.prev-step-container').style.visibility = 'visible';
+            }
+            
+            // Scroll to top of form for better UX
+            const formContainer = document.querySelector('.auth-card');
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        // Set up business type card selection
+        businessTypeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selection from all cards
+                businessTypeCards.forEach(c => c.classList.remove('selected'));
+                
+                // Add selection to clicked card
+                this.classList.add('selected');
+                
+                // Set hidden input value
+                const businessType = this.getAttribute('data-type');
+                document.getElementById('id_business_type').value = businessType;
+            });
+        });
+        
+        // Handle next button clicks with validation
+        nextButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                let isValid = validateStep(currentStep);
+                
+                if (isValid) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            });
+        });
+        
+        // Handle previous button clicks
+        prevButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                currentStep--;
+                showStep(currentStep);
+            });
+        });
+        
+        // Function to validate each step
+        function validateStep(stepIndex) {
+            let isValid = true;
+            const currentStepElement = steps[stepIndex];
+            
+            // Clear all previous validation styles
+            currentStepElement.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            
+            // Step 1: Validate business type selection
+            if (stepIndex === 0) {
+                const businessTypeValue = document.getElementById('id_business_type').value;
+                if (!businessTypeValue) {
+                    isValid = false;
+                    // Show error message
+                    const errorMsg = document.getElementById('business-type-error');
+                    errorMsg.style.display = 'block';
+                    
+                    // Add shake animation to cards to draw attention
+                    businessTypeCards.forEach(card => {
+                        card.classList.add('shake-animation');
+                        setTimeout(() => {
+                            card.classList.remove('shake-animation');
+                        }, 500);
+                    });
+                } else {
+                    document.getElementById('business-type-error').style.display = 'none';
+                }
+            }
+            
+            // Step 2: Validate business information
+            if (stepIndex === 1) {
+                // Required fields
+                const businessName = document.getElementById('id_business_name');
+                const businessAddress = document.getElementById('id_business_address');
+                
+                if (!businessName.value.trim()) {
+                    isValid = false;
+                    businessName.classList.add('is-invalid');
+                }
+                
+                if (!businessAddress.value.trim()) {
+                    isValid = false;
+                    businessAddress.classList.add('is-invalid');
+                }
+            }
+            
+            // Step 3: Validate personal details
+            if (stepIndex === 2) {
+                const firstName = document.getElementById('id_firstName');
+                const lastName = document.getElementById('id_lastName');
+                const phoneNumber = document.getElementById('id_phoneNumber');
+                const existingAccount = document.getElementById('id_existing_account');
+                
+                if (!firstName.value.trim()) {
+                    isValid = false;
+                    firstName.classList.add('is-invalid');
+                }
+                
+                if (!lastName.value.trim()) {
+                    isValid = false;
+                    lastName.classList.add('is-invalid');
+                }
+                
+                if (existingAccount.checked) {
+                    const existingPhone = document.getElementById('id_existing_phone');
+                    if (!existingPhone.value.trim()) {
+                        isValid = false;
+                        existingPhone.classList.add('is-invalid');
+                    }
+                } else {
+                    if (!phoneNumber.value.trim()) {
+                        isValid = false;
+                        phoneNumber.classList.add('is-invalid');
+                    }
+                    
+                    // Validate password match
+                    const password1 = document.getElementById('id_password1');
+                    const password2 = document.getElementById('id_password2');
+                    
+                    if (password1.value !== password2.value) {
+                        isValid = false;
+                        password2.classList.add('is-invalid');
+                        document.getElementById('password-match-error').style.display = 'block';
+                    } else {
+                        document.getElementById('password-match-error').style.display = 'none';
+                    }
+                }
+            }
+            
+            return isValid;
+        }
+        
+        // Form submission handler
+        registrationForm.addEventListener('submit', function(e) {
+            // If not on the last step, prevent submission
+            if (currentStep !== 3) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Validate terms checkbox
+            const termsCheckbox = document.getElementById('terms');
+            if (!termsCheckbox.checked) {
+                e.preventDefault();
+                termsCheckbox.classList.add('is-invalid');
+                document.getElementById('terms-error').style.display = 'block';
+            } else {
+                document.getElementById('terms-error').style.display = 'none';
+            }
+        });
+        
+        // Toggle existing account fields
+        const existingAccountCheckbox = document.getElementById('id_existing_account');
+        const existingAccountFields = document.getElementById('existing-account-fields');
+        const newAccountFields = document.getElementById('new-account-fields');
+        
+        existingAccountCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                existingAccountFields.classList.remove('d-none');
+                newAccountFields.classList.add('d-none');
+            } else {
+                existingAccountFields.classList.add('d-none');
+                newAccountFields.classList.remove('d-none');
+            }
+        });
+        
+        // Location button functionality
+        const locationButton = document.getElementById('get-location');
+        if (locationButton) {
+            locationButton.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    this.disabled = true;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        function success(position) {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            
+                            // Use reverse geocoding
+                            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const address = data.display_name;
+                                    document.getElementById('id_business_address').value = address;
+                                    
+                                    // Reset button
+                                    locationButton.disabled = false;
+                                    locationButton.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location';
+                                })
+                                .catch(error => {
+                                    console.error('Error getting address:', error);
+                                    alert('Unable to get your address. Please enter it manually.');
+                                    
+                                    // Reset button
+                                    locationButton.disabled = false;
+                                    locationButton.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location';
+                                });
+                        },
+                        function error(err) {
+                            console.error('Geolocation error:', err);
+                            alert('Unable to get your location. Please enter your address manually.');
+                            
+                            // Reset button
+                            locationButton.disabled = false;
+                            locationButton.innerHTML = '<i class="fas fa-map-marker-alt"></i> Use Current Location';
+                        }
+                    );
+                } else {
+                    alert('Geolocation is not supported by your browser. Please enter your address manually.');
+                }
+            });
+        }
+        
+        // Initialize the first step
+        showStep(currentStep);
+        
+        // Check for pre-selected business type
+        const preselectedType = document.getElementById('id_business_type').value;
+        if (preselectedType) {
+            const matchingCard = document.querySelector(`.business-type-card[data-type="${preselectedType}"]`);
+            if (matchingCard) {
+                matchingCard.classList.add('selected');
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="auth-card card shadow">
+                <div class="card-header text-center">
+                    <div class="auth-logo mb-3">
+                        <img src="/static/website/images/kikapuu.png" alt="Kikapu Logo" class="img-fluid">
+                    </div>
+                    <h2 class="fw-bold text-primary mb-0">Create Your Business Account</h2>
+                    <p class="text-muted mb-0">Join the Kikapu Marketplace and start selling your products</p>
+                </div>
+                
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger mb-4">
+                        <h5 class="alert-heading">Please fix the following errors:</h5>
+                        <ul class="mb-0">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <li>{{ field }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Progress Tracker -->
+                    <div class="progress-tracker mb-4">
+                        <div class="progress-step active" data-step="1">
+                            <div class="step-circle">1</div>
+                            <div class="step-title">Business Type</div>
+                        </div>
+                        <div class="progress-step" data-step="2">
+                            <div class="step-circle">2</div>
+                            <div class="step-title">Business Info</div>
+                        </div>
+                        <div class="progress-step" data-step="3">
+                            <div class="step-circle">3</div>
+                            <div class="step-title">Your Details</div>
+                        </div>
+                        <div class="progress-step" data-step="4">
+                            <div class="step-circle">4</div>
+                            <div class="step-title">Finish</div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" novalidate id="business-registration-form" class="needs-validation" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="business_type" id="id_business_type" value="">
+                        
+                        <!-- Step 1: Business Type -->
+                        <div class="form-step active" id="step-1">
+                            <h4 class="section-title">
+                                <i class="fas fa-store header-icon"></i>
+                                What type of business do you operate?
+                            </h4>
+                            
+                            <div class="alert alert-info-light mb-4">
+                                <p class="mb-0"><i class="fas fa-info-circle me-2"></i> Selecting the right business type helps us customize your experience and connect you with the right customers.</p>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6 mb-3">
+                                    <div class="business-type-card" data-type="farmer">
+                                        <i class="fas fa-tractor fa-2x"></i>
+                                        <h5>Farmer / Producer</h5>
+                                        <p class="text-muted mb-0">You grow or produce fresh food products directly</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="business-type-card" data-type="processor">
+                                        <i class="fas fa-industry fa-2x"></i>
+                                        <h5>Food Processor</h5>
+                                        <p class="text-muted mb-0">You process raw ingredients into food products</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="business-type-card" data-type="wholesaler">
+                                        <i class="fas fa-warehouse fa-2x"></i>
+                                        <h5>Wholesaler</h5>
+                                        <p class="text-muted mb-0">You sell in bulk to other businesses</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="business-type-card" data-type="retailer">
+                                        <i class="fas fa-shopping-basket fa-2x"></i>
+                                        <h5>Retailer / Shop</h5>
+                                        <p class="text-muted mb-0">You have a physical or online shop</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="text-danger mb-4 d-none" id="business-type-error">
+                                <i class="fas fa-exclamation-circle me-1"></i> Please select a business type to continue
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <div class="prev-step-container" style="visibility: hidden;">
+                                    <button type="button" class="btn btn-kikapu-outline prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i> Back
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-kikapu next-step">
+                                    Continue <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 2: Business Information -->
+                        <div class="form-step" id="step-2">
+                            <h4 class="section-title">
+                                <i class="fas fa-building header-icon"></i>
+                                Tell us about your business
+                            </h4>
+                            
+                            <div class="mb-4">
+                                <label for="id_business_name" class="form-label">Business Name <span class="text-danger">*</span></label>
+                                {{ form.business_name }}
+                                <div class="invalid-feedback">Please enter your business name.</div>
+                                {% if form.business_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.business_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="id_business_address" class="form-label">Business Address <span class="text-danger">*</span></label>
+                                {{ form.business_address }}
+                                <div class="invalid-feedback">Please provide your business address.</div>
+                                {% if form.business_address.errors %}
+                                    <div class="text-danger small mt-1">{{ form.business_address.errors }}</div>
+                                {% endif %}
+                                <div class="mt-2">
+                                    <button type="button" id="get-location" class="btn btn-sm btn-kikapu-outline location-btn">
+                                        <i class="fas fa-map-marker-alt"></i> Use Current Location
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="id_business_description" class="form-label">Business Description <span class="text-danger">*</span></label>
+                                {{ form.business_description }}
+                                <div class="form-text">Tell customers what makes your business special (e.g., locally sourced products, family-owned since 2005)</div>
+                                {% if form.business_description.errors %}
+                                    <div class="text-danger small mt-1">{{ form.business_description.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="id_registration_number" class="form-label">Business Registration Number</label>
+                                    {{ form.registration_number }}
+                                    <div class="form-text">Optional, but helps with verification</div>
+                                    {% if form.registration_number.errors %}
+                                        <div class="text-danger small mt-1">{{ form.registration_number.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="id_business_phone" class="form-label">Business Phone <span class="text-danger">*</span></label>
+                                    {{ form.business_phone }}
+                                    <div class="form-text">Public phone number customers will see</div>
+                                    {% if form.business_phone.errors %}
+                                        <div class="text-danger small mt-1">{{ form.business_phone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="id_business_email" class="form-label">Business Email</label>
+                                    {{ form.business_email }}
+                                    <div class="form-text">Public email for business inquiries</div>
+                                    {% if form.business_email.errors %}
+                                        <div class="text-danger small mt-1">{{ form.business_email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="id_business_hours" class="form-label">Business Hours</label>
+                                    {{ form.business_hours }}
+                                    <div class="form-text">E.g., "Mon-Fri: 9am-5pm, Sat: 10am-2pm"</div>
+                                    {% if form.business_hours.errors %}
+                                        <div class="text-danger small mt-1">{{ form.business_hours.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="id_business_logo" class="form-label">Business Logo</label>
+                                {{ form.business_logo }}
+                                <div class="form-text">Upload a logo to help customers recognize your brand (Square image, 500x500px recommended)</div>
+                                {% if form.business_logo.errors %}
+                                    <div class="text-danger small mt-1">{{ form.business_logo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <div class="prev-step-container">
+                                    <button type="button" class="btn btn-kikapu-outline prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i> Back
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-kikapu next-step">
+                                    Continue <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 3: Your Information -->
+                        <div class="form-step" id="step-3">
+                            <h4 class="section-title">
+                                <i class="fas fa-user header-icon"></i>
+                                Your Account Details
+                            </h4>
+                            
+                            <div class="alert alert-info-light mb-4">
+                                <p class="mb-0"><i class="fas fa-info-circle me-2"></i> These details will be used for your business admin account.</p>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="id_firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                    {{ form.firstName }}
+                                    <div class="invalid-feedback">Please enter your first name.</div>
+                                    {% if form.firstName.errors %}
+                                        <div class="text-danger small mt-1">{{ form.firstName.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="id_lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    {{ form.lastName }}
+                                    <div class="invalid-feedback">Please enter your last name.</div>
+                                    {% if form.lastName.errors %}
+                                        <div class="text-danger small mt-1">{{ form.lastName.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-check mb-3">
+                                    {{ form.existing_account }}
+                                    <label class="form-check-label" for="id_existing_account">
+                                        I already have a Kikapu account
+                                    </label>
+                                </div>
+                                
+                                <div id="existing-account-fields" class="d-none mb-3">
+                                    <label for="id_existing_phone" class="form-label">Your Existing Phone Number <span class="text-danger">*</span></label>
+                                    {{ form.existing_phone }}
+                                    <div class="form-text">Enter the phone number associated with your existing account</div>
+                                    <div class="invalid-feedback">Please enter your existing phone number.</div>
+                                </div>
+                                
+                                <div id="new-account-fields">
+                                    <div class="mb-4">
+                                        <label for="id_phoneNumber" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                        {{ form.phoneNumber }}
+                                        <div class="form-text">This will be used for account login and verification</div>
+                                        <div class="invalid-feedback">Please enter a valid phone number.</div>
+                                        {% if form.phoneNumber.errors %}
+                                            <div class="text-danger small mt-1">{{ form.phoneNumber.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="id_email" class="form-label">Email Address</label>
+                                        {{ form.email }}
+                                        <div class="form-text">We'll use this for order notifications and updates</div>
+                                        {% if form.email.errors %}
+                                            <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="id_password1" class="form-label">Password <span class="text-danger">*</span></label>
+                                        {{ form.password1 }}
+                                        <div class="form-text">{{ form.password1.help_text }}</div>
+                                        {% if form.password1.errors %}
+                                            <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="id_password2" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                        {{ form.password2 }}
+                                        <div class="text-danger d-none" id="password-match-error">Passwords do not match</div>
+                                        {% if form.password2.errors %}
+                                            <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <div class="prev-step-container">
+                                    <button type="button" class="btn btn-kikapu-outline prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i> Back
+                                    </button>
+                                </div>
+                                <button type="button" class="btn btn-kikapu next-step">
+                                    Continue <i class="fas fa-arrow-right ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Step 4: Final Step -->
+                        <div class="form-step" id="step-4">
+                            <h4 class="section-title text-center">
+                                <i class="fas fa-check-circle header-icon"></i>
+                                Complete Your Registration
+                            </h4>
+                            
+                            <div class="text-center mb-4">
+                                <i class="fas fa-store-alt fa-4x text-accent mb-3"></i>
+                                <h5 class="text-primary">Your business is ready to join Kikapu!</h5>
+                                <p class="text-muted">Just one final step to start selling your products.</p>
+                            </div>
+                            
+                            <div class="card bg-light border-0 rounded-lg mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary fw-bold mb-3">What happens next?</h5>
+                                    <ol class="ps-3 mb-0">
+                                        <li class="mb-2">Your business account will be created immediately</li>
+                                        <li class="mb-2">You can start adding your products to the marketplace</li>
+                                        <li class="mb-2">Our team will review your business details for verification</li>
+                                        <li>Once verified, your products will be visible to customers</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="agreed" name="terms" id="terms" required>
+                                    <label class="form-check-label" for="terms">
+                                        I agree to the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Privacy Policy</a>
+                                    </label>
+                                    <div class="text-danger d-none mt-1" id="terms-error">You must agree to the Terms and Conditions</div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <div class="prev-step-container">
+                                    <button type="button" class="btn btn-kikapu-outline prev-step">
+                                        <i class="fas fa-arrow-left me-2"></i> Back
+                                    </button>
+                                </div>
+                                <button type="submit" id="submit-btn" class="btn btn-kikapu btn-lg">
+                                    Create Business Account <i class="fas fa-check ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Already have an account? <a href="{% url 'registration:login' %}" class="text-primary">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

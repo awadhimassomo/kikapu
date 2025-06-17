@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KIKAPU{% endblock %}</title>
+    {% load static %}
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#395144">
+    <meta name="description" content="Connect with local farmers and buy fresh produce">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Kikapu">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/icon-192x192.png' %}">
+    
+    <!-- Comprehensive favicon declarations to ensure consistent display -->
+    <link rel="shortcut icon" href="{% static 'images/kikapuu.png' %}" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/kikapuu.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/kikapuu.png' %}">
+    <link rel="mask-icon" href="{% static 'images/kikapuu.png' %}" color="#395144">
+    <!-- Preload critical resources -->
+    <link rel="preload" href="{% static 'css/tailwind.css' %}" as="style">
+    <link rel="preload" href="https://unpkg.com/htmx.org@1.9.6" as="script" integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni" crossorigin="anonymous">
+
+    <!-- HTMX with SRI integrity check -->
+    <script src="https://unpkg.com/htmx.org@1.9.6" integrity="sha384-FhXw7b6AlE/jyjlZH5iHa/tTe9EpJ1Y55RjcgPbjeWMskSxZt1v9qkxLJWNJaGni" crossorigin="anonymous"></script>
+    <!-- Alpine.js for interactive components -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- HTMX extension for content-disposed events, helps prevent duplicate initialization -->
+    <script>
+        // Add content-disposed event to improve HTMX behavior with SPAs
+        // This helps prevent duplicate event handlers when content is swapped
+        htmx.defineExtension('content-disposed', {
+            onEvent: function(name, evt) {
+                if (name === 'htmx:beforeCleanupElement') {
+                    evt.target.dispatchEvent(new Event('content-disposed'));
+                }
+            }
+        });
+        // Correct way to set htmx configuration
+        htmx.config.useTemplateFragments = true;
+        htmx.config.allowEval = false;
+    </script>
+    <!-- Critical CSS first for fast rendering -->
+    <link href="{% static 'css/tailwind.css' %}" rel="stylesheet">
+    <!-- Bootstrap Overrides -->
+    <link href="{% static 'css/bootstrap-overrides.css' %}" rel="stylesheet">
+    
+    <!-- FontAwesome - defer non-critical -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
+    
+    <!-- Cart Styles -->
+    <link href="{% static 'css/cart-styles.css' %}" rel="stylesheet">
+    
+    <!-- Move non-critical scripts to end of body -->
+    <script src="{% static 'js/cart-registry.js' %}" defer></script>
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #395144;
+            --secondary-color: #4E6C50;
+            --accent-color: #AA8B56;
+            --light-color: #F0EBCE;
+        }
+        
+        /* Animation classes */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        /* Staggered animations */
+        .animate-in {
+            opacity: 0;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .stagger-delay-1 {
+            animation-delay: 0.1s;
+        }
+        
+        .stagger-delay-2 {
+            animation-delay: 0.2s;
+        }
+        
+        .stagger-delay-3 {
+            animation-delay: 0.3s;
+        }
+        
+        .stagger-delay-4 {
+            animation-delay: 0.4s;
+        }
+        
+        .stagger-delay-5 {
+            animation-delay: 0.5s;
+        }
+        
+        .stagger-delay-6 {
+            animation-delay: 0.6s;
+        }
+        
+        /* Custom color classes */
+        .text-primary {
+            color: var(--primary-color);
+        }
+        
+        .bg-primary {
+            background-color: var(--primary-color);
+        }
+        
+        .border-primary {
+            border-color: var(--primary-color);
+        }
+        
+        .text-secondary {
+            color: var(--secondary-color);
+        }
+        
+        .bg-secondary {
+            background-color: var(--secondary-color);
+        }
+    </style>
+    <!-- Modern Card & Content Styles -->
+    <style>
+        /* Card styles */
+        .card {
+            @apply bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300;
+        }
+        
+        .card:hover {
+            @apply shadow-lg transform translate-y-[-4px];
+        }
+        
+        .card-body {
+            @apply p-6;
+        }
+        
+        .card-header {
+            @apply border-b border-gray-100 px-6 py-4;
+        }
+        
+        .card-footer {
+            @apply border-t border-gray-100 px-6 py-4;
+        }
+        
+        /* Content typography */
+        .title-xl {
+            @apply text-3xl md:text-4xl font-bold leading-tight text-gray-900 mb-4;
+        }
+        
+        .title-lg {
+            @apply text-2xl md:text-3xl font-bold leading-tight text-gray-900 mb-3;
+        }
+        
+        .title-md {
+            @apply text-xl md:text-2xl font-semibold leading-tight text-gray-900 mb-2;
+        }
+        
+        .subtitle {
+            @apply text-lg text-gray-600 mb-6 max-w-3xl;
+        }
+        
+        /* Section spacing */
+        .section {
+            @apply py-12 md:py-16;
+        }
+        
+        .section-lg {
+            @apply py-16 md:py-24;
+        }
+        
+        /* Image optimization */
+        .img-responsive {
+            @apply max-w-full h-auto object-cover;
+        }
+        
+        .img-thumbnail {
+            max-height: 180px;
+            @apply object-cover rounded-lg;
+        }
+        
+        /* Improved button styles */
+        .btn {
+            @apply px-6 py-3 rounded-lg font-medium transition-all duration-200 inline-block text-center;
+        }
+        
+        .btn-sm {
+            @apply px-4 py-2 rounded-md text-sm;
+        }
+        
+        .btn-primary {
+            @apply bg-primary text-white hover:bg-secondary;
+        }
+        
+        .btn-outline {
+            @apply border-2 border-primary text-primary hover:bg-primary hover:text-white;
+        }
+        
+        .btn-accent {
+            @apply bg-accent-color text-white hover:bg-opacity-90;
+        }
+        
+        /* Content containers */
+        .container-narrow {
+            @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8;
+        }
+        
+        /* Focus styles for accessibility */
+        a:focus, button:focus, input:focus, select:focus, textarea:focus {
+            @apply outline-none ring-2 ring-primary ring-opacity-50;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm fixed w-full z-10 transition-all duration-200">
+        <div class="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="{% url 'website:index' %}" class="flex items-center space-x-3">
+                    <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-10">
+                    <span class="font-bold text-2xl text-primary">KIKAPU</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="{% url 'website:index' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Home</a>
+                    <a href="{% url 'marketplace:marketplace' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Marketplace</a>
+                    <a href="{% url 'credits:kikapu_card_home' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Kikapu Card</a>
+                    <a href="{% url 'website:about' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">About</a>
+                    <a href="{% url 'website:contact' %}" class="text-gray-700 hover:text-primary transition-colors font-medium text-base">Contact</a>
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <button class="md:hidden flex items-center text-gray-700 hover:text-primary" id="mobile-menu-button">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+                
+                <!-- User Actions -->
+                <div class="hidden md:flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                        <a href="{% url 'operations:login' %}" class="flex items-center space-x-2 text-primary hover:text-secondary transition-colors mr-3">
+                            <i class="fas fa-cog text-lg"></i>
+                            <span class="font-medium">Operations</span>
+                        </a>
+                        {% endif %}
+                        <!-- Cart Icon Component -->
+                        {% include 'marketplace/partials/cart_icon.html' with cart_count=user.cart.item_count|default:0 id_suffix="desktop" %}
+                        <a href="{% url 'credits:kikapu_card_home' %}" class="text-gray-700 hover:text-primary transition-colors relative ml-4">
+                            <i class="fas fa-credit-card text-xl"></i>
+                            {% if user.nfc_card %}
+                                <span class="absolute -top-2 -right-2 {% if user.nfc_card.card_type == 'POSTPAID' %}bg-yellow-600{% else %}bg-primary{% endif %} text-white text-xs rounded-full px-2 py-0.5" style="min-width: 20px; font-size: 10px; line-height: 1; white-space: nowrap;">
+                                    {% if user.nfc_card.card_type == 'POSTPAID' %}POST{% else %}PRE{% endif %}
+                                </span>
+                            {% endif %}
+                        </a>
+                        <div class="relative" x-data="{ open: false }" @mouseleave="setTimeout(() => open = false, 300)">
+                            <button class="flex items-center space-x-2 text-gray-700 hover:text-primary transition-colors" 
+                                    @mouseenter="open = true"
+                                    @click="open = !open">
+                                <i class="fas fa-user-circle text-xl"></i>
+                                <span class="font-medium">{{ user.username }}</span>
+                                <i class="fas fa-chevron-down text-xs transform transition-transform" :class="{ 'rotate-180': open }"></i>
+                            </button>
+                            <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg py-2 transition-all duration-200 transform origin-top"
+                                 x-show="open"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 @mouseenter="clearTimeout(window.closeDropdownTimeout)"
+                                 @mouseleave="setTimeout(() => open = false, 300)"
+                                 style="display: none;"
+                                 class="border border-gray-100 z-20">
+                                <a href="{% url 'registration:profile' %}" class="flex items-center px-4 py-2 text-gray-700 hover:bg-light hover:text-primary">
+                                    <i class="fas fa-user-circle mr-3 text-gray-500"></i>
+                                    <span>Profile</span>
+                                </a>
+                                <a href="{% url 'marketplace:order_history' %}" class="flex items-center px-4 py-2 text-gray-700 hover:bg-light hover:text-primary">
+                                    <i class="fas fa-clipboard-list mr-3"></i>
+                                    <span>Orders</span>
+                                </a>
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="{% url 'registration:logout' %}" class="flex items-center px-4 py-2 text-gray-700 hover:bg-light hover:text-primary">
+                                    <i class="fas fa-sign-out-alt mr-3 text-gray-500"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'registration:login' %}" class="btn-sm btn-outline">Log In</a>
+                        <a href="{% url 'registration:customer_register' %}" class="btn-sm btn-primary">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div class="md:hidden hidden bg-white border-t border-gray-100 py-3" id="mobile-menu">
+            <div class="container mx-auto px-4">
+                <nav class="flex flex-col space-y-3">
+                    <a href="{% url 'website:index' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-home mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="{% url 'marketplace:marketplace' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-store mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Marketplace</span>
+                    </a>
+                    <a href="{% url 'credits:kikapu_card_home' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-credit-card mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Kikapu NFC Card</span>
+                        {% if user.nfc_card %}
+                        <span class="ml-2 {% if user.nfc_card.card_type == 'POSTPAID' %}bg-yellow-600{% else %}bg-primary{% endif %} text-white text-xs rounded-full px-2 py-0.5" style="font-size: 10px; line-height: 1.5;">
+                            {% if user.nfc_card.card_type == 'POSTPAID' %}POSTPAID{% else %}PREPAID{% endif %}
+                        </span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'website:about' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-info-circle mr-3 w-6 text-center text-gray-500"></i>
+                        <span>About</span>
+                    </a>
+                    <a href="{% url 'website:contact' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                        <i class="fas fa-envelope mr-3 w-6 text-center text-gray-500"></i>
+                        <span>Contact</span>
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="border-t border-gray-100 pt-3 mt-1 flex flex-col space-y-3">
+                            {% if user.is_staff %}
+                            <a href="{% url 'operations:login' %}" class="text-primary hover:text-secondary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-cog mr-3 w-6 text-center text-primary text-lg"></i>
+                                <span>Operations</span>
+                            </a>
+                            {% endif %}
+                         
+                            <a href="{% url 'marketplace:order_history' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-clipboard-list mr-3"></i>
+                                <span>Orders</span>
+                            </a>
+                            <a href="{% url 'registration:profile' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-user-circle mr-3 w-6 text-center text-gray-500"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="{% url 'registration:logout' %}" class="text-gray-700 hover:text-primary transition-colors font-medium py-2 flex items-center">
+                                <i class="fas fa-sign-out-alt mr-3 w-6 text-center text-gray-500"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="border-t border-gray-100 pt-3 mt-1 flex flex-col space-y-4">
+                            <a href="{% url 'registration:login' %}" class="btn btn-outline text-center py-2.5">Log In</a>
+                            <a href="{% url 'registration:customer_register' %}" class="btn btn-primary text-center py-2.5">Sign Up</a>
+                        </div>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="flex-grow pt-24 pb-16">
+        <div class="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Page Content Container -->
+            <div class="content-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-16 relative">
+        <div class="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <!-- Company Info -->
+                <div class="animate-in stagger-delay-1">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <img src="{% static 'website/images/kikapuu.png' %}" alt="KIKAPU Logo" class="h-10">
+                        <span class="font-bold text-2xl text-white">KIKAPU</span>
+                    </div>
+                    <p class="text-gray-300 mb-6 text-base leading-relaxed">Connecting local food ecosystems for healthier communities and a more sustainable future.</p>
+                    <div class="flex space-x-5">
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-accent-color transition-colors text-lg">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="animate-in stagger-delay-2">
+                    <h3 class="font-bold text-xl mb-6 text-white">Quick Links</h3>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'website:index' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Home
+                        </a></li>
+                        <li><a href="{% url 'marketplace:marketplace' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Marketplace
+                        </a></li>
+                        <li><a href="{% url 'website:about' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>About Us
+                        </a></li>
+                        <li><a href="{% url 'website:contact' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Contact</a></li>
+                        <li><a href="{% url 'website:blog' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Blog
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div class="animate-in stagger-delay-3">
+                    <h3 class="font-bold text-xl mb-6 text-white">Legal</h3>
+                    <ul class="space-y-3">
+                        <li><a href="{% url 'website:privacy_policy' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Privacy Policy
+                        </a></li>
+                        <li><a href="{% url 'website:terms' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Terms of Service
+                        </a></li>
+                        <li><a href="{% url 'website:cookies' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Cookie Policy
+                        </a></li>
+                        <li><a href="{% url 'website:refund' %}" class="text-gray-300 hover:text-accent-color transition-colors flex items-center">
+                            <i class="fas fa-chevron-right text-xs mr-2 text-accent-color"></i>Refund Policy
+                        </a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div class="animate-in stagger-delay-4">
+                    <h3 class="font-bold text-xl mb-6 text-white">Contact</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt text-accent-color mt-1.5 mr-3 text-lg"></i>
+                            <span class="text-gray-300">1730 Illazo, Dodoma, Tanzania</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone text-accent-color mt-1.5 mr-3 text-lg"></i>
+                            <span class="text-gray-300">+255 687 046 323</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope text-accent-color mt-1.5 mr-3 text-lg"></i>
+                            <span class="text-gray-300">info@kikapu.com</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">&copy; 2025 KIKAPU. All rights reserved.</p>
+                <div class="flex items-center space-x-8 mt-4 md:mt-0">
+                    <a href="{% url 'website:privacy_policy' %}" class="text-gray-400 hover:text-accent-color transition-colors text-sm">Privacy</a>
+                    <a href="{% url 'website:terms' %}" class="text-gray-400 hover:text-accent-color transition-colors text-sm">Terms</a>
+                    <a href="{% url 'website:faq' %}" class="text-gray-400 hover:text-accent-color transition-colors text-sm">FAQ</a>
+                    <a href="{% url 'operations:login' %}" class="text-gray-300 hover:text-accent-color transition-colors" title="Staff Operations">
+                        <i class="fas fa-cog text-base"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+
+
+  document.addEventListener('cart:updated', function(e) {
+    const count = e.detail.count;
+    const badge = document.getElementById('cart-count');
+    if (badge) {
+      badge.innerText = count;
+      badge.classList.add('scale-110');
+      setTimeout(() => badge.classList.remove('scale-110'), 300);
+    }
+  });
+
+
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Intersection Observer for animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const animatedElements = document.querySelectorAll('.animate-in');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            animatedElements.forEach(el => {
+                el.style.animationPlayState = 'paused';
+                observer.observe(el);
+            });
+            
+            // Listen for cart update events
+            document.addEventListener('cart:updated', function(e) {
+                console.log('Cart updated event received:', e.detail);
+                
+                // Check if we're in the middle of processing another cart event
+                // to prevent recursive loop of updates
+                if (!window.isProcessingCartEvent) {
+                    // Use a flag to prevent recursive calls
+                    window.isProcessingCartEvent = true;
+                    setTimeout(() => {
+                        try {
+                            // Only update if the value is different from the current one
+                            if (window.currentCartCount === undefined || 
+                                window.currentCartCount !== parseInt(e.detail.count)) {
+                                updateCartCount(e.detail.count);
+                            }
+                        } finally {
+                            window.isProcessingCartEvent = false;
+                        }
+                    }, 10);
+                }
+            });
+            
+            // Auto-initialize the cart when page loads
+            initializeCart();
+            
+            // HTMX debugging
+            document.body.addEventListener('htmx:beforeRequest', function(event) {
+                console.log('HTMX request starting:', event.detail);
+            });
+            
+            document.body.addEventListener('htmx:afterRequest', function(event) {
+                console.log('HTMX request completed:', event.detail);
+            });
+            
+            document.body.addEventListener('htmx:responseError', function(event) {
+                console.error('HTMX response error:', event.detail);
+            });
+            
+            document.body.addEventListener('htmx:sendError', function(event) {
+                console.error('HTMX send error:', event.detail);
+            });
+        });
+        
+        // Function to update cart count in the header
+        function updateCartCount(count, isOptimistic = false) {
+            console.log('Updating cart count to:', count);
+            
+            // Parse count to ensure it's a number
+            // String "1" will become number 1, etc.
+            let parsedCount = parseInt(count);
+            if (isNaN(parsedCount)) {
+                parsedCount = 0; // Default to 0 if invalid value
+            }
+            
+            // Get all cart badges across all templates
+            const cartBadges = document.querySelectorAll('#cart-badge, #cart-count-mobile, .cart-badge');
+            
+            console.log('Found cart badges:', cartBadges.length);
+            
+            // Store the previous count for possible rollback
+            if (isOptimistic) {
+                window.previousCartCount = cartBadges.length > 0 ? 
+                    parseInt(cartBadges[0].textContent) || 0 : 0;
+            }
+            
+            // Update each cart badge with the new count
+            cartBadges.forEach(badge => {
+                // Skip if this is in a template
+                if (badge.closest('template')) return;
+                
+                badge.textContent = parsedCount;
+                
+                // Also update the data attribute for future reference
+                badge.dataset.cartCount = parsedCount;
+                
+                // Add animation class to show the change
+                badge.classList.add('animate-bounce');
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    badge.classList.remove('animate-bounce');
+                }, 500);
+            });
+            
+            // Only dispatch event if this wasn't triggered by an event itself
+            // This prevents circular event references
+            if (!window.isProcessingCartEvent) {
+                window.isProcessingCartEvent = true;
+                try {
+                    // Store the updated count in a global variable for reference
+                    window.currentCartCount = parsedCount;
+                    
+                    // Dispatch the event with the correct count
+                    document.dispatchEvent(new CustomEvent('cart:updated', { 
+                        detail: { count: parsedCount, isOptimistic: isOptimistic }
+                    }));
+                } finally {
+                    // Always reset the flag
+                    setTimeout(() => {
+                        window.isProcessingCartEvent = false;
+                    }, 50);
+                }
+            }
+        }
+        
+        // Function to rollback cart count in case of error
+        function rollbackCartCount() {
+            if (window.previousCartCount !== undefined) {
+                updateCartCount(window.previousCartCount);
+            }
+        }
+        
+        // Function to initialize the cart data
+        function initializeCart() {
+            // Get all cart badges
+            const cartBadges = document.querySelectorAll('#cart-badge, #cart-count-mobile, .cart-badge');
+            
+            // Initialize from data-cart-count attribute first if available
+            if (cartBadges.length > 0) {
+                // Try to get count from data attribute on any badge
+                for (const badge of cartBadges) {
+                    if (badge.dataset.cartCount) {
+                        console.log('Initializing cart count from data attribute:', badge.dataset.cartCount);
+                        // Update all badges with this value
+                        cartBadges.forEach(b => b.textContent = badge.dataset.cartCount);
+                        break;
+                    }
+                }
+            }
+            
+            // Then try to fetch updated data from server (will override the data attribute values)
+            if (document.querySelector('#cart-badge') || 
+                document.querySelector('#cart-count-mobile') || 
+                document.querySelector('.cart-badge')) {
+                
+                fetch('/marketplace/api/cart-summary/', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.cart_count !== undefined) {
+                        updateCartCount(data.cart_count);
+                        console.log('Cart initialized with', data.cart_count, 'items');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error initializing cart:', error);
+                });
+            }
+        }
+        
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/js/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+    
+    <!-- Add animation for cart badge -->
+    <style>
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-4px);
+            }
+        }
+        
+        .animate-bounce {
+            animation: bounce 0.5s ease 2;
+        }
+    </style>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
